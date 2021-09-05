@@ -2,8 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import "reset-css";
 import LandingPage from "./components/LandingPage";
-
-import { createTheme, makeStyles, ThemeProvider } from '@material-ui/core/styles';
+import { createTheme, ThemeProvider } from '@material-ui/core/styles';
 
 export const theme = createTheme({
     palette: {
@@ -25,6 +24,9 @@ export const theme = createTheme({
     },
     typography: {
         fontFamily: 'Open Sans',
+    },
+    shape: {
+        borderRadius: 20,
     },
 });
 
