@@ -3,6 +3,8 @@ import PageCarousel from "./landingPage/PageCarousel";
 import AboutSection from "./landingPage/AboutSection";
 import TryApplication from "./landingPage/TryApplication";
 import Benefits from "./landingPage/Benefits"
+import ContactUs from "./landingPage/ContactUs";
+import Footer from "./landingPage/Footer";
 
 
 const LandingPage = () => {
@@ -13,6 +15,8 @@ const LandingPage = () => {
             <AboutSection />
             <TryApplication />
             <Benefits />
+            <ContactUs />
+            <Footer />
         </>
     )
 };

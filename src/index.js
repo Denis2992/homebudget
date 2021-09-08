@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import "reset-css";
 import LandingPage from "./components/LandingPage";
+import App from "./App";
 import { createTheme, ThemeProvider } from '@material-ui/core/styles';
 
 export const theme = createTheme({
@@ -33,7 +34,7 @@ export const theme = createTheme({
 
 const Index = () => {
     return (
-        <LandingPage/>
+        <App />
     )
 }
 

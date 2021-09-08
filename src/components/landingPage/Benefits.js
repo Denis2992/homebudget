@@ -11,21 +11,22 @@ import {theme} from "../../index";
 const useStyles = makeStyles((theme) => ({
     root: {
         flexGrow: 1,
-        maxWidth: 1500,
+        maxWidth: theme.spacing(187.5),
+        width: "100%",
         margin: "24px auto",
     },
     gridContainer: {
+        margin: "0 auto",
         display: "flex",
-        justifyContent: "space-around",
-        margin: "0 auto"
+        justifyContent: "space-around"
     },
     paper: {
         padding: theme.spacing(4, 3),
         textAlign: 'center',
         color: theme.palette.text.primary,
         maxWidth: 300,
-        flexBasis: 0,
-        border: `2px solid ${theme.palette.info.main}`
+        border: `2px solid ${theme.palette.info.main}`,
+
     },
     checkIcon: {
         color: theme.palette.info.main
@@ -45,7 +46,7 @@ const Benefits = () => {
     function FormRow() {
         return (
             <>
-                <Grid item xs={4}>
+                <Grid item xs={4} style={{flexBasis: "initial"}}>
                     <Paper className={classes.paper} elevation={3}>
                         <CheckCircleIcon className={classes.checkIcon} fontSize="large"/>
                         <Typography variant="h5" className={classes.paperHead}>Lorem ipsum dolor</Typography>
@@ -57,7 +58,7 @@ const Benefits = () => {
                         </Typography>
                     </Paper>
                 </Grid>
-                <Grid item xs={4}>
+                <Grid item xs={4} style={{flexBasis: "initial"}}>
                     <Paper className={classes.paper} elevation={3} style={{borderColor: theme.palette.secondary.main}}>
                         <SearchIcon color="secondary" fontSize="large" />
                         <Typography variant="h5" className={classes.paperHead}>Lorem ipsum dolor</Typography>
@@ -69,7 +70,7 @@ const Benefits = () => {
                         </Typography>
                     </Paper>
                 </Grid>
-                <Grid item xs={4}>
+                <Grid item xs={4} style={{flexBasis: "initial"}}>
                     <Paper className={classes.paper} belevation={3} style={{borderColor: theme.palette.primary.main}}>
                         <MonetizationOnIcon color="primary" fontSize="large"/>
                         <Typography variant="h5" className={classes.paperHead}>Lorem ipsum dolor</Typography>
@@ -87,11 +88,9 @@ const Benefits = () => {
 
     return (
         <div className={classes.root}>
-            <Grid container spacing={1}>
                 <Grid container item xs={12} spacing={3} className={classes.gridContainer}>
                     <FormRow />
                 </Grid>
-            </Grid>
         </div>
     );
 };

@@ -12,7 +12,8 @@ import {Paper} from "@material-ui/core";
 const useStyles = makeStyles((theme) =>({
     dataContainer: {
         margin: "0 auto",
-        maxWidth: 1500,
+        maxWidth: theme.spacing(187.5),
+        width: "100%",
         padding: theme.spacing(2, 0)
     },
     dataPaper: {

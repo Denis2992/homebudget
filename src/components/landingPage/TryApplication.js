@@ -4,7 +4,8 @@ import {makeStyles} from "@material-ui/core/styles";
 
 const useStyles = makeStyles((theme) => ({
     dataContainer: {
-        maxWidth: 1500
+        maxWidth: theme.spacing(187.5),
+        width: "100%",
     },
     dataBox: {
         maxWidth: 1500,

@@ -10,7 +10,8 @@ import {theme} from "../../index";
 
 const useStyles = makeStyles((theme) =>({
     carousel: {
-        maxWidth: 1500,
+        maxWidth: theme.spacing(187.5),
+        width: "100%",
         margin: "0 auto",
 
     },
