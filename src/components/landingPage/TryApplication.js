@@ -1,6 +1,7 @@
 import React from "react";
 import {Button, Container, Paper, Typography} from "@material-ui/core";
 import {makeStyles} from "@material-ui/core/styles";
+import {Link} from "react-router-dom";
 
 const useStyles = makeStyles((theme) => ({
     dataContainer: {
@@ -39,7 +40,7 @@ const TryApplication = () => {
             <Paper elevation={3} className={classes.dataBox}>
                 <Typography variant="h6" className={classes.dataBoxText}>Przetestuj naszą aplikacje!</Typography>
                 <Button variant="contained" className={classes.dataBoxBtn}>
-                    <a href="https://www.google.pl/" target="blank" className={classes.BtnLink}>Przejdź</a>
+                    <Link to="/app" className={classes.BtnLink}>Przejdź</Link>
                 </Button>
             </Paper>
         </Container>

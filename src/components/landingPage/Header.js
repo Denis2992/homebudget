@@ -4,6 +4,7 @@ import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import HomeIcon from '@material-ui/icons/Home';
+import {Link} from "react-router-dom";
 
 const useStyles = makeStyles((theme) => ({
 
@@ -22,7 +23,7 @@ const useStyles = makeStyles((theme) => ({
     },
     title: {
         flexGrow: 1,
-        fontFamily: "'Courgette', cursive"
+        fontFamily: "'Courgette', cursive",
     },
     navigation: {
         display: "flex",
@@ -31,7 +32,14 @@ const useStyles = makeStyles((theme) => ({
     navLi: {
         padding: theme.spacing(0, 2),
         "&:hover": {
-            color: theme.palette.info.main
+            color: theme.palette.info.main,
+        }
+    },
+    navLink: {
+        textDecoration: "none",
+        color: theme.palette.primary.contrastText,
+        "&:hover": {
+            color: theme.palette.info.main,
         }
     }
 }));
@@ -49,7 +57,9 @@ export default function ButtonAppBar() {
                     </Typography>
                     <Typography>
                         <ul className={classes.navigation}>
-                            <li className={classes.navLi}>Przejdź do aplikacji</li>
+                            <li className={classes.navLi}>
+                                <Link to="/app" className={classes.navLink}>Przejdź do aplikacji</Link>
+                            </li>
                             <li className={classes.navLi}>Dlaczego warto?</li>
                             <li className={classes.navLi}>O aplikacji</li>
                             <li className={classes.navLi} style={{paddingRight: "0"}}>Kontakt</li>

@@ -51,7 +51,9 @@ const WhyShouldCount = () => {
         <Container className={classes.dataContainer}>
             <Paper component="div" elevation={3} className={classes.dataPaper}>
                 <Box className={classes.textBox}>
-                    <Typography variant="h5" className={classes.textBoxHead}>Dlaczego warto wiedzieć na co wydajesz swoja pensje?</Typography>
+                    <Typography variant="h5" className={classes.textBoxHead}>
+                        Dlaczego warto wiedzieć na co wydajesz swoja pensje?
+                    </Typography>
                     <Typography className={classes.textBoxParagraph}>Lorem ipsum dolor sit amet, consectetur adipiscing
                         elit, sed do eiusmod tempor incididunt ut labore et dolore
                         magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation

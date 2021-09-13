@@ -1,8 +1,10 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import "reset-css";
+import {HashRouter, Route, Switch} from "react-router-dom";
 import LandingPage from "./components/LandingPage";
 import App from "./App";
+import StartWindow from "./components/app/StartWindow";
 import { createTheme, ThemeProvider } from '@material-ui/core/styles';
 
 export const theme = createTheme({
@@ -34,7 +36,12 @@ export const theme = createTheme({
 
 const Index = () => {
     return (
-        <App />
+        <HashRouter>
+            <Switch>
+                <Route exact path="/" component={LandingPage} />
+                <Route path="/app" component={App} />
+            </Switch>
+        </HashRouter>
     )
 }
 

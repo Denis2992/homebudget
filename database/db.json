@@ -1,0 +1,24 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "login": "denis299",
+      "name": "John",
+      "surname": "Doe",
+      "email": "danzel299@gmail.com",
+      "password": "qwerty",
+      "birthDate": "21.11.92",
+      "gender": "mężczyzna"
+    },
+    {
+      "id": 2,
+      "login": "helena94",
+      "name": "Helena",
+      "surname": "Prince",
+      "email": "helena94@gmail.com",
+      "password": "asdfg",
+      "birthDate": "25.09.1994",
+      "gender": "kobieta"
+    }
+  ]
+}
