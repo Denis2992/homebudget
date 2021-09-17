@@ -1,5 +1,5 @@
 import React from "react";
-import {Box, Container, rgbToHex, Typography} from "@material-ui/core";
+import {Box, Container, Typography} from "@material-ui/core";
 import HomeIcon from '@material-ui/icons/Home';
 import InstagramIcon from '@material-ui/icons/Instagram';
 import FacebookIcon from '@material-ui/icons/Facebook';

@@ -238,7 +238,7 @@ const Registration = () => {
             <Box className={classes.box}>
                 <Paper className={classes.paper} elevation={3}>
                     <IconButton aria-label="close" className={classes.closeBtn}>
-                        <Link to="/app">
+                        <Link to="/app" style={{height: 24}}>
                             <HighlightOffIcon className={classes.iconStyle}/>
                         </Link>
                     </IconButton>
@@ -281,9 +281,10 @@ const Registration = () => {
                             onChange={handleChange("email")}
                         />
                         <FormControl className={classes.textField} variant="outlined" color="secondary">
-                            <InputLabel htmlFor="password">Wprowadź hasło</InputLabel>
+                            <InputLabel htmlFor="enterPassword">Wprowadź hasło</InputLabel>
                             <OutlinedInput
-                                id="password"
+                                label="Wprowadź hasło"
+                                id="enterPassword"
                                 type={values.showPassword ? 'text' : 'password'}
                                 value={values.password}
                                 onChange={handleChange('password')}
@@ -305,6 +306,7 @@ const Registration = () => {
                         <FormControl className={classes.textField} variant="outlined" color="secondary">
                             <InputLabel htmlFor="confirmPassword">Powtórz hasło</InputLabel>
                             <OutlinedInput
+                                label="Powtórz hasło"
                                 id="confirmPassword"
                                 type={values.showConfirmPassword ? 'text' : 'password'}
                                 value={values.confirmPassword}

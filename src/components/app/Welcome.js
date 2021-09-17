@@ -21,7 +21,8 @@ const useStyles = makeStyles((theme) => ({
         alignItems: "center"
     },
     paperBoxText: {
-        padding: theme.spacing(3, 0),
+        padding: theme.spacing(2, 0),
+        textAlign: "center"
     },
     link: {
         textDecoration: "none",
@@ -37,7 +38,7 @@ export default function Welcome() {
         <Paper className={classes.paper} elevation={3}>
             <Box className={classes.paperBox}>
                 <Typography variant="h6">Witamy w aplikacji Budget Domowy! &#128578;</Typography>
-                <Typography variant="h6" className={classes.paperBoxText}>Zanim zaczniesz, zaloguj się</Typography>
+                <Typography variant="body2" className={classes.paperBoxText}>Zanim zaczniesz, zaloguj się</Typography>
                 <Button variant="contained" color="primary">
                     <Link to="/app/login" className={classes.link}>Logowanie</Link>
                 </Button>
@@ -46,9 +47,9 @@ export default function Welcome() {
 
             <Box className={classes.paperBox}>
                 <Typography variant="h6">Nie masz konta? Żaden problem!</Typography>
-                <Typography variant="h6" className={classes.paperBoxText}>
-                    Naciśnij załóż konto i w pare minut<br/>
-                    będziesz mieć dostęp do aplikacji
+                <Typography variant="body2" className={classes.paperBoxText}>
+                    Naciśnij załóż konto i w pare minut
+                    będziesz<br/> mieć dostęp do aplikacji
                 </Typography>
                 <Button variant="contained" color="secondary">
                     <Link to="/app/registration" className={classes.link}>Załóż konto</Link>

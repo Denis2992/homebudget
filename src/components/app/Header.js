@@ -8,7 +8,6 @@ import {
     AppBar,
     Toolbar,
     List,
-    CssBaseline,
     Typography,
     Divider,
     ListItem,
@@ -28,10 +27,11 @@ import LibraryBooksIcon from '@material-ui/icons/LibraryBooks';
 import {HashRouter, Link, NavLink, Route, Switch} from "react-router-dom";
 import ExitToAppIcon from '@material-ui/icons/ExitToApp';
 import StartWindow from "./StartWindow";
-import Budget from "./Budget";
 import CreditCalculator from "./CreditCalculator";
 import Notes from "./Notes";
 import Pulpit from "./Pulpit";
+import Budget from "./Budget";
+
 
 
 const drawerWidth = 240;
@@ -107,12 +107,15 @@ const useStyles = makeStyles((theme) => ({
         ...theme.mixins.toolbar,
     },
     content: {
-        flexGrow: 1,
-        padding: theme.spacing(3),
+        alignItems: "center",
+        justifyContent: "center",
+        width: "100%",
+        maxHeight: 800,
+        height: "100%"
     },
     avatar: {
         color: theme.palette.primary.contrastText,
-        backgroundColor: theme.palette.info.main,
+        backgroundColor: theme.palette.info.light,
         marginRight: theme.spacing(2)
 
     },
@@ -141,9 +144,10 @@ const useStyles = makeStyles((theme) => ({
         textDecoration: "none",
         fontSize: 20,
         padding: theme.spacing(1.5, 0)
+
     },
     navLinkIcon: {
-        marginRight: theme.spacing(3)
+        marginRight: theme.spacing(3.5)
     }
 }));
 
@@ -161,7 +165,6 @@ export default function Header() {
     const theme = useTheme();
     const [open, setOpen] = useState(false);
 
-    JSON.parse(localStorage.getItem( "user" ));
 
     const handleDrawerOpen = () => {
         setOpen(true);
@@ -178,7 +181,6 @@ export default function Header() {
     if (localStorage.userName && localStorage.userPassword) {
         return (
             <div className={classes.root}>
-
                 <AppBar
                     position="fixed"
                     className={clsx(classes.appBar, {
@@ -240,9 +242,10 @@ export default function Header() {
                     <Divider />
                     <List className={classes.list}>
                         <ListItem button >
-                            <NavLink to="/app/pulpit"
+                            <NavLink exact to="/app/"
                                      className={classes.navLink}
-                                     activeStyle={{color: theme.palette.info.main}}
+                                     activeStyle={{color: theme.palette.info.light}}
+
                             >
                                 <DesktopWindowsIcon className={classes.navLinkIcon}/>
                                 Pulpit
@@ -251,7 +254,8 @@ export default function Header() {
                         <ListItem button >
                             <NavLink to="/app/budget"
                                      className={classes.navLink}
-                                     activeStyle={{color: theme.palette.info.main}}
+                                     activeStyle={{color: theme.palette.info.light}}
+
                             >
                                 <AccountBalanceWalletIcon className={classes.navLinkIcon}/>
                                 Budget
@@ -260,7 +264,8 @@ export default function Header() {
                         <ListItem button >
                             <NavLink to="/app/creditCalculator"
                                      className={classes.navLink}
-                                     activeStyle={{color: theme.palette.info.main}}
+                                     activeStyle={{color: theme.palette.info.light}}
+
                             >
                                 <AccountBalanceIcon className={classes.navLinkIcon}/>
                                 Kalkulator<br/> kredytowy
@@ -269,7 +274,7 @@ export default function Header() {
                         <ListItem button >
                             <NavLink to="/app/notes"
                                      className={classes.navLink}
-                                     activeStyle={{color: theme.palette.info.main}}
+                                     activeStyle={{color: theme.palette.info.light}}
                             >
                                 <LibraryBooksIcon className={classes.navLinkIcon}/>
                                 Notes
@@ -281,15 +286,15 @@ export default function Header() {
                     <div className={classes.toolbar} />
                     <HashRouter>
                         <Switch>
-                            <Route exact path="/app/pulpit" component={Pulpit}/>
-                            <Route path="/app/budget" component={Budget}/>
-                            <Route path="/app/creditCalculator" component={CreditCalculator}/>
-                            <Route path="/app/notes" component={Notes}/>
+                            <Route exact path="/app/" component={Pulpit}/>
+                            <Route path="/app/budget/" component={Budget}/>
+                            <Route path="/app/creditCalculator/" component={CreditCalculator}/>
+                            <Route path="/app/notes/" component={Notes}/>
                         </Switch>
                     </HashRouter>
                 </main>
             </div>
-        );
+        )
     } else {
         return <StartWindow />;
     }

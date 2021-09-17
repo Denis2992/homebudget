@@ -87,8 +87,8 @@ export default function StartWindow() {
                     <HashRouter>
                         <Switch>
                             <Route exact path="/app/" component={Welcome}/>
-                            <Route path="/app/login" component={Login}/>
-                            <Route path="/app/registration" component={Registration}/>
+                            <Route path="/app/login/" component={Login}/>
+                            <Route path="/app/registration/" component={Registration}/>
                         </Switch>
                     </HashRouter>
                 </div>

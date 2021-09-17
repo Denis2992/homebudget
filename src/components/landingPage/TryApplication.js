@@ -40,7 +40,7 @@ const TryApplication = () => {
             <Paper elevation={3} className={classes.dataBox}>
                 <Typography variant="h6" className={classes.dataBoxText}>Przetestuj naszą aplikacje!</Typography>
                 <Button variant="contained" className={classes.dataBoxBtn}>
-                    <Link to="/app" className={classes.BtnLink}>Przejdź</Link>
+                    <Link to="/app/" className={classes.BtnLink}>Przejdź</Link>
                 </Button>
             </Paper>
         </Container>

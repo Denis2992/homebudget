@@ -18,7 +18,37 @@
       "email": "helena94@gmail.com",
       "password": "asdfg",
       "birthDate": "25.09.1994",
-      "gender": "kobieta"
+      "gender": "kobieta",
+      "budget": [
+        {
+          "category": "Sklepy",
+          "title": "Zakupy w Auchan",
+          "summ": 220,
+          "date": "11.09.2021"
+        },
+        {
+          "category": "Kredyty",
+          "title": "Remont mieszkania",
+          "summ": 200,
+          "date": "12.09.2021"
+        },
+        {
+          "category": "Pensja",
+          "title": "Zaliczka",
+          "summ": 500,
+          "date": "13.09.2021"
+        }
+      ]
+    },
+    {
+      "login": "Vasko1989",
+      "name": "asdfg",
+      "surname": "zxcv",
+      "email": "eeefff@mm.gg",
+      "password": "asdfg",
+      "birthDate": "2021-09-16",
+      "gender": "mężczyzna",
+      "id": 3
     }
   ]
 }

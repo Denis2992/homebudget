@@ -8,43 +8,54 @@ import ArrowDropUpIcon from '@material-ui/icons/ArrowDropUp';
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 import FiberManualRecordIcon from '@material-ui/icons/FiberManualRecord';
 import CircularProgress from '@material-ui/core/CircularProgress';
+import AddIcon from '@material-ui/icons/Add';
+
+
 
 const useStyles = makeStyles((theme) => ({
     root: {
         flexGrow: 1,
     },
     box: {
-      maxWidth: theme.spacing(130),
-        margin: theme.spacing(5)
+        margin: theme.spacing(4, 6)
     },
+    //this month income/expenses
     paperThisMonth: {
         padding: theme.spacing(2),
         textAlign: 'center',
         color: theme.palette.text.secondary,
-        border: `2px solid ${theme.palette.secondary.main}`
+        border: `2px solid ${theme.palette.warning.dark}`,
+
     },
     incomeBox: {
         display: "flex",
         alignItems: "center",
-        justifyContent: "center",
-        color: theme.palette.success.main
+        color: theme.palette.success.main,
+        padding: theme.spacing(0.7, 0)
     },
     expensesBox: {
         display: "flex",
         alignItems: "center",
-        justifyContent: "center",
-        color: theme.palette.error.main
+        color: theme.palette.error.main,
+        padding: theme.spacing(0.7, 0)
+    },
+    savingsBox: {
+        display: "flex",
+        alignItems: "center",
+        color: theme.palette.secondary.dark,
+        padding: theme.spacing(0.7, 0)
     },
     paperSummaryBoxInfo: {
         display: "flex",
         flexWrap: "wrap",
         justifyContent: "space-around"
     },
+    //expenses money Circle
     paperExpenses: {
         padding: theme.spacing(2),
         textAlign: 'center',
         color: theme.palette.text.secondary,
-        border: `2px solid ${theme.palette.warning.main}`
+        border: `2px solid ${theme.palette.secondary.main}`
     },
     boxCircleProgress: {
         display: "flex",
@@ -55,13 +66,65 @@ const useStyles = makeStyles((theme) => ({
     circleProgressInfo: {
         color: theme.palette.success.main
     },
+    //the biggestExpenses
+    theBiggestExpenses: {
+        padding: theme.spacing(2),
+        textAlign: 'center',
+        color: theme.palette.text.secondary,
+        border: `2px solid ${theme.palette.info.light}`
+    },
+    theBiggestExpensesSingleBox: {
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: theme.spacing(1, 0)
+    },
+    theBiggestExpensesLinearProgressBar: {
+        width: theme.spacing(25),
+        height: 12,
+        margin: theme.spacing(0 ,2),
+        borderRadius: 15
+    },
+    // last expenses
+    lastExpenses: {
+        padding: theme.spacing(2),
+        textAlign: 'center',
+        color: theme.palette.text.secondary,
+        border: `2px solid ${theme.palette.primary.light}`
+    },
+    lastExpensesSingleBox: {
+        display: "flex",
+        justifyContent: "space-around",
+        padding: theme.spacing(1, 0)
+    },
+    // savings
+    savings: {
+        padding: theme.spacing(2),
+        textAlign: 'center',
+        color: theme.palette.text.secondary,
+        border: `2px solid ${theme.palette.error.light}`
+    },
+    circleProgressSaving: {
+        color: theme.palette.warning.main,
+        padding: theme.spacing(2, 0)
+    },
+    credits: {
+        padding: theme.spacing(2),
+        textAlign: 'center',
+        color: theme.palette.text.secondary,
+        border: `2px solid ${theme.palette.secondary.dark}`,
+        height: theme.spacing(28)
+    },
+    singleCredit: {
+       padding: theme.spacing(1, 0)
+    }
 }));
 
 const IncomeProgressBar = withStyles((theme) => ({
     root: {
         height: 12,
         borderRadius: 5,
-        width: theme.spacing(25)
+        width: theme.spacing(17)
     },
     colorPrimary: {
         backgroundColor: theme.palette.primary.contrastText,
@@ -71,12 +134,11 @@ const IncomeProgressBar = withStyles((theme) => ({
         backgroundColor: theme.palette.success.main
     },
 }))(LinearProgress);
-
 const ExpensesProgressBar = withStyles((theme) => ({
     root: {
         height: 12,
         borderRadius: 5,
-        width: theme.spacing(25)
+        width: theme.spacing(17)
     },
     colorPrimary: {
         backgroundColor: theme.palette.primary.contrastText,
@@ -86,6 +148,21 @@ const ExpensesProgressBar = withStyles((theme) => ({
         backgroundColor: theme.palette.error.main
     },
 }))(LinearProgress);
+const SavingsProgressBar = withStyles((theme) => ({
+    root: {
+        height: 12,
+        borderRadius: 5,
+        width: theme.spacing(17)
+    },
+    colorPrimary: {
+        backgroundColor: theme.palette.primary.contrastText,
+    },
+    bar: {
+        borderRadius: 5,
+        backgroundColor: theme.palette.secondary.dark
+    },
+}))(LinearProgress);
+
 
 export default function Pulpit() {
     const classes = useStyles();
@@ -94,9 +171,9 @@ export default function Pulpit() {
         <div className={classes.root}>
             <Box className={classes.box}>
                 <Grid container spacing={3}>
-                    <Grid item xs={4}>
+                    <Grid item xs={3}>
                         <Paper className={classes.paperThisMonth} elevation={3}>
-                            <Typography>W tym miesiącu</Typography>
+                            <Typography color="textPrimary">W tym miesiącu</Typography>
                             <Box className={classes.incomeBox}>
                                 <IncomeProgressBar variant="determinate" value={100} />
                                 <ArrowDropUpIcon fontSize="large" />
@@ -108,9 +185,14 @@ export default function Pulpit() {
                                 <ArrowDropDownIcon fontSize="large" />
                                 <Typography>{2000}</Typography>
                             </Box>
+                            <Box className={classes.savingsBox}>
+                                <SavingsProgressBar variant="determinate" value={10} />
+                                <AddIcon style={{padding: "0 5px"}}/>
+                                <Typography>{300}</Typography>
+                            </Box>
                             <Box className={classes.paperSummaryBoxInfo}>
                                 <div className={classes.incomeBox}>
-                                    <FiberManualRecordIcon />
+                                    <FiberManualRecordIcon  />
                                     <Typography color="textSecondary" variant="body2">przychód</Typography>
                                 </div>
                                 <div className={classes.expensesBox}>
@@ -118,26 +200,21 @@ export default function Pulpit() {
                                     <Typography color="textSecondary" variant="body2">wydatki</Typography>
                                 </div>
                             </Box>
+                            <div className={classes.savingsBox} style={{justifyContent: "center"}}>
+                                <FiberManualRecordIcon />
+                                <Typography color="textSecondary" variant="body2">oszczędności</Typography>
+                            </div>
                         </Paper>
                     </Grid>
-
-                    <Grid item xs>
-                        <Paper className={classes.paper}>xs</Paper>
-                    </Grid>
-                    <Grid item xs>
-                        <Paper className={classes.paper}>xs</Paper>
-                    </Grid>
-                </Grid>
-                <Grid container spacing={3}>
                     <Grid item xs>
                         <Paper className={classes.paperExpenses} elevation={3}>
-                            <Typography>Wykorzystano środków</Typography>
+                            <Typography color="textPrimary">Wykorzystano środków</Typography>
                             <Box className={classes.boxCircleProgress}>
                                 <CircularProgress
                                     variant="determinate"
                                     value={66.6}
                                     thickness={10}
-                                    size="130px"
+                                    size="143px"
                                     className={classes.circleProgressInfo}
                                 />
                                 <Typography>66,6%</Typography>
@@ -146,10 +223,119 @@ export default function Pulpit() {
                         </Paper>
                     </Grid>
                     <Grid item xs={6}>
-                        <Paper className={classes.paper}>xs=6</Paper>
+                        <Paper className={classes.lastExpenses} elevation={3}>
+                            <Typography color="textPrimary">Twoje ostatnie wydatki</Typography>
+                            <div className={classes.lastExpensesSingleBox}>
+                                <FiberManualRecordIcon />
+                                <Typography>Kategoria</Typography>
+                                <Typography>Nazwa</Typography>
+                                <Typography>Cena</Typography>
+                            </div>
+                            <div className={classes.lastExpensesSingleBox}>
+                                <FiberManualRecordIcon />
+                                <Typography>Kategoria</Typography>
+                                <Typography>Nazwa</Typography>
+                                <Typography>Cena</Typography>
+                            </div>
+                            <div className={classes.lastExpensesSingleBox}>
+                                <FiberManualRecordIcon />
+                                <Typography>Kategoria</Typography>
+                                <Typography>Nazwa</Typography>
+                                <Typography>Cena</Typography>
+                            </div>
+                            <div className={classes.lastExpensesSingleBox}>
+                                <FiberManualRecordIcon />
+                                <Typography>Kategoria</Typography>
+                                <Typography>Nazwa</Typography>
+                                <Typography>Cena</Typography>
+                            </div>
+                            <div className={classes.lastExpensesSingleBox}>
+                                <FiberManualRecordIcon />
+                                <Typography>Kategoria</Typography>
+                                <Typography>Nazwa</Typography>
+                                <Typography>Cena</Typography>
+                            </div>
+                        </Paper>
+                    </Grid>
+                </Grid>
+                <Grid container spacing={3}>
+                    <Grid item xs={5}>
+                        <Paper className={classes.theBiggestExpenses} elevation={3}>
+                            <Typography color="textPrimary">Twoje największe wydatki przez cały czas</Typography>
+                            <div className={classes.theBiggestExpensesSingleBox}>
+                                <FiberManualRecordIcon />
+                                <Typography>Kategoria</Typography>
+                                <LinearProgress
+                                    variant="determinate"
+                                    value={100}
+                                    className={classes.theBiggestExpensesLinearProgressBar}
+                                />
+                                <Typography>{3000}</Typography>
+                            </div>
+                            <div className={classes.theBiggestExpensesSingleBox}>
+                                <FiberManualRecordIcon />
+                                <Typography>Kategoria</Typography>
+                                <LinearProgress
+                                    variant="determinate"
+                                    value={100}
+                                    className={classes.theBiggestExpensesLinearProgressBar}
+                                />
+                                <Typography>{3000}</Typography>
+                            </div>
+                            <div className={classes.theBiggestExpensesSingleBox}>
+                                <FiberManualRecordIcon />
+                                <Typography>Kategoria</Typography>
+                                <LinearProgress
+                                    variant="determinate"
+                                    value={100}
+                                    className={classes.theBiggestExpensesLinearProgressBar}
+                                />
+                                <Typography>{3000}</Typography>
+                            </div>
+                            <div className={classes.theBiggestExpensesSingleBox}>
+                                <FiberManualRecordIcon />
+                                <Typography>Kategoria</Typography>
+                                <LinearProgress
+                                    variant="determinate"
+                                    value={100}
+                                    className={classes.theBiggestExpensesLinearProgressBar}
+                                />
+                                <Typography>{3000}</Typography>
+                            </div>
+                            <div className={classes.theBiggestExpensesSingleBox}>
+                                <FiberManualRecordIcon />
+                                <Typography>Kategoria</Typography>
+                                <LinearProgress
+                                    variant="determinate"
+                                    value={100}
+                                    className={classes.theBiggestExpensesLinearProgressBar}
+                                />
+                                <Typography>{3000}</Typography>
+                            </div>
+                        </Paper>
+                    </Grid>
+                    <Grid item xs={3}>
+                        <Paper className={classes.savings} elevation={3}>
+                            <Typography color="textPrimary">Aktualnie zbierasz pieniądze na wakacje</Typography>
+                            <CircularProgress
+                                variant="determinate"
+                                value={40}
+                                thickness={22}
+                                size="100px"
+                                className={classes.circleProgressSaving}
+                            />
+                            <Typography variant="body2">Zebrano 40%</Typography>
+                            <Typography variant="body2">Potrzebujesz 10000</Typography>
+                        </Paper>
                     </Grid>
                     <Grid item xs>
-                        <Paper className={classes.paper}>xs</Paper>
+                        <Paper className={classes.credits} elevation={3}>
+                            <Typography color="textPrimary">Aktualne kredyty</Typography>
+                            <Typography className={classes.singleCredit}>Nazwa: zostało do splaty</Typography>
+                            <Typography className={classes.singleCredit}>Nazwa: zostało do splaty</Typography>
+                            <Typography className={classes.singleCredit}>Nazwa: zostało do splaty</Typography>
+                            <Typography className={classes.singleCredit}>Nazwa: zostało do splaty</Typography>
+                        </Paper>
                     </Grid>
                 </Grid>
             </Box>

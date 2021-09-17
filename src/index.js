@@ -4,8 +4,8 @@ import "reset-css";
 import {HashRouter, Route, Switch} from "react-router-dom";
 import LandingPage from "./components/LandingPage";
 import App from "./App";
-import StartWindow from "./components/app/StartWindow";
 import { createTheme, ThemeProvider } from '@material-ui/core/styles';
+
 
 export const theme = createTheme({
     palette: {

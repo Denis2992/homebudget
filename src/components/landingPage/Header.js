@@ -58,7 +58,7 @@ export default function ButtonAppBar() {
                     <Typography>
                         <ul className={classes.navigation}>
                             <li className={classes.navLi}>
-                                <Link to="/app" className={classes.navLink}>Przejdź do aplikacji</Link>
+                                <Link to="/app/" className={classes.navLink}>Przejdź do aplikacji</Link>
                             </li>
                             <li className={classes.navLi}>Dlaczego warto?</li>
                             <li className={classes.navLi}>O aplikacji</li>
