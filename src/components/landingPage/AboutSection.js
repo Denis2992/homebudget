@@ -7,7 +7,7 @@ import {theme} from "../../index";
 import coins from "../images/aboutSection/coins.jpg"
 import diagram from "../images/aboutSection/diagram.png"
 import {Paper} from "@material-ui/core";
-
+import { Element } from 'react-scroll';
 
 const useStyles = makeStyles((theme) =>({
     dataContainer: {
@@ -48,23 +48,25 @@ const useStyles = makeStyles((theme) =>({
 const WhyShouldCount = () => {
     const classes = useStyles();
     return (
-        <Container className={classes.dataContainer}>
-            <Paper component="div" elevation={3} className={classes.dataPaper}>
-                <Box className={classes.textBox}>
-                    <Typography variant="h5" className={classes.textBoxHead}>
-                        Dlaczego warto wiedzieć na co wydajesz swoja pensje?
-                    </Typography>
-                    <Typography className={classes.textBoxParagraph}>Lorem ipsum dolor sit amet, consectetur adipiscing
-                        elit, sed do eiusmod tempor incididunt ut labore et dolore
-                        magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation
-                        ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute
-                        irure dolor in reprehenderit in voluptate velit esse cillum dolore
-                        eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident,
-                        sunt in culpa qui officia deserunt mollit anim id est laborum.</Typography>
-                </Box>
-                <img src={coins} className={classes.coinsImg} alt="coins"/>
-            </Paper>
-        </Container>
+        <Element name="forWhat">
+            <Container className={classes.dataContainer}>
+                <Paper component="div" elevation={3} className={classes.dataPaper}>
+                    <Box className={classes.textBox}>
+                        <Typography variant="h5" className={classes.textBoxHead}>
+                            Dlaczego warto wiedzieć na co wydajesz swoja pensje?
+                        </Typography>
+                        <Typography className={classes.textBoxParagraph}>Lorem ipsum dolor sit amet, consectetur adipiscing
+                            elit, sed do eiusmod tempor incididunt ut labore et dolore
+                            magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation
+                            ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute
+                            irure dolor in reprehenderit in voluptate velit esse cillum dolore
+                            eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident,
+                            sunt in culpa qui officia deserunt mollit anim id est laborum.</Typography>
+                    </Box>
+                    <img src={coins} className={classes.coinsImg} alt="coins"/>
+                </Paper>
+            </Container>
+        </Element>
     );
 };
 
@@ -72,21 +74,23 @@ const WhyShouldCount = () => {
 const AboutApplication = () => {
     const classes = useStyles();
     return (
-        <Container className={classes.dataContainer}>
-            <Paper component="div" elevation={3} className={classes.dataPaper} style={{border: `2px solid ${theme.palette.primary.main}`}}>
-                <img src={diagram} className={classes.diagramImg} alt="diagram"/>
-                <Box className={classes.textBox}>
-                    <Typography variant="h5" className={classes.textBoxHead}>Do czego służy aplikacja?</Typography>
-                    <Typography className={classes.textBoxParagraph}>Lorem ipsum dolor sit amet, consectetur adipiscing
-                        elit, sed do eiusmod tempor incididunt ut labore et dolore
-                        magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation
-                        ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute
-                        irure dolor in reprehenderit in voluptate velit esse cillum dolore
-                        eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident,
-                        sunt in culpa qui officia deserunt mollit anim id est laborum.</Typography>
-                </Box>
-            </Paper>
-        </Container>
+        <Element name="about">
+            <Container className={classes.dataContainer}>
+                <Paper component="div" elevation={3} className={classes.dataPaper} style={{border: `2px solid ${theme.palette.primary.main}`}}>
+                    <img src={diagram} className={classes.diagramImg} alt="diagram"/>
+                    <Box className={classes.textBox}>
+                        <Typography variant="h5" className={classes.textBoxHead}>Do czego służy aplikacja?</Typography>
+                        <Typography className={classes.textBoxParagraph}>Lorem ipsum dolor sit amet, consectetur adipiscing
+                            elit, sed do eiusmod tempor incididunt ut labore et dolore
+                            magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation
+                            ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute
+                            irure dolor in reprehenderit in voluptate velit esse cillum dolore
+                            eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident,
+                            sunt in culpa qui officia deserunt mollit anim id est laborum.</Typography>
+                    </Box>
+                </Paper>
+            </Container>
+        </Element>
     );
 };
 

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useContext} from 'react';
 import PropTypes from 'prop-types';
 import { makeStyles } from '@material-ui/core/styles';
 import Table from '@material-ui/core/Table';
@@ -17,33 +17,18 @@ import Tooltip from '@material-ui/core/Tooltip';
 import {withStyles, Container} from "@material-ui/core";
 import {Link} from "react-router-dom";
 import StorageIcon from '@material-ui/icons/Storage';
+import {usersDataContext} from "../../../App";
 
-
-function createData(id, creditTitle, leftSumm, singlePayment, leftPayments) {
-    return {id, creditTitle, leftSumm, singlePayment, leftPayments};
-}
-
-const rows = [
-    createData("1", "Auto", 2000, 200, 14),
-    createData("2", "Auto", 25),
-    createData("3", "Auto", 16),
-    createData("4", "Auto", 6),
-    createData("5", "Auto", 16),
-    createData("6", "Auto", 3),
-    createData("7", "Auto", 9),
-    createData("8", "Auto", 0),
-    createData("9", "Auto", 26),
-    createData("10", "Auto", 0),
-    createData("11", "Auto", 555),
-    createData("12", "Auto", 19),
-    createData("13", "Auto", 18),
-];
 
 function descendingComparator(a, b, orderBy) {
-    if (b[orderBy] < a[orderBy]) {
+    const isNumber = !isNaN(a[orderBy]);
+    let first = isNumber ? +a[orderBy] : a[orderBy];
+    let second = isNumber ? +b[orderBy] : b[orderBy];
+
+    if (second < first) {
         return -1;
     }
-    if (b[orderBy] > a[orderBy]) {
+    if (second > first) {
         return 1;
     }
     return 0;
@@ -55,7 +40,7 @@ function getComparator(order, orderBy) {
         : (a, b) => -descendingComparator(a, b, orderBy);
 }
 
-function stableSort(array, comparator) {
+function stableSort(array =[], comparator) {
     const stabilizedThis = array.map((el, index) => [el, index]);
     stabilizedThis.sort((a, b) => {
         const order = comparator(a[0], b[0]);
@@ -68,7 +53,7 @@ function stableSort(array, comparator) {
 const headCells = [
     { id: 'creditTitle', disablePadding: false, label: 'Nazwa' },
     { id: 'leftSumm', disablePadding: false, label: 'Zostało do spłaty' },
-    { id: 'singlePayment', disablePadding: false, label: 'Miesięczna rata' },
+    { id: 'monthlyPayment', disablePadding: false, label: 'Miesięczna rata' },
     { id: 'leftPayments', disablePadding: false, label: 'Zostało rat' },
 
 ];
@@ -180,19 +165,21 @@ const useStyles = makeStyles((theme) => ({
     },
 }));
 
+
+
 export default function CreditTableSummary() {
     const classes = useStyles();
     const [order, setOrder] = React.useState('asc');
     const [orderBy, setOrderBy] = React.useState('calories');
     const [page, setPage] = React.useState(0);
     const [rowsPerPage, setRowsPerPage] = React.useState(5);
+    const {currentUserData} = useContext(usersDataContext);
 
     const handleRequestSort = (event, property) => {
         const isAsc = orderBy === property && order === 'asc';
         setOrder(isAsc ? 'desc' : 'asc');
         setOrderBy(property);
     };
-
 
     const handleChangePage = (event, newPage) => {
         setPage(newPage);
@@ -218,10 +205,10 @@ export default function CreditTableSummary() {
                                 order={order}
                                 orderBy={orderBy}
                                 onRequestSort={handleRequestSort}
-                                rowCount={rows.length}
+                                rowCount={currentUserData?.credits?.length}
                             />
                             <TableBody>
-                                {stableSort(rows, getComparator(order, orderBy))
+                                {stableSort(currentUserData?.credits, getComparator(order, orderBy))
                                     .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                                     .map((row) => {
 
@@ -232,7 +219,7 @@ export default function CreditTableSummary() {
                                             >
                                                 <TableCell>{row.creditTitle}</TableCell>
                                                 <TableCell>{row.leftSumm}</TableCell>
-                                                <TableCell>{row.singlePayment}</TableCell>
+                                                <TableCell>{row.monthlyPayment}</TableCell>
                                                 <TableCell>{row.leftPayments}</TableCell>
                                             </TableRow>
                                         );
@@ -244,7 +231,7 @@ export default function CreditTableSummary() {
                     <TablePagination
                         rowsPerPageOptions={[5, 10, 15]}
                         component="div"
-                        count={rows.length}
+                        count={currentUserData?.credits?.length}
                         rowsPerPage={rowsPerPage}
                         labelRowsPerPage="Wierszy na stronie"
                         page={page}

@@ -1,4 +1,4 @@
-import React, {createContext, useEffect, useState} from 'react';
+import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
@@ -41,29 +41,9 @@ const useStyles = makeStyles((theme) => ({
     }
 }));
 
-export const usersDataContext = createContext('');
-export const usersApiUrl = "http://localhost:3001/users";
 
 export default function StartWindow() {
-    const [usersData, setUsersData] = useState("");
-
-
-    useEffect(() => {
-        fetch(usersApiUrl)
-            .then((resp) => {
-                if (resp.ok) {
-                    return resp.json();
-                } else {
-                    throw new Error("Błąd sieci!");
-                }
-            })
-            .then((data) => setUsersData(data))
-            .catch(err => console.log("Błąd!", err));
-    }, []);
-
-
     const classes = useStyles();
-
 
     if (localStorage.userName && localStorage.userPassword) {
         return (
@@ -71,28 +51,26 @@ export default function StartWindow() {
         )
     } else {
         return (
-            <usersDataContext.Provider value={{usersData, setUsersData}}>
-                <div className={classes.root}>
-                    <AppBar position="static" className={classes.navBar}>
-                        <Toolbar className={classes.toolbar}>
-                            <NavLink to="/" className={classes.homeLink}>
-                                <HomeIcon/>
-                                <Typography variant="h5" className={classes.title}>
-                                    BudgetDomowy
-                                </Typography>
-                            </NavLink>
-                            <Typography variant="h6" className={classes.motto}>Licz swoje wydatki</Typography>
-                        </Toolbar>
-                    </AppBar>
-                    <HashRouter>
-                        <Switch>
-                            <Route exact path="/app/" component={Welcome}/>
-                            <Route path="/app/login/" component={Login}/>
-                            <Route path="/app/registration/" component={Registration}/>
-                        </Switch>
-                    </HashRouter>
-                </div>
-            </usersDataContext.Provider>
+            <div className={classes.root}>
+                <AppBar position="static" className={classes.navBar}>
+                    <Toolbar className={classes.toolbar}>
+                        <NavLink to="/" className={classes.homeLink}>
+                            <HomeIcon/>
+                            <Typography variant="h5" className={classes.title}>
+                                BudgetDomowy
+                            </Typography>
+                        </NavLink>
+                        <Typography variant="h6" className={classes.motto}>Licz swoje wydatki</Typography>
+                    </Toolbar>
+                </AppBar>
+                <HashRouter>
+                    <Switch>
+                        <Route exact path="/app/" component={Welcome}/>
+                        <Route path="/app/login/" component={Login}/>
+                        <Route path="/app/registration/" component={Registration}/>
+                    </Switch>
+                </HashRouter>
+            </div>
         );
     }
-}
+};

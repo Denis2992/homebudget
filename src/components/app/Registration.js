@@ -20,11 +20,10 @@ from "@material-ui/core";
 import Visibility from '@material-ui/icons/Visibility';
 import VisibilityOff from '@material-ui/icons/VisibilityOff';
 import HighlightOffIcon from '@material-ui/icons/HighlightOff';
-import {Link} from "react-router-dom";
-import {usersDataContext} from "./StartWindow";
+import {Link, useHistory} from "react-router-dom";
+import {usersDataContext} from "../../App";
 import validator from "validator/es";
-import {usersApiUrl} from "./StartWindow";
-import Header from "./Header";
+import {usersApiUrl} from "../../App";
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -87,8 +86,8 @@ const Registration = () => {
         showPassword: false,
         showConfirmPassword: false
     });
-    const [errorList, setErrorList] = useState([])
-    const [newUserLoggedIn, setNewUserLoggedIn] = useState(false);
+    const [errorList, setErrorList] = useState([]);
+    const history = useHistory();
     const {usersData} = useContext(usersDataContext);
 
 
@@ -135,11 +134,11 @@ const Registration = () => {
         }
 
         if (!validator.isAlpha(name,'pl-PL') || name.length < 3) {
-            newErrorList.push("Imie nie może zawierać liczby i znaki i musi zawierać minimum 3 litery")
+            newErrorList.push("Imie nie może zawierać liczby lub znaki i musi zawierać minimum 3 litery")
         }
 
         if (!validator.isAlpha(surname, 'pl-PL') || surname.length < 3) {
-            newErrorList.push("Nazwisko nie może zawierać liczby i znaki i musi zawierać 3 litery");
+            newErrorList.push("Nazwisko nie może zawierać liczby lub znaki i musi zawierać 3 litery");
         }
 
         if (!validator.isEmail(email)) {
@@ -175,6 +174,9 @@ const Registration = () => {
                 password: values.password,
                 birthDate: values.birthDate,
                 gender: values.gender,
+                budget: [],
+                credits: [],
+                savings: [],
             };
 
             fetch(usersApiUrl, {
@@ -194,6 +196,7 @@ const Registration = () => {
                 .then((data) => {
                     localStorage.setItem("userName", data.login);
                     localStorage.setItem("userPassword", data.password);
+                    history.push("/app");
                     setValues({
                         login: "",
                         name: "",
@@ -206,10 +209,8 @@ const Registration = () => {
                     });
                 })
                 .catch((err) => console.log("Błąd!", err));
-
-            setNewUserLoggedIn(true);
         }
-    }
+    };
 
     const getErrorToRender = () => {
         let errorToRender;
@@ -231,159 +232,154 @@ const Registration = () => {
         }
 
         return errorToRender;
-    }
+    };
 
-    if (!newUserLoggedIn) {
-        return (
-            <Box className={classes.box}>
-                <Paper className={classes.paper} elevation={3}>
-                    <IconButton aria-label="close" className={classes.closeBtn}>
-                        <Link to="/app" style={{height: 24}}>
-                            <HighlightOffIcon className={classes.iconStyle}/>
-                        </Link>
-                    </IconButton>
-                    <form className={classes.form} onSubmit={handleFormSubmit}>
-                        <Typography variant="h5">Wprowadź swoje dane</Typography>
-                        <TextField
-                            id="login"
-                            variant="outlined"
-                            color="secondary"
-                            label="Login"
-                            className={classes.textField}
-                            value={values.login}
-                            onChange={handleChange("login")}
+    return (
+        <Box className={classes.box}>
+            <Paper className={classes.paper} elevation={3}>
+                <IconButton aria-label="close" className={classes.closeBtn}>
+                    <Link to="/app" style={{height: 24}}>
+                        <HighlightOffIcon className={classes.iconStyle}/>
+                    </Link>
+                </IconButton>
+                <form className={classes.form} onSubmit={handleFormSubmit}>
+                    <Typography variant="h5">Wprowadź swoje dane</Typography>
+                    <TextField
+                        id="login"
+                        variant="outlined"
+                        color="secondary"
+                        label="Login"
+                        className={classes.textField}
+                        value={values.login}
+                        onChange={handleChange("login")}
+                    />
+                    <TextField
+                        id="name"
+                        variant="outlined"
+                        color="secondary"
+                        label="Imię"
+                        className={classes.textField}
+                        value={values.name}
+                        onChange={handleChange("name")}
+                    />
+                    <TextField
+                        id="surname"
+                        variant="outlined"
+                        color="secondary"
+                        label="Nazwisko"
+                        className={classes.textField}
+                        value={values.surname}
+                        onChange={handleChange("surname")}
+                    />
+                    <TextField
+                        id="email"
+                        variant="outlined"
+                        color="secondary"
+                        label="Email"
+                        className={classes.textField}
+                        value={values.email}
+                        onChange={handleChange("email")}
+                    />
+                    <FormControl className={classes.textField} variant="outlined" color="secondary">
+                        <InputLabel htmlFor="enterPassword">Wprowadź hasło</InputLabel>
+                        <OutlinedInput
+                            label="Wprowadź hasło"
+                            id="enterPassword"
+                            type={values.showPassword ? 'text' : 'password'}
+                            value={values.password}
+                            onChange={handleChange('password')}
+                            endAdornment={
+                                <InputAdornment position="end">
+                                    <IconButton
+                                        aria-label="toggle password visibility"
+                                        onClick={handleClickShowPassword}
+                                        onMouseDown={handleMouseDownPassword}
+                                        edge="end"
+                                    >
+                                        {values.showPassword ? <Visibility /> : <VisibilityOff />}
+                                    </IconButton>
+                                </InputAdornment>
+                            }
+                            labelWidth={70}
                         />
-                        <TextField
-                            id="name"
-                            variant="outlined"
-                            color="secondary"
-                            label="Imię"
-                            className={classes.textField}
-                            value={values.name}
-                            onChange={handleChange("name")}
-                        />
-                        <TextField
-                            id="surname"
-                            variant="outlined"
-                            color="secondary"
-                            label="Nazwisko"
-                            className={classes.textField}
-                            value={values.surname}
-                            onChange={handleChange("surname")}
-                        />
-                        <TextField
-                            id="email"
-                            variant="outlined"
-                            color="secondary"
-                            label="Email"
-                            className={classes.textField}
-                            value={values.email}
-                            onChange={handleChange("email")}
-                        />
-                        <FormControl className={classes.textField} variant="outlined" color="secondary">
-                            <InputLabel htmlFor="enterPassword">Wprowadź hasło</InputLabel>
-                            <OutlinedInput
-                                label="Wprowadź hasło"
-                                id="enterPassword"
-                                type={values.showPassword ? 'text' : 'password'}
-                                value={values.password}
-                                onChange={handleChange('password')}
-                                endAdornment={
-                                    <InputAdornment position="end">
-                                        <IconButton
-                                            aria-label="toggle password visibility"
-                                            onClick={handleClickShowPassword}
-                                            onMouseDown={handleMouseDownPassword}
-                                            edge="end"
-                                        >
-                                            {values.showPassword ? <Visibility /> : <VisibilityOff />}
-                                        </IconButton>
-                                    </InputAdornment>
-                                }
-                                labelWidth={70}
-                            />
-                        </FormControl>
-                        <FormControl className={classes.textField} variant="outlined" color="secondary">
-                            <InputLabel htmlFor="confirmPassword">Powtórz hasło</InputLabel>
-                            <OutlinedInput
-                                label="Powtórz hasło"
-                                id="confirmPassword"
-                                type={values.showConfirmPassword ? 'text' : 'password'}
-                                value={values.confirmPassword}
-                                onChange={handleChange('confirmPassword')}
-                                endAdornment={
-                                    <InputAdornment position="end">
-                                        <IconButton
-                                            aria-label="toggle password visibility"
-                                            onClick={handleClickShowConfirmPassword}
-                                            onMouseDown={handleMouseDownPassword}
-                                            edge="end"
-                                        >
-                                            {values.showConfirmPassword ? <Visibility /> : <VisibilityOff />}
-                                        </IconButton>
-                                    </InputAdornment>
-                                }
-                                labelWidth={70}
-                                InputLabelProps={{
-                                    shrink: true,
-                                }}
-                            />
-                        </FormControl>
-                        <TextField
-                            variant="outlined"
-                            color="secondary"
-                            id="birthDate"
-                            name="birthDate"
-                            label="Data urodzenia"
-                            type="date"
-                            defaultValue=""
-                            className={classes.textField}
-                            value={values.birthDate}
-                            onChange={handleChange("birthDate")}
+                    </FormControl>
+                    <FormControl className={classes.textField} variant="outlined" color="secondary">
+                        <InputLabel htmlFor="confirmPassword">Powtórz hasło</InputLabel>
+                        <OutlinedInput
+                            label="Powtórz hasło"
+                            id="confirmPassword"
+                            type={values.showConfirmPassword ? 'text' : 'password'}
+                            value={values.confirmPassword}
+                            onChange={handleChange('confirmPassword')}
+                            endAdornment={
+                                <InputAdornment position="end">
+                                    <IconButton
+                                        aria-label="toggle password visibility"
+                                        onClick={handleClickShowConfirmPassword}
+                                        onMouseDown={handleMouseDownPassword}
+                                        edge="end"
+                                    >
+                                        {values.showConfirmPassword ? <Visibility /> : <VisibilityOff />}
+                                    </IconButton>
+                                </InputAdornment>
+                            }
+                            labelWidth={70}
                             InputLabelProps={{
                                 shrink: true,
                             }}
                         />
-                        <FormControl component="fieldset" className={classes.genderContainer}>
-                            <FormLabel component="legend" color="secondary">Płeć</FormLabel>
-                            <RadioGroup
-                                aria-label="gender"
-                                name="gender1"
-                                className={classes.chooseGender}
-                            >
-                                <FormControlLabel
-                                    name="gender"
-                                    value="kobieta"
-                                    control={<Radio />}
-                                    label="Kobieta"
-                                    onChange={handleChange("gender")}
-                                    checked={values.gender === "kobieta"}
-                                />
-                                <FormControlLabel
-                                    name="gender"
-                                    value="mężczyzna"
-                                    control={<Radio />}
-                                    label="Mężczyzna"
-                                    onChange={handleChange("gender")}
-                                    checked={values.gender === "mężczyzna"}
-                                />
-                            </RadioGroup>
-                        </FormControl>
-                        {getErrorToRender()}
-                        <Box className={classes.agreement}>
-                            <Typography variant="body2">Klikając zarejestruj się, zgadzasz się z warunkami
-                                korzystania aplikacji.
-                            </Typography>
-                        </Box>
-                        <Button variant="contained" color="secondary" type="submit">Zarejestruj się</Button>
-                    </form>
-                </Paper>
-            </Box>
-        );
-    } else {
-       return <Header />;
-    }
-
+                    </FormControl>
+                    <TextField
+                        variant="outlined"
+                        color="secondary"
+                        id="birthDate"
+                        name="birthDate"
+                        label="Data urodzenia"
+                        type="date"
+                        defaultValue=""
+                        className={classes.textField}
+                        value={values.birthDate}
+                        onChange={handleChange("birthDate")}
+                        InputLabelProps={{
+                            shrink: true,
+                        }}
+                    />
+                    <FormControl component="fieldset" className={classes.genderContainer}>
+                        <FormLabel component="legend" color="secondary">Płeć</FormLabel>
+                        <RadioGroup
+                            aria-label="gender"
+                            name="gender1"
+                            className={classes.chooseGender}
+                        >
+                            <FormControlLabel
+                                name="gender"
+                                value="kobieta"
+                                control={<Radio />}
+                                label="Kobieta"
+                                onChange={handleChange("gender")}
+                                checked={values.gender === "kobieta"}
+                            />
+                            <FormControlLabel
+                                name="gender"
+                                value="mężczyzna"
+                                control={<Radio />}
+                                label="Mężczyzna"
+                                onChange={handleChange("gender")}
+                                checked={values.gender === "mężczyzna"}
+                            />
+                        </RadioGroup>
+                    </FormControl>
+                    {getErrorToRender()}
+                    <Box className={classes.agreement}>
+                        <Typography variant="body2">Klikając zarejestruj się, zgadzasz się z warunkami
+                            korzystania aplikacji.
+                        </Typography>
+                    </Box>
+                    <Button variant="contained" color="secondary" type="submit">Zarejestruj się</Button>
+                </form>
+            </Paper>
+        </Box>
+    );
 };
 
 export default Registration;

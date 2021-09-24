@@ -1,54 +1,36 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import clsx from 'clsx';
-import { lighten, makeStyles, withStyles } from '@material-ui/core/styles';
-import Table from '@material-ui/core/Table';
-import TableBody from '@material-ui/core/TableBody';
-import TableCell from '@material-ui/core/TableCell';
-import TableContainer from '@material-ui/core/TableContainer';
-import TableHead from '@material-ui/core/TableHead';
-import TablePagination from '@material-ui/core/TablePagination';
-import TableRow from '@material-ui/core/TableRow';
-import TableSortLabel from '@material-ui/core/TableSortLabel';
-import Toolbar from '@material-ui/core/Toolbar';
-import Typography from '@material-ui/core/Typography';
-import Paper from '@material-ui/core/Paper';
-import Checkbox from '@material-ui/core/Checkbox';
-import IconButton from '@material-ui/core/IconButton';
-import Tooltip from '@material-ui/core/Tooltip';
-import DeleteIcon from '@material-ui/icons/Delete';
-import PlayCircleFilledIcon from '@material-ui/icons/PlayCircleFilled';
-import AddCircleIcon from '@material-ui/icons/AddCircle';
-import EditIcon from '@material-ui/icons/Edit';
-import {HashRouter, Link, Route, Switch} from "react-router-dom";
+import React, {createContext, useContext, useEffect, useState} from "react";
+import {Checkbox, Paper, TableBody, TableCell, TableRow, Typography, TableContainer, Table} from "@material-ui/core"
+import {usersApiUrl, usersDataContext} from "../../../App";
+import TableHead from "@material-ui/core/TableHead";
+import TableSortLabel from "@material-ui/core/TableSortLabel";
+import PropTypes from "prop-types";
+import {lighten, makeStyles, withStyles} from "@material-ui/core/styles";
+import Toolbar from "@material-ui/core/Toolbar";
+import clsx from "clsx";
+import {HashRouter, Link, Route, Switch, useHistory} from "react-router-dom";
+import IconButton from "@material-ui/core/IconButton";
+import PlayCircleFilledIcon from "@material-ui/icons/PlayCircleFilled";
+import EditIcon from "@material-ui/icons/Edit";
+import DeleteIcon from "@material-ui/icons/Delete";
+import AddCircleIcon from "@material-ui/icons/AddCircle";
+import Tooltip from "@material-ui/core/Tooltip";
+import TablePagination from "@material-ui/core/TablePagination";
 import BudgetNewItemForm from "./BudgetNewItemForm";
 
-
-function createData(id, title, category, summ, date) {
-    return {id, title, category, summ, date};
-}
-
-const rows = [
-    createData("1", "Zakupy w Auchan", "Sklepy", 220, "11.09.2021"),
-    createData("2", "Auto", 25.0, 51, 4.9),
-    createData("3", "Auto", 16.0, 24, 6.0),
-    createData("4", "Auto", 6.0, 24, 4.0),
-    createData("5", "Auto", 16.0, 49, 3.9),
-    createData("6", "Auto", 3.2, 87, 6.5),
-    createData("7", "Auto", 9.0, 37, 4.3),
-    createData("8", "Auto", 0.0, 94, 0.0),
-    createData("9", "Auto", 26.0, 65, 7.0),
-    createData("10", "Auto", 0.2, 98, 0.0),
-    createData("11", "Auto", 0, 81, 2.0),
-    createData("12", "Auto", 19.0, 9, 37.0),
-    createData("13", "Auto", 18.0, 63, 4.0),
-];
+export const newDataItemContext = createContext("");
 
 function descendingComparator(a, b, orderBy) {
-    if (b[orderBy] < a[orderBy]) {
+    const isNumber = !isNaN(a[orderBy]);
+    let first = isNumber ? +a[orderBy] : a[orderBy];
+    let second = isNumber ? +b[orderBy] : b[orderBy];
+    // if (orderBy === "date") {
+    //     first = new Date()
+    // }
+
+    if (second < first) {
         return -1;
     }
-    if (b[orderBy] > a[orderBy]) {
+    if (second > first) {
         return 1;
     }
     return 0;
@@ -60,8 +42,9 @@ function getComparator(order, orderBy) {
         : (a, b) => -descendingComparator(a, b, orderBy);
 }
 
-function stableSort(array, comparator) {
+function stableSort(array = [], comparator) {
     const stabilizedThis = array.map((el, index) => [el, index]);
+
     stabilizedThis.sort((a, b) => {
         const order = comparator(a[0], b[0]);
         if (order !== 0) return order;
@@ -69,14 +52,6 @@ function stableSort(array, comparator) {
     });
     return stabilizedThis.map((el) => el[0]);
 }
-
-const headCells = [
-    { id: "id", disablePadding: false, label: 'ID' },
-    { id: 'title', disablePadding: false, label: 'Tytuł' },
-    { id: 'category', disablePadding: false, label: 'Kategoria' },
-    { id: 'summ', disablePadding: false, label: 'Suma' },
-    { id: 'date', disablePadding: false, label: 'Data' },
-];
 
 const LightTooltip = withStyles((theme) => ({
     tooltip: {
@@ -86,6 +61,14 @@ const LightTooltip = withStyles((theme) => ({
         fontSize: 11,
     },
 }))(Tooltip);
+
+const headCells = [
+    { id: "id", label: 'ID' },
+    { id: 'title', label: 'Tytuł' },
+    { id: 'category', label: 'Kategoria' },
+    { id: 'summ', label: 'Suma' },
+    { id: 'date', label: 'Data' },
+];
 
 function EnhancedTableHead(props) {
     const { classes, onSelectAllClick, order, orderBy, numSelected, rowCount, onRequestSort } = props;
@@ -172,9 +155,19 @@ const useToolbarStyles = makeStyles((theme) => ({
     }
 }));
 
+EnhancedTableHead.propTypes = {
+    classes: PropTypes.object.isRequired,
+    numSelected: PropTypes.number.isRequired,
+    onRequestSort: PropTypes.func.isRequired,
+    onSelectAllClick: PropTypes.func.isRequired,
+    order: PropTypes.oneOf(['asc', 'desc']).isRequired,
+    orderBy: PropTypes.string.isRequired,
+    rowCount: PropTypes.number.isRequired,
+};
+
 const EnhancedTableToolbar = (props) => {
     const classes = useToolbarStyles();
-    const { numSelected } = props;
+    const { numSelected, onDeleteItem, onEditItem } = props;
 
     return (
         <Toolbar
@@ -208,14 +201,30 @@ const EnhancedTableToolbar = (props) => {
 
             {numSelected > 0 ? (
                 <>
-                    <LightTooltip title="Edytuj">
-                        <EditIcon className={classes.editIcon} />
-                    </LightTooltip>
-                    <LightTooltip title="Usuń">
-                        <IconButton aria-label="delete">
-                            <DeleteIcon color="error"/>
-                        </IconButton>
-                    </LightTooltip>
+                    {numSelected > 1 ? (
+                        <>
+                            <IconButton disabled>
+                                <EditIcon />
+                            </IconButton>
+                            <IconButton disabled>
+                                <DeleteIcon />
+                            </IconButton>
+                        </>
+
+                    ) : (
+                        <>
+                            <LightTooltip title="Edytuj">
+                                <IconButton aria-label="edit">
+                                    <EditIcon className={classes.editIcon} onClick={onEditItem}/>
+                                </IconButton>
+                            </LightTooltip>
+                            <LightTooltip title="Usuń">
+                                <IconButton aria-label="delete" onClick={onDeleteItem}>
+                                    <DeleteIcon color="error"/>
+                                </IconButton>
+                            </LightTooltip>
+                        </>
+                    )}
                 </>
             ) : (
                 <Link to="/app/budget/dataBudget/add/">
@@ -237,13 +246,14 @@ EnhancedTableToolbar.propTypes = {
 const useStyles = makeStyles((theme) => ({
     root: {
         width: '100%',
-        maxWidth: theme.spacing(162.5),
+        maxWidth: theme.spacing(172.5),
         display: "flex",
         margin: theme.spacing(4)
     },
     paper: {
-        maxWidth: 1200,
-        border: `2px solid ${theme.palette.success.main}`
+        width: "100%",
+        border: `2px solid ${theme.palette.success.main}`,
+
     },
     table: {
 
@@ -261,13 +271,38 @@ const useStyles = makeStyles((theme) => ({
     },
 }));
 
-export default function BudgetTableFull() {
+export default function BudgetTableFull () {
     const classes = useStyles();
-    const [order, setOrder] = React.useState('asc');
-    const [orderBy, setOrderBy] = React.useState('calories');
-    const [selected, setSelected] = React.useState([]);
-    const [page, setPage] = React.useState(0);
-    const [rowsPerPage, setRowsPerPage] = React.useState(10);
+    const [order, setOrder] = useState('asc');
+    const [orderBy, setOrderBy] = useState('');
+    const [selected, setSelected] = useState([]);
+    const [page, setPage] = useState(0);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [editMode, setEditMode] = useState(false)
+    const [newItemData, setNewItemData] = useState({
+        id: "",
+        title: "",
+        category: "",
+        date: "",
+        summ: "",
+    });
+    const {currentUserData, setUsersData, usersData} = useContext(usersDataContext);
+    const history = useHistory();
+
+    useEffect(() => {
+        fetch(usersApiUrl)
+            .then((resp) => {
+                if (resp.ok) {
+                    return resp.json();
+                } else {
+                    throw new Error("Błąd sieci!");
+                }
+            })
+            .then((data) => {
+                setUsersData(data);
+            })
+            .catch(err => console.log("Błąd!", err));
+    }, [setUsersData, usersData]);
 
     const handleRequestSort = (event, property) => {
         const isAsc = orderBy === property && order === 'asc';
@@ -277,7 +312,7 @@ export default function BudgetTableFull() {
 
     const handleSelectAllClick = (event) => {
         if (event.target.checked) {
-            const newSelecteds = rows.map((n) => n.id);
+            const newSelecteds = currentUserData.budget.map((n) => n.id);
             setSelected(newSelecteds);
             return;
         }
@@ -315,85 +350,149 @@ export default function BudgetTableFull() {
 
     const isSelected = (name) => selected.indexOf(name) !== -1;
 
+    const handleDeleteItem = () => {
+        const dataToSend = {
+            budget: currentUserData.budget.filter(item => item.id !== selected[0])
+        };
 
-    return (
+        fetch(`${usersApiUrl}/${currentUserData.id}`, {
+            method: "PATCH",
+            body: JSON.stringify(dataToSend),
+            headers: {
+                "Content-Type": "application/json"
+            }
+        })
+            .then((resp) => {
+                if (resp.ok) {
+                    return resp.json();
+                } else {
+                    throw new Error("Błąd")
+                }
+            })
+            .catch((err) => console.log("Błąd", err));
 
-        <div className={classes.root}>
-            <Paper className={classes.paper} elevation={3}>
-                <EnhancedTableToolbar numSelected={selected.length}/>
-                <TableContainer>
-                    <Table
-                        className={classes.table}
-                        aria-labelledby="tableTitle"
-                        aria-label="enhanced table"
-                    >
-                        <EnhancedTableHead
-                            classes={classes}
-                            numSelected={selected.length}
-                            order={order}
-                            orderBy={orderBy}
-                            onSelectAllClick={handleSelectAllClick}
-                            onRequestSort={handleRequestSort}
-                            rowCount={rows.length}
-                        />
-                        <TableBody>
-                            {stableSort(rows, getComparator(order, orderBy))
-                                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                                .map((row, index) => {
-                                    const isItemSelected = isSelected(row.id);
-                                    const labelId = `enhanced-table-checkbox-${index}`;
-                                    return (
-                                        <TableRow
-                                            hover
-                                            onClick={(event) => handleClick(event, row.id)}
-                                            role="checkbox"
-                                            aria-checked={isItemSelected}
-                                            tabIndex={-1}
-                                            key={row.id}
-                                            selected={isItemSelected}
-                                        >
-                                            <TableCell padding="checkbox">
-                                                <Checkbox
-                                                    checked={isItemSelected}
-                                                    inputProps={{'aria-labelledby': labelId}}
-                                                />
-                                            </TableCell>
-                                            <TableCell component="th" id={labelId} scope="row">
-                                                {row.id}
-                                            </TableCell>
-                                            <TableCell>{row.title}</TableCell>
-                                            <TableCell>{row.category}</TableCell>
-                                            <TableCell>{row.summ}</TableCell>
-                                            <TableCell>{row.date}</TableCell>
-                                        </TableRow>
-                                    );
-                                })}
-                        </TableBody>
-                    </Table>
-                    <Typography style={{
-                        textAlign: "right",
-                        padding: "16px 16px 0 0"
-                    }}
-                    >
-                        Zostało środków: 200
-                    </Typography>
-                </TableContainer>
-                <TablePagination
-                    rowsPerPageOptions={[10, 25, 50, 100]}
-                    component="div"
-                    count={rows.length}
-                    rowsPerPage={rowsPerPage}
-                    labelRowsPerPage="Wierszy na stronie"
-                    page={page}
-                    onPageChange={handleChangePage}
-                    onRowsPerPageChange={handleChangeRowsPerPage}
-                />
-            </Paper>
-            <HashRouter>
-                <Switch>
-                    <Route path="/app/budget/dataBudget/add/" component={BudgetNewItemForm}/>
-                </Switch>
-            </HashRouter>
-        </div>
-    )
+        setSelected([]);
+
+        fetch(usersApiUrl)
+            .then((resp) => {
+                if (resp.ok) {
+                    return resp.json();
+                } else {
+                    throw new Error("Błąd sieci!");
+                }
+            })
+            .then((data) => {
+                setUsersData(data);
+            })
+            .catch(err => console.log("Błąd!", err));
+    };
+
+    const handleEditItem = () => {
+       const singleData = currentUserData.budget.filter(item => item.id === selected[0]);
+
+        setNewItemData({
+            id: singleData[0].id,
+            title: singleData[0].title,
+            category: singleData[0].category,
+            date: singleData[0].date,
+            summ: singleData[0].summ,
+        });
+        setEditMode(true);
+        history.push(`/app/budget/dataBudget/edit/${selected[0]}`)
+    };
+
+
+    if (currentUserData){
+        return (
+            <newDataItemContext.Provider
+                value= {{
+                    newItemData,
+                    setNewItemData,
+                    editMode,
+                    setEditMode,
+                    setSelected
+                }}
+            >
+            <div className={classes.root}>
+                <Paper className={classes.paper} elevation={3}>
+                    <EnhancedTableToolbar
+                        numSelected={selected.length}
+                        onDeleteItem={handleDeleteItem}
+                        onEditItem={handleEditItem}
+                    />
+                    <TableContainer>
+                        <Table
+                            className={classes.table}
+                            aria-labelledby="tableTitle"
+                            aria-label="enhanced table"
+                        >
+                            <EnhancedTableHead
+                                classes={classes}
+                                numSelected={selected.length}
+                                order={order}
+                                orderBy={orderBy}
+                                onSelectAllClick={handleSelectAllClick}
+                                onRequestSort={handleRequestSort}
+                                rowCount={currentUserData?.budget?.length}
+                            />
+                            <TableBody>
+                                {stableSort(currentUserData?.budget, getComparator(order, orderBy))
+                                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                                    .map((row, index) => {
+                                        const isItemSelected = isSelected(row.id);
+                                        const labelId = `enhanced-table-checkbox-${index}`;
+                                        return (
+                                            <TableRow
+                                                hover
+                                                onClick={(event) => handleClick(event, row.id)}
+                                                role="checkbox"
+                                                aria-checked={isItemSelected}
+                                                tabIndex={-1}
+                                                key={row.id}
+                                                selected={isItemSelected}
+                                            >
+                                                <TableCell padding="checkbox">
+                                                    <Checkbox
+                                                        checked={isItemSelected}
+                                                        inputProps={{'aria-labelledby': labelId}}
+                                                    />
+                                                </TableCell>
+                                                <TableCell component="th" id={labelId} scope="row">
+                                                    {row.id}
+                                                </TableCell>
+                                                <TableCell>{row.title}</TableCell>
+                                                <TableCell>{row.category}</TableCell>
+                                                <TableCell>{row.summ}</TableCell>
+                                                <TableCell>{row.date}</TableCell>
+                                            </TableRow>
+                                        );
+                                    })}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+                    <TablePagination
+                        rowsPerPageOptions={[10, 25, 50, 100]}
+                        component="div"
+                        count={currentUserData?.budget?.length}
+                        rowsPerPage={rowsPerPage}
+                        labelRowsPerPage="Wierszy na stronie"
+                        page={page}
+                        onPageChange={handleChangePage}
+                        onRowsPerPageChange={handleChangeRowsPerPage}
+                    />
+                </Paper>
+                <HashRouter>
+                    <Switch>
+                        <Route path="/app/budget/dataBudget/add/" component={BudgetNewItemForm}/>
+                        <Route path="/app/budget/dataBudget/edit/" component={BudgetNewItemForm}/>
+
+                    </Switch>
+                </HashRouter>
+            </div>
+            </newDataItemContext.Provider>
+        );
+    } else {
+        return <Typography>Loading</Typography>
+    }
+
 }

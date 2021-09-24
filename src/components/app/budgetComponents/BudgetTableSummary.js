@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useContext} from 'react';
 import PropTypes from 'prop-types';
 import { makeStyles } from '@material-ui/core/styles';
 import Table from '@material-ui/core/Table';
@@ -17,33 +17,18 @@ import Tooltip from '@material-ui/core/Tooltip';
 import {withStyles, Container} from "@material-ui/core";
 import {Link} from "react-router-dom";
 import StorageIcon from '@material-ui/icons/Storage';
-
-
-function createData(id, category, summ) {
-    return {id, category, summ};
-}
-
-const rows = [
-    createData("1", "Auto", 200000),
-    createData("2", "Auto", 25),
-    createData("3", "Auto", 16),
-    createData("4", "Auto", 6),
-    createData("5", "Auto", 16),
-    createData("6", "Auto", 3),
-    createData("7", "Auto", 9),
-    createData("8", "Auto", 0),
-    createData("9", "Auto", 26),
-    createData("10", "Auto", 0),
-    createData("11", "Auto", 555),
-    createData("12", "Auto", 19),
-    createData("13", "Auto", 18),
-];
+import {usersDataContext} from "../../../App";
+import {datesContext} from "./BudgetPulpit";
 
 function descendingComparator(a, b, orderBy) {
-    if (b[orderBy] < a[orderBy]) {
+    const isNumber = !isNaN(a[orderBy]);
+    let first = isNumber ? +a[orderBy] : a[orderBy];
+    let second = isNumber ? +b[orderBy] : b[orderBy];
+
+    if (second < first) {
         return -1;
     }
-    if (b[orderBy] > a[orderBy]) {
+    if (second > first) {
         return 1;
     }
     return 0;
@@ -55,7 +40,7 @@ function getComparator(order, orderBy) {
         : (a, b) => -descendingComparator(a, b, orderBy);
 }
 
-function stableSort(array, comparator) {
+function stableSort(array = [], comparator) {
     const stabilizedThis = array.map((el, index) => [el, index]);
     stabilizedThis.sort((a, b) => {
         const order = comparator(a[0], b[0]);
@@ -66,7 +51,7 @@ function stableSort(array, comparator) {
 }
 
 const headCells = [
-    { id: 'category', label: 'Kategoria' },
+    { id: 'Title', label: 'Tytuł' },
     { id: 'summ',  label: 'Suma' }
 
 ];
@@ -130,16 +115,17 @@ const useToolbarStyles = makeStyles((theme) => ({
 
     titleToolbar: {
         flex: '1 1 100%',
+        paddingTop: theme.spacing(2)
     },
 }));
 
-const EnhancedTableToolbar = () => {
+const EnhancedTableToolbar = ({monthProps, yearProps}) => {
     const classes = useToolbarStyles();
 
     return (
         <Toolbar className={classes.root}>
             <Typography className={classes.titleToolbar} variant="h6" id="tableTitle" component="div">
-                Wydatki i przychody za 09.2021
+                Wydatki i przychody za {monthProps}.{yearProps}
             </Typography>
             <Link to="/app/budget/dataBudget/">
                 <LightTooltip title="Zobacz szczegóły">
@@ -177,12 +163,18 @@ const useStyles = makeStyles((theme) => ({
     },
 }));
 
+
 export default function BudgetTableSummary() {
     const classes = useStyles();
     const [order, setOrder] = React.useState('asc');
     const [orderBy, setOrderBy] = React.useState('calories');
     const [page, setPage] = React.useState(0);
     const [rowsPerPage, setRowsPerPage] = React.useState(5);
+    const {currentUserData} = useContext(usersDataContext);
+    const {month, year} = useContext(datesContext);
+
+    // filter date
+    const monthlyBudget = currentUserData?.budget?.filter(item => item.date.includes(`${year}-${month}`));
 
     const handleRequestSort = (event, property) => {
         const isAsc = orderBy === property && order === 'asc';
@@ -203,7 +195,7 @@ export default function BudgetTableSummary() {
         <Container style={{width: "100%"}}>
         <div className={classes.root}>
             <Paper className={classes.paper} elevation={3}>
-                <EnhancedTableToolbar />
+                <EnhancedTableToolbar monthProps={month} yearProps={year}/>
                 <TableContainer>
                     <Table
                         className={classes.table}
@@ -215,10 +207,10 @@ export default function BudgetTableSummary() {
                             order={order}
                             orderBy={orderBy}
                             onRequestSort={handleRequestSort}
-                            rowCount={rows.length}
+                            rowCount={monthlyBudget?.length}
                         />
                         <TableBody>
-                            {stableSort(rows, getComparator(order, orderBy))
+                            {stableSort(monthlyBudget, getComparator(order, orderBy))
                                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                                 .map((row) => {
 
@@ -227,7 +219,7 @@ export default function BudgetTableSummary() {
                                             hover
                                             key={row.id}
                                         >
-                                            <TableCell align="center">{row.category}</TableCell>
+                                            <TableCell align="center">{row.title}</TableCell>
                                             <TableCell align="center">{row.summ}</TableCell>
                                         </TableRow>
                                     );
@@ -239,7 +231,7 @@ export default function BudgetTableSummary() {
                 <TablePagination
                     rowsPerPageOptions={[5, 10, 15, 20]}
                     component="div"
-                    count={rows.length}
+                    count={monthlyBudget?.length}
                     rowsPerPage={rowsPerPage}
                     labelRowsPerPage="Wierszy na stronie"
                     page={page}

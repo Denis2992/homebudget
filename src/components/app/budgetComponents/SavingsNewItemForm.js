@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useContext, useState} from "react";
 import {
     Divider,
     Paper,
@@ -6,20 +6,28 @@ import {
     Typography,
     Button,
     makeStyles,
-    IconButton
+    IconButton, List, ListItem
 } from "@material-ui/core";
 import HighlightOffIcon from '@material-ui/icons/HighlightOff';
-import {Link} from "react-router-dom";
+import {Link, useHistory} from "react-router-dom";
+import {newSavingDataContext} from "./SavingsTable";
+import {usersApiUrl, usersDataContext} from "../../../App";
+import isDecimal from "validator/es/lib/isDecimal";
+import validator from "validator/es";
 
 const useStyles = makeStyles((theme) => ({
     paper: {
         margin: theme.spacing(0, 4),
         width: "100%",
         maxWidth: 380,
-        maxHeight: 550,
+        minHeight: 550,
+        maxHeight: 1000,
         border: `2px solid ${theme.palette.info.main}`,
         display: "flex",
         flexDirection: "column",
+        position: "absolute",
+        left: "15%",
+        top: "10%"
 
     },
     form: {
@@ -49,11 +57,232 @@ const useStyles = makeStyles((theme) => ({
         "&:hover" : {
             backgroundColor: theme.palette.info.main,
         }
+    },
+    list: {
+        width: theme.spacing(35),
+
+    },
+    listElement: {
+        color: theme.palette.error.main,
+        padding: "3px 0"
     }
 }));
 
 export default function SavingsNewItemForm () {
     const classes = useStyles();
+    const {
+        newSavingData,
+        setNewSavingData,
+        editMode,
+        setEditMode,
+        setSelected
+    } = useContext(newSavingDataContext);
+    const {currentUserData, setUsersData, setCurrentUserData} = useContext(usersDataContext);
+    const [errorList, setErrorList] = useState([]);
+    const history = useHistory();
+
+    const handleValueChange = (event) => {
+        const {name, value} = event.target;
+        setNewSavingData(prevState => ({...prevState, [name]: value}));
+    };
+
+    // inputs validation
+    const checkIfFormValid = () => {
+        const newErrorList = [];
+        const {name, currentState, goal, leftSum} = newSavingData;
+
+        if (!currentState || !goal || !leftSum) {
+            newErrorList.push("Wszystkie pola maja byc wypełnione");
+        }
+
+        if (!isDecimal(currentState)) {
+            newErrorList.push("Aktualny stan ma byc liczbą");
+        }
+
+        if (!isDecimal(goal)) {
+            newErrorList.push("Cel ma byc liczbą");
+        }
+
+        if (!isDecimal(leftSum)) {
+            newErrorList.push('Pole "Zostało" ma byc liczbą');
+        }
+
+        if (!validator.isAlpha(name, "pl-PL")) {
+            newErrorList.push('Pole "Na co zbierasz" nie może zawierać liczb lub znaków');
+        }
+
+        if (name.length < 3) {
+            newErrorList.push('Pole "Na co zbierasz" musi zawierać minimum 3 litery');
+        }
+
+        if (!editMode) {
+            if (currentUserData.savings.some(el => el.name === name)) {
+                newErrorList.push("Taka nazwa juz istnieje");
+            }
+        }
+
+        setErrorList(newErrorList);
+
+        return newErrorList.length === 0;
+    };
+
+    const getErrorsToRender = () => {
+        let errorsToRender
+
+        if (errorList.length > 0) {
+            errorsToRender = (
+                <List className={classes.list}>
+                    {errorList.map((err, i) => (
+                        <ListItem
+                            key={i}
+                            className={classes.listElement}
+                            variant="body2"
+                        >
+                            {err}
+                        </ListItem>
+                    ))}
+                </List>
+            );
+        } else {
+            errorsToRender = null;
+        }
+
+        return errorsToRender;
+    };
+
+    const handleAddNewItem = () => {
+        const ids = currentUserData.savings.map(el => el.id);
+
+        const dataToSend = {
+            savings: [
+                ...currentUserData.savings,
+                {
+                    id: currentUserData.savings.length === 0 ? 1 : (Math.max(...ids) + 1),
+                    name: newSavingData.name,
+                    currentState: newSavingData.currentState,
+                    goal: newSavingData.goal,
+                    leftSum: newSavingData.leftSum
+                }
+            ]
+        };
+
+        if (checkIfFormValid()) {
+            fetch(`${usersApiUrl}/${currentUserData.id}`, {
+                method: "PATCH",
+                body: JSON.stringify(dataToSend),
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            })
+                .then((resp) => {
+                    if (resp.ok) {
+                        return resp.json();
+                    } else {
+                        throw new Error("Błąd")
+                    }
+                })
+                .then(data => {
+                    setCurrentUserData(data);
+
+                })
+                .catch((err) => console.log("Błąd", err));
+
+            setNewSavingData({
+                id: "",
+                name: "",
+                currentState: "",
+                goal: "",
+                leftSum: ""
+            });
+
+            history.push("/app/budget/dataSavings");
+
+            fetch(usersApiUrl)
+                .then((resp) => {
+                    if (resp.ok) {
+                        return resp.json();
+                    } else {
+                        throw new Error("Błąd sieci!");
+                    }
+                })
+                .then((data) => {
+                    setUsersData(data);
+                })
+                .catch(err => console.log("Błąd!", err));
+        }
+    };
+
+    const handleSaveEditItem = () => {
+        const dataToSend = {
+            savings: [
+                ...currentUserData.savings.filter(item => item.id !== newSavingData.id),
+                {
+                    id: newSavingData.id,
+                    name: newSavingData.name,
+                    currentState: newSavingData.currentState,
+                    goal: newSavingData.goal,
+                    leftSum: newSavingData.leftSum
+                }
+            ]
+        };
+
+        if (checkIfFormValid()) {
+            fetch(`${usersApiUrl}/${currentUserData.id}`, {
+                method: "PATCH",
+                body: JSON.stringify(dataToSend),
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            })
+                .then((resp) => {
+                    if (resp.ok) {
+                        return resp.json();
+                    } else {
+                        throw new Error("Błąd")
+                    }
+                })
+                .then(data => {
+                    setCurrentUserData(data);
+
+                })
+                .catch((err) => console.log("Błąd", err));
+
+            setCurrentUserData({
+                id: "",
+                name: "",
+                currentState: "",
+                goal: "",
+                leftSum: ""
+            });
+
+            setEditMode(false);
+            setSelected([]);
+            history.push("/app/budget/dataSavings");
+
+            fetch(usersApiUrl)
+                .then((resp) => {
+                    if (resp.ok) {
+                        return resp.json();
+                    } else {
+                        throw new Error("Błąd sieci!");
+                    }
+                })
+                .then((data) => {
+                    setUsersData(data);
+                })
+                .catch(err => console.log("Błąd!", err));
+        }
+    };
+
+    const handleSendForm = (e) => {
+        e.preventDefault();
+        if (editMode) {
+            return handleSaveEditItem();
+        } else {
+            return handleAddNewItem();
+        }
+    };
+
 
     return (
         <Paper className={classes.paper} elevation={3}>
@@ -61,37 +290,52 @@ export default function SavingsNewItemForm () {
                 <Link to="/app/budget/dataSavings/" style={{height: 24}}>
                     <HighlightOffIcon color="error" />
                 </Link>
-            </IconButton><Typography className={classes.headText} variant="h6">Nowy wpis</Typography>
+            </IconButton>
+            {editMode ? (
+                <Typography className={classes.headText} variant="h6">Edytuj</Typography>
+            ) : (
+                <Typography className={classes.headText} variant="h6">Nowy wpis</Typography>
+            )}
             <Divider className={classes.divider} variant="middle"/>
-            <form className={classes.form}>
+            <form className={classes.form} onSubmit={handleSendForm}>
+                <TextField
+                    label="Nazwa"
+                    name="name"
+                    value={newSavingData.name}
+                    variant="outlined"
+                    className={classes.inputs}
+                    onChange={handleValueChange}
+                    color="primary"
+                />
                 <TextField
                     label="Aktualny stan"
-                    type="number"
+                    name="currentState"
+                    value={newSavingData.currentState}
                     variant="outlined"
                     color="primary"
                     className={classes.inputs}
+                    onChange={handleValueChange}
                 />
                 <TextField
                     label="Cel"
-                    type="number"
+                    name="goal"
+                    value={newSavingData.goal}
                     variant="outlined"
                     color="primary"
                     className={classes.inputs}
+                    onChange={handleValueChange}
                 />
                 <TextField
                     label="Zostało"
-                    type="number"
+                    name="leftSum"
+                    value={newSavingData.leftSum}
                     variant="outlined"
                     color="primary"
                     className={classes.inputs}
+                    onChange={handleValueChange}
                 />
-                <TextField
-                    label="Na co"
-                    variant="outlined"
-                    className={classes.inputs}
-                    color="primary"
-                />
-                <Button className={classes.formBtn}>Zapisz i zamknij</Button>
+                {getErrorsToRender()}
+                <Button className={classes.formBtn} type="submit">Zapisz i zamknij</Button>
             </form>
         </Paper>
     )

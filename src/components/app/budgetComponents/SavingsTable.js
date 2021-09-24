@@ -21,26 +21,24 @@ import PlayCircleFilledIcon from '@material-ui/icons/PlayCircleFilled';
 import AddCircleIcon from '@material-ui/icons/AddCircle';
 import EditIcon from '@material-ui/icons/Edit';
 import {HashRouter, Link, Route, Switch, useHistory} from "react-router-dom";
-import CreditNewItemForm from "./CreditNewItemForm";
-import {Container} from "@material-ui/core";
+import SavingsNewItemForm from "./SavingsNewItemForm";
 import {usersApiUrl, usersDataContext} from "../../../App";
 
-export const newCreditDataContext = createContext("")
+export const newSavingDataContext = createContext("");
 
 const headCells = [
-    { id: 'creditTitle', label: 'Tytuł' },
-    { id: 'creditSumm', label: 'Całkowita suma' },
-    { id: 'paidSumm', label: 'Spłacono' },
+    { id: 'name', label: 'Nazwa' },
+    { id: 'currentState', label: 'Aktualny stan' },
+    { id: 'goal', label: 'Cel' },
     { id: 'leftSumm', label: 'Zostało' },
-    { id: 'singlePayment', label: 'Miesięczna rata' },
-    { id: 'leftPayments', label: 'Zostało rat' }
+
+
 ];
 
 function descendingComparator(a, b, orderBy) {
-    const isNumber = !isNaN(a[orderBy]);
+    const isNumber = !isNaN(a[orderBy])
     let first = isNumber ? +a[orderBy] : a[orderBy];
     let second = isNumber ? +b[orderBy] : b[orderBy];
-
     if (second < first) {
         return -1;
     }
@@ -58,7 +56,6 @@ function getComparator(order, orderBy) {
 
 function stableSort(array = [], comparator) {
     const stabilizedThis = array.map((el, index) => [el, index]);
-
     stabilizedThis.sort((a, b) => {
         const order = comparator(a[0], b[0]);
         if (order !== 0) return order;
@@ -160,10 +157,10 @@ const useToolbarStyles = makeStyles((theme) => ({
         color: theme.palette.warning.dark
     }
 }));
+
 const EnhancedTableToolbar = (props) => {
     const classes = useToolbarStyles();
-    const { numSelected, onDeleteItem, onEditItem} = props;
-    const history = useHistory();
+    const { numSelected, onDeleteItem, onEditItem } = props;
 
     return (
         <Toolbar
@@ -189,7 +186,7 @@ const EnhancedTableToolbar = (props) => {
                         </LightTooltip>
                     </Link>
                     <Typography className={classes.titleToolbar} variant="h6" id="tableTitle" component="div">
-                        Kredyty i pożyczki
+                        Oszczędności
                     </Typography>
                 </>
 
@@ -210,8 +207,8 @@ const EnhancedTableToolbar = (props) => {
                     ) : (
                         <>
                             <LightTooltip title="Edytuj">
-                                <IconButton aria-label="edit">
-                                    <EditIcon className={classes.editIcon} onClick={onEditItem}/>
+                                <IconButton onClick={onEditItem}>
+                                    <EditIcon className={classes.editIcon} />
                                 </IconButton>
                             </LightTooltip>
                             <LightTooltip title="Usuń">
@@ -220,14 +217,18 @@ const EnhancedTableToolbar = (props) => {
                                 </IconButton>
                             </LightTooltip>
                         </>
+
                     )}
+
                 </>
             ) : (
-                <LightTooltip title="Dodaj nowy wpis">
-                    <IconButton onClick={() => history.push("/app/budget/dataCredit/add/")}>
-                        <AddCircleIcon fontSize="large" className={classes.addBtn}/>
-                    </IconButton>
-                </LightTooltip>
+                <Link to="/app/budget/dataSavings/add/">
+                    <LightTooltip title="Dodaj nowy wpis">
+                        <IconButton>
+                            <AddCircleIcon fontSize="large" className={classes.addBtn}/>
+                        </IconButton>
+                    </LightTooltip>
+                </Link>
             )}
         </Toolbar>
     );
@@ -246,9 +247,8 @@ const useStyles = makeStyles((theme) => ({
     },
     paper: {
         maxWidth: 1200,
-        border: `2px solid ${theme.palette.warning.light}`,
-        position: "relative",
-        zIndex: 1
+        border: `2px solid ${theme.palette.info.main}`,
+
     },
     table: {
 
@@ -266,24 +266,23 @@ const useStyles = makeStyles((theme) => ({
     },
 }));
 
-export default function CreditTableFull() {
+export default function BudgetTableFull() {
     const classes = useStyles();
     const [order, setOrder] = useState('asc');
-    const [orderBy, setOrderBy] = useState('');
+    const [orderBy, setOrderBy] = useState('calories');
     const [selected, setSelected] = useState([]);
-    const [editMode, setEditMode] = useState(false);
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(5);
-    const {currentUserData, setUsersData, usersData} = useContext(usersDataContext);
-    const [newCreditData, setNewCreditData] = useState({
+    const [editMode, setEditMode] = useState(false);
+    const [newSavingData, setNewSavingData] = useState({
         id: "",
-        creditTitle: "",
-        creditSumm: "",
-        paidSumm: "",
-        leftSumm: "",
-        monthlyPayment: "",
-        leftPayments: ""
+        name: "",
+        currentState: "",
+        goal: "",
+        leftSum: ""
+
     });
+    const {currentUserData, setUsersData, usersData} = useContext(usersDataContext);
     const history = useHistory();
 
     useEffect(() => {
@@ -309,7 +308,7 @@ export default function CreditTableFull() {
 
     const handleSelectAllClick = (event) => {
         if (event.target.checked) {
-            const newSelecteds = currentUserData.credits.map((n) => n.id);
+            const newSelecteds = currentUserData.savings.map((n) => n.id);
             setSelected(newSelecteds);
             return;
         }
@@ -349,7 +348,7 @@ export default function CreditTableFull() {
 
     const handleDeleteItem = () => {
         const dataToSend = {
-            credits: currentUserData.credits.filter(item => item.id !== selected[0])
+            savings: currentUserData.savings.filter(item => item.id !== selected[0])
         };
 
         fetch(`${usersApiUrl}/${currentUserData.id}`, {
@@ -385,34 +384,30 @@ export default function CreditTableFull() {
     };
 
     const handleEditItem = () => {
-        const singleData = currentUserData.credits.filter(item => item.id === selected[0]);
+        const singleData = currentUserData.savings.filter(item => item.id === selected[0]);
 
-        setNewCreditData({
-            id: singleData[0].id,
-            creditTitle: singleData[0].creditTitle,
-            creditSumm: singleData[0].creditSumm,
-            paidSumm: singleData[0].paidSumm,
-            leftSumm: singleData[0].leftSumm,
-            monthlyPayment: singleData[0].monthlyPayment,
-            leftPayments: singleData[0].leftPayments
+        setNewSavingData({
+            id:singleData[0].id,
+            name: singleData[0].name,
+            currentState: singleData[0].currentState,
+            goal: singleData[0].goal,
+            leftSum: singleData[0].leftSum
         });
-
         setEditMode(true);
-        history.push(`/app/budget/dataCredit/edit/${selected[0]}`)
+        history.push(`/app/budget/dataSavings/edit/${selected[0]}`)
     };
 
     if (currentUserData) {
         return (
-            <newCreditDataContext.Provider value={{
-                newCreditData,
-                setNewCreditData,
+            <newSavingDataContext.Provider value={{
                 setSelected,
+                editMode,
                 setEditMode,
-                editMode
-            }}
-            >
-                <Container style={{width: "100%"}}>
-                    <div className={classes.root}>
+                newSavingData,
+                setNewSavingData
+            }}>
+                <div className={classes.root}>
+                    <div>
                         <Paper className={classes.paper} elevation={3}>
                             <EnhancedTableToolbar
                                 numSelected={selected.length}
@@ -432,10 +427,10 @@ export default function CreditTableFull() {
                                         orderBy={orderBy}
                                         onSelectAllClick={handleSelectAllClick}
                                         onRequestSort={handleRequestSort}
-                                        rowCount={currentUserData?.credits?.length}
+                                        rowCount={currentUserData?.savings?.length}
                                     />
                                     <TableBody>
-                                        {stableSort(currentUserData?.credits, getComparator(order, orderBy))
+                                        {stableSort(currentUserData?.savings, getComparator(order, orderBy))
                                             .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                                             .map((row, index) => {
                                                 const isItemSelected = isSelected(row.id);
@@ -457,13 +452,11 @@ export default function CreditTableFull() {
                                                             />
                                                         </TableCell>
                                                         <TableCell component="th" id={labelId} scope="row">
-                                                            {row.creditTitle}
+                                                            {row.name}
                                                         </TableCell>
-                                                        <TableCell>{row.creditSumm}</TableCell>
-                                                        <TableCell>{row.paidSumm}</TableCell>
-                                                        <TableCell>{row.leftSumm}</TableCell>
-                                                        <TableCell>{row.monthlyPayment}</TableCell>
-                                                        <TableCell>{row.leftPayments}</TableCell>
+                                                        <TableCell>{row.currentState}</TableCell>
+                                                        <TableCell>{row.goal}</TableCell>
+                                                        <TableCell>{row.leftSum}</TableCell>
                                                     </TableRow>
                                                 );
                                             })}
@@ -471,9 +464,9 @@ export default function CreditTableFull() {
                                 </Table>
                             </TableContainer>
                             <TablePagination
-                                rowsPerPageOptions={[5, 10]}
+                                rowsPerPageOptions={[5, 10, 15, 20]}
                                 component="div"
-                                count={currentUserData?.credits?.length}
+                                count={currentUserData?.savings?.length}
                                 rowsPerPage={rowsPerPage}
                                 labelRowsPerPage="Wierszy na stronie"
                                 page={page}
@@ -481,18 +474,17 @@ export default function CreditTableFull() {
                                 onRowsPerPageChange={handleChangeRowsPerPage}
                             />
                         </Paper>
-                        <HashRouter>
-                            <Switch>
-                                <Route path="/app/budget/dataCredit/add/" component={CreditNewItemForm}/>
-                                <Route path="/app/budget/dataCredit/edit/" component={CreditNewItemForm}/>
-                            </Switch>
-                        </HashRouter>
                     </div>
-                </Container>
-            </newCreditDataContext.Provider>
+                    <HashRouter>
+                        <Switch>
+                            <Route path="/app/budget/dataSavings/add/" component={SavingsNewItemForm}/>
+                            <Route path="/app/budget/dataSavings/edit/" component={SavingsNewItemForm}/>
+                        </Switch>
+                    </HashRouter>
+                </div>
+            </newSavingDataContext.Provider>
         )
     } else {
         return <Typography>Loading...</Typography>
     }
-
 }

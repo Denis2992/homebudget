@@ -2,9 +2,8 @@ import React, {useContext, useState} from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import {Typography, Paper, Button, IconButton, TextField} from "@material-ui/core";
 import HighlightOffIcon from '@material-ui/icons/HighlightOff';
-import {Link} from "react-router-dom";
-import {usersDataContext} from "./StartWindow";
-import Header from "./Header";
+import {Link, useHistory} from "react-router-dom";
+import {usersDataContext} from "../../App";
 
 
 const useStyles = makeStyles((theme) => ({
@@ -48,38 +47,35 @@ const useStyles = makeStyles((theme) => ({
 const Login = () => {
     const [userLogin, setUserLogin] = useState("");
     const [password, setPassword] = useState("");
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const history = useHistory();
     const [error, setError] = useState("");
     const {usersData} = useContext(usersDataContext);
-
-
 
     const checkInputs = (e) => {
         e.preventDefault();
        if (usersData.some(user => {
            return user.login === userLogin && user.password === password
        })) {
-           setIsLoggedIn(true);
+
            localStorage.clear();
            let userInfo = {
                login: userLogin,
-               password: password
+               password: password,
            };
-           // or  sessionStorage
+
            localStorage.setItem("userName", userInfo.login);
            localStorage.setItem("userPassword", userInfo.password);
+
+           history.push("/app");
+
+
        } else {
            setError("Niepoprawny login lub hasło")
-       }
-       if (!userLogin && !password) {
-           setError("Pola maja byc wypełnione")
        }
     };
 
 
     const classes = useStyles();
-
-    if (!isLoggedIn) {
         return (
             <Paper className={classes.paper} elevation={3}>
                 <IconButton aria-label="close" className={classes.closeBtn}>
@@ -117,9 +113,6 @@ const Login = () => {
                 </form>
             </Paper>
         )
-    } else {
-        return <Header/>
-    }
 };
 
 export default Login;

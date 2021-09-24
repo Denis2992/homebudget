@@ -1,7 +1,8 @@
-import React from "react";
+import React, {useContext} from "react";
 import {Button, Paper, Typography, makeStyles} from "@material-ui/core";
 import {DoubleArrow} from "@material-ui/icons";
 import {Link} from "react-router-dom";
+import {usersDataContext} from "../../../App";
 
 const useStyles = makeStyles((theme) => ({
     paper: {
@@ -32,6 +33,14 @@ const useStyles = makeStyles((theme) => ({
 
 export default function Savings () {
     const classes = useStyles();
+    const {currentUserData} = useContext(usersDataContext);
+
+    const total = currentUserData?.savings?.map(item => item.currentState)
+        .reduce((sum, num) => {
+            return +sum + +num;
+        }, 0);
+
+
 
     return (
         <Paper className={classes.paper} elevation={3}>
@@ -39,7 +48,7 @@ export default function Savings () {
                 color="textPrimary"
                 className={classes.paddingStyle}
             >
-                Twoje oszczędności: <br/>4000
+                Twoje oszczędności: <br/>{total}
             </Typography>
             <Typography className={classes.paddingStyle}>Zobacz pewną informacje</Typography>
             <DoubleArrow fontSize="large" color="secondary" className={classes.paddingStyle}/>

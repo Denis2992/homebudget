@@ -8,7 +8,117 @@
       "email": "danzel299@gmail.com",
       "password": "qwerty",
       "birthDate": "21.11.92",
-      "gender": "mężczyzna"
+      "gender": "mężczyzna",
+      "budget": [
+        {
+          "id": 3,
+          "title": "wrzesień3",
+          "category": "Auto",
+          "summ": "100",
+          "date": "2021-09-30"
+        },
+        {
+          "id": 4,
+          "title": "wrzesień1",
+          "category": "Pensja",
+          "summ": "100",
+          "date": "2021-09-01"
+        },
+        {
+          "id": 2,
+          "title": "wrzesień2",
+          "category": "Sklepy",
+          "summ": "100",
+          "date": "2021-09-15"
+        },
+        {
+          "id": 5,
+          "title": "sierpień1",
+          "category": "Pensja",
+          "summ": "200",
+          "date": "2021-08-01"
+        },
+        {
+          "id": 6,
+          "title": "sierpień2",
+          "category": "Sklepy",
+          "summ": "200",
+          "date": "2021-08-15"
+        },
+        {
+          "id": 8,
+          "title": "lipiec1",
+          "category": "Pensja",
+          "summ": "300",
+          "date": "2021-07-01"
+        },
+        {
+          "id": 10,
+          "title": "lipiec3",
+          "category": "Auto",
+          "summ": "300",
+          "date": "2021-07-31"
+        },
+        {
+          "id": 9,
+          "title": "lipiec2",
+          "category": "Sklepy",
+          "summ": "300",
+          "date": "2021-07-15"
+        },
+        {
+          "id": 7,
+          "title": "sierpień3",
+          "category": "Auto",
+          "summ": "200",
+          "date": "2021-08-30"
+        }
+      ],
+      "credits": [
+        {
+          "id": 1,
+          "creditTitle": "Okulary",
+          "creditSumm": "1500",
+          "paidSumm": "0",
+          "leftSumm": "1500",
+          "monthlyPayment": "150",
+          "leftPayments": "10"
+        },
+        {
+          "id": 4,
+          "creditTitle": "yyy",
+          "creditSumm": "6",
+          "paidSumm": "6",
+          "leftSumm": "67",
+          "monthlyPayment": "6",
+          "leftPayments": "6"
+        },
+        {
+          "id": 6,
+          "creditTitle": "xxx",
+          "creditSumm": "10000",
+          "paidSumm": "200",
+          "leftSumm": "9800",
+          "monthlyPayment": "200",
+          "leftPayments": "49"
+        }
+      ],
+      "savings": [
+        {
+          "id": 4,
+          "name": "Wakacje",
+          "currentState": "2000",
+          "goal": "10000",
+          "leftSum": "8000"
+        },
+        {
+          "id": 5,
+          "name": "Gitara",
+          "currentState": "500",
+          "goal": "5000",
+          "leftSum": "4500"
+        }
+      ]
     },
     {
       "id": 2,
@@ -21,34 +131,149 @@
       "gender": "kobieta",
       "budget": [
         {
+          "id": 1,
           "category": "Sklepy",
           "title": "Zakupy w Auchan",
           "summ": 220,
           "date": "11.09.2021"
         },
         {
+          "id": 2,
           "category": "Kredyty",
           "title": "Remont mieszkania",
           "summ": 200,
           "date": "12.09.2021"
         },
         {
+          "id": 3,
           "category": "Pensja",
           "title": "Zaliczka",
           "summ": 500,
           "date": "13.09.2021"
         }
       ]
+    }
+  ],
+  "categories": [
+    {
+      "id": 1,
+      "categoryName": "Pensja"
     },
     {
-      "login": "Vasko1989",
-      "name": "asdfg",
-      "surname": "zxcv",
-      "email": "eeefff@mm.gg",
-      "password": "asdfg",
-      "birthDate": "2021-09-16",
-      "gender": "mężczyzna",
-      "id": 3
+      "id": 2,
+      "categoryName": "Sklepy"
+    },
+    {
+      "id": 3,
+      "categoryName": "Auto"
+    },
+    {
+      "id": 4,
+      "categoryName": "Sklepy"
+    },
+    {
+      "id": 5,
+      "categoryName": "Zdrowie"
+    },
+    {
+      "id": 6,
+      "categoryName": "Odzież"
+    },
+    {
+      "id": 7,
+      "categoryName": "Obuwie"
+    },
+    {
+      "id": 8,
+      "categoryName": "Restauracje"
+    },
+    {
+      "id": 9,
+      "categoryName": "Uroda"
+    }
+  ],
+  "months": [
+    {
+      "name": "styczeń",
+      "monthNumber": "01"
+    },
+    {
+      "name": "luty",
+      "monthNumber": "02"
+    },
+    {
+      "name": "marzec",
+      "monthNumber": "03"
+    },
+    {
+      "name": "kwiecień",
+      "monthNumber": "04"
+    },
+    {
+      "name": "maj",
+      "monthNumber": "05"
+    },
+    {
+      "name": "czerwiec",
+      "monthNumber": "06"
+    },
+    {
+      "name": "lipiec",
+      "monthNumber": "07"
+    },
+    {
+      "name": "sierpień",
+      "monthNumber": "08"
+    },
+    {
+      "name": "wrzesień",
+      "monthNumber": "09"
+    },
+    {
+      "name": "październik",
+      "monthNumber": "10"
+    },
+    {
+      "name": "listopad",
+      "monthNumber": "11"
+    },
+    {
+      "name": "grudzień",
+      "monthNumber": "12"
+    }
+  ],
+  "years": [
+    {
+      "id": 1,
+      "yearNumber": "2018"
+    },
+    {
+      "id": 2,
+      "yearNumber": "2019"
+    },
+    {
+      "id": 3,
+      "yearNumber": "2020"
+    },
+    {
+      "id": 4,
+      "yearNumber": "2021"
+    },
+    {
+      "id": 5,
+      "yearNumber": "2022"
+    },
+    {
+      "id": 6,
+      "yearNumber": "2023"
+    },
+    {
+      "id": 7,
+      "yearNumber": "2024"
+    },
+    {
+      "id": 8,
+      "yearNumber": "2025"
     }
   ]
 }

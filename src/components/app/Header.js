@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import clsx from 'clsx';
 import {
     makeStyles,
@@ -31,6 +31,7 @@ import CreditCalculator from "./CreditCalculator";
 import Notes from "./Notes";
 import Pulpit from "./Pulpit";
 import Budget from "./Budget";
+import {usersDataContext} from "../../App";
 
 
 
@@ -39,7 +40,7 @@ const drawerWidth = 240;
 const useStyles = makeStyles((theme) => ({
     root: {
         display: 'flex',
-        maxWidth: theme.spacing(187.5),
+        maxWidth: theme.spacing(162.5),
 
     },
     appBar: {
@@ -109,9 +110,8 @@ const useStyles = makeStyles((theme) => ({
     content: {
         alignItems: "center",
         justifyContent: "center",
-        width: "100%",
-        maxHeight: 800,
-        height: "100%"
+        margin: 0,
+        padding: 0
     },
     avatar: {
         color: theme.palette.primary.contrastText,
@@ -164,6 +164,11 @@ export default function Header() {
     const classes = useStyles();
     const theme = useTheme();
     const [open, setOpen] = useState(false);
+    const {setCurrentUserData, usersData} = useContext(usersDataContext);
+
+    useEffect(() => {
+        setCurrentUserData(usersData.find(user => user.login === localStorage.userName));
+    });
 
 
     const handleDrawerOpen = () => {
@@ -176,6 +181,7 @@ export default function Header() {
 
     const handleExitApp = () => {
         localStorage.clear();
+        setCurrentUserData([]);
     };
 
     if (localStorage.userName && localStorage.userPassword) {

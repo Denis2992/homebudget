@@ -12,7 +12,7 @@ import {
 import MailOutlineIcon from '@material-ui/icons/MailOutline';
 import CallIcon from '@material-ui/icons/Call';
 import {theme} from "../../index";
-
+import { Element } from 'react-scroll';
 
 const useStyles = makeStyles((theme) => ({
     containerData: {
@@ -77,51 +77,53 @@ const ContactUs = () => {
     const classes = useStyles();
 
     return (
-        <Container className={classes.containerData}>
-            <Paper className={classes.paperContact}  elevation={3}>
-                <Typography variant="h5" className={classes.paperContactHead}>Masz jakieś pytania?<br/>Skontaktuj sie z nami!</Typography>
-                <Box className={classes.paperContactBoxInfo} style={{padding: theme.spacing(2,0)}}>
-                    <MailOutlineIcon />
-                    <Typography>homebudget@gmail.com</Typography>
-                </Box>
-                <Box className={classes.paperContactBoxInfo}>
-                    <CallIcon />
-                    <Typography>+44 12 645 48 45</Typography>
-                </Box>
-            </Paper>
-
-            <Paper className={classes.paperForm}  elevation={3}>
-                <form className={classes.form} noValidate autoComplete="off">
-                    <Typography variant="h5" className={classes.paperContactHead}>Wyślij do nas wiadomość</Typography>
-                    <TextField
-                        label="Imię"
-                        placeholder="Wpisz swoje imię"
-                        variant="outlined"
-                        id="outlined-basic"
-                        className={classes.textField}
-                        color="secondary"
-                    />
-                    <TextField
-                        label="Email"
-                        placeholder="Wpisz swój email"
-                        variant="outlined"
-                        id="outlined-basic"
-                        className={classes.textField}
-                        color="secondary"
-                    />
-                    <Box className={classes.agreementBox}>
-                        <Checkbox />
-                        <Typography className={classes.agreementParagraph}>
-                            Wyrażam zgodę na przetwarzanie moich danych
-                            osobowych podanych w powyższym formularzu w celach
-                            handlowych i marketingowych przez Sp z o.o. BudgetDomowy
-                            oraz przez podmioty trzecie.
-                        </Typography>
+        <Element name="contact">
+            <Container className={classes.containerData} >
+                <Paper className={classes.paperContact}  elevation={3}>
+                    <Typography variant="h5" className={classes.paperContactHead}>Masz jakieś pytania?<br/>Skontaktuj sie z nami!</Typography>
+                    <Box className={classes.paperContactBoxInfo} style={{padding: theme.spacing(2,0)}}>
+                        <MailOutlineIcon />
+                        <Typography>homebudget@gmail.com</Typography>
                     </Box>
-                    <Button variant="contained" color="secondary" className={classes.agreementBtn}>Wyślij</Button>
-                </form>
-            </Paper>
-        </Container>
+                    <Box className={classes.paperContactBoxInfo}>
+                        <CallIcon />
+                        <Typography>+44 12 645 48 45</Typography>
+                    </Box>
+                </Paper>
+
+                <Paper className={classes.paperForm}  elevation={3}>
+                    <form className={classes.form} noValidate autoComplete="off">
+                        <Typography variant="h5" className={classes.paperContactHead}>Wyślij do nas wiadomość</Typography>
+                        <TextField
+                            label="Imię"
+                            placeholder="Wpisz swoje imię"
+                            variant="outlined"
+                            id="outlined-basic"
+                            className={classes.textField}
+                            color="secondary"
+                        />
+                        <TextField
+                            label="Email"
+                            placeholder="Wpisz swój email"
+                            variant="outlined"
+                            id="outlined-basic"
+                            className={classes.textField}
+                            color="secondary"
+                        />
+                        <Box className={classes.agreementBox}>
+                            <Checkbox />
+                            <Typography className={classes.agreementParagraph}>
+                                Wyrażam zgodę na przetwarzanie moich danych
+                                osobowych podanych w powyższym formularzu w celach
+                                handlowych i marketingowych przez Sp z o.o. BudgetDomowy
+                                oraz przez podmioty trzecie.
+                            </Typography>
+                        </Box>
+                        <Button variant="contained" color="secondary" className={classes.agreementBtn}>Wyślij</Button>
+                    </form>
+                </Paper>
+            </Container>
+        </Element>
     )
 };
 

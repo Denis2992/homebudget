@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {useContext, useState} from "react";
 import {
     Button,
     Typography,
@@ -7,9 +7,10 @@ import {
     Select,
     MenuItem,
     Paper,
-    makeStyles,
+    makeStyles, List, ListItem,
 } from "@material-ui/core";
 import {lighten} from "@material-ui/core/styles";
+import {datesContext} from "./BudgetPulpit";
 
 const useStyles = makeStyles((theme) => ({
     paper: {
@@ -24,7 +25,7 @@ const useStyles = makeStyles((theme) => ({
         alignItems: "center"
     },
     input: {
-        margin: theme.spacing(2,1),
+        margin: theme.spacing(2, 1, 0, 1),
         width: theme.spacing(19.5),
     },
     selectRoot: {
@@ -49,63 +50,103 @@ const useStyles = makeStyles((theme) => ({
     },
     sortBtn: {
         width: theme.spacing(12),
-        margin: theme.spacing(2),
+        margin: theme.spacing(2, 2, 0, 2),
         "&:hover": {
             backgroundColor: theme.palette.warning.dark
         }
+    },
+    list: {
+        display: "flex",
+        justifyContent: "center",
+        margin: "0 auto",
+        width: 220
+    },
+    listElement: {
+        color: theme.palette.error.main,
+        padding: "3px 0",
     }
 }));
 
-
-
 export default function SortPulpitBudget () {
-    const [month, setMonth] = useState('');
-    const [year, setYear] = useState('');
+    const {setMonth, setYear, months, years} = useContext(datesContext);
+    const [errorList, setErrorList] = useState([]);
+    const [dateParams, setDateParams] = useState({
+        month: "",
+        year: "",
+    })
     const classes = useStyles();
 
-    const months = {
-        january: "Styczeń",
-        february: "Luty",
-        march: "Marzec",
-        april: "Kwiecień",
-        may: "Maj",
-        june: "Czerwiec",
-        july: "Lipiec",
-        august: "Sierpień",
-        september: "Wrzesień",
-        october: "Październik",
-        november: "Listopad",
-        december: "Grudzień"
+    const validSelectInputs = () => {
+        const newErrorList = [];
+
+        if (dateParams.year === "") {
+            newErrorList.push("Wybierz rok");
+        }
+
+        if (dateParams.month === "") {
+            newErrorList.push("Wybierz miesiąc");
+        }
+
+        setErrorList(newErrorList);
+
+        return newErrorList.length === 0;
+    };
+
+    const errorsToRender = () => {
+        if (errorList.length > 0) {
+            return (
+                <List className={classes.list}>
+                    {errorList.map((el, i) => (
+                        <ListItem key={i} className={classes.listElement}>{el}</ListItem>
+                    ))}
+                </List>
+            )
+        }
+    }
+
+    const handleFilterData = (e) => {
+        e.preventDefault();
+        if (validSelectInputs()) {
+            setMonth(dateParams.month);
+            setYear(dateParams.year);
+            setDateParams({
+                month: "",
+                year: "",
+            })
+        }
     };
 
     return (
         <Paper className={classes.paper}>
             <Typography align="center">Zobacz dane za inny miesiąc</Typography>
-            <form className={classes.form}>
+            <form className={classes.form} onSubmit={handleFilterData}>
                 <FormControl fullWidth variant="outlined" className={classes.input}>
                     <InputLabel id="month" color="secondary">Miesiąc</InputLabel>
                     <Select
                         labelId="month"
                         id="month"
-                        value={month}
+                        value={dateParams.month}
                         label="Miesiąc"
                         classes={{root: classes.selectRoot}}
                         color="secondary"
-                        onChange={e => setMonth(e.target.value)}
+                        onChange={e => setDateParams(prevState => ({...prevState, month: e.target.value}))}
                         over
                     >
-                            <MenuItem classes={{ selected: classes.selected, root: classes.rootMenuItem}} value={months.january}>{months.january}</MenuItem>
-                            <MenuItem classes={{ selected: classes.selected, root: classes.rootMenuItem}} value={months.february}>{months.february}</MenuItem>
-                            <MenuItem classes={{ selected: classes.selected, root: classes.rootMenuItem}} value={months.march}>{months.march}</MenuItem>
-                            <MenuItem classes={{ selected: classes.selected, root: classes.rootMenuItem}} value={months.april}>{months.april}</MenuItem>
-                            <MenuItem classes={{ selected: classes.selected, root: classes.rootMenuItem}} value={months.may}>{months.may}</MenuItem>
-                            <MenuItem classes={{ selected: classes.selected, root: classes.rootMenuItem}} value={months.june}>{months.june}</MenuItem>
-                            <MenuItem classes={{ selected: classes.selected, root: classes.rootMenuItem}} value={months.july}>{months.july}</MenuItem>
-                            <MenuItem classes={{ selected: classes.selected, root: classes.rootMenuItem}} value={months.august}>{months.august}</MenuItem>
-                            <MenuItem classes={{ selected: classes.selected, root: classes.rootMenuItem}} value={months.september}>{months.september}</MenuItem>
-                            <MenuItem classes={{ selected: classes.selected, root: classes.rootMenuItem}} value={months.october}>{months.october}</MenuItem>
-                            <MenuItem classes={{ selected: classes.selected, root: classes.rootMenuItem}} value={months.november}>{months.november}</MenuItem>
-                            <MenuItem classes={{ selected: classes.selected, root: classes.rootMenuItem}} value={months.december}>{months.december}</MenuItem>
+                        {months.map(month => {
+                            return (
+                                <MenuItem key={month.name}
+                                          classes={{
+                                              selected: classes.selected,
+                                              root: classes.rootMenuItem
+                                          }}
+                                          value={month.monthNumber}
+                                >
+                                    {month.name}
+                                </MenuItem>
+                            )
+                        })}
+
+
                     </Select>
                 </FormControl>
                 <FormControl fullWidth className={classes.input} variant="outlined">
@@ -113,28 +154,35 @@ export default function SortPulpitBudget () {
                     <Select
                         labelId="year"
                         id="year"
-                        value={year}
+                        value={dateParams.year}
                         label="Rok"
                         variant="outlined"
-                        onChange={e => setYear(e.target.value)}
+                        onChange={e => setDateParams(prevState => ({...prevState, year: e.target.value}))}
                         color="secondary"
                         classes={{root: classes.selectRoot}}
                     >
-                        <MenuItem value={2018}>2018</MenuItem>
-                        <MenuItem value={2019}>2019</MenuItem>
-                        <MenuItem value={2020}>2020</MenuItem>
-                        <MenuItem value={2021}>2021</MenuItem>
-                        <MenuItem value={2022}>2022</MenuItem>
-                        <MenuItem value={2023}>2023</MenuItem>
-                        <MenuItem value={2024}>2024</MenuItem>
-                        <MenuItem value={2025}>2025</MenuItem>
+                        {years.map(year => {
+                            return (
+                                <MenuItem key={year.id}
+                                          classes={{
+                                              selected: classes.selected,
+                                              root: classes.rootMenuItem
+                                          }}
+                                          value={year.yearNumber}
+                                >
+                                    {year.yearNumber}
+                                </MenuItem>
+                            )
+                        })}
                     </Select>
                 </FormControl>
                 <Button variant="contained"
                         color="secondary"
                         className={classes.sortBtn}
-                >Sortuj</Button>
+                        type="submit"
+                >Filtruj</Button>
             </form>
+            {errorsToRender()}
         </Paper>
     )
 }
