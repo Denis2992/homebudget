@@ -36,7 +36,13 @@ const useStyles = makeStyles((theme) => ({
             left: "40vw",
             top: "12vh",
         },
-
+    },
+    gridBox: {
+        justifyContent: "center",
+        marginLeft: 54,
+        [theme.breakpoints.up('sm')]: {
+            marginLeft: 0
+        },
     },
     form: {
         display: "flex",
@@ -290,7 +296,7 @@ export default function SavingsNewItemForm () {
 
 
     return (
-        <Grid container spacing={3} style={{justifyContent: "center", marginLeft: 54}}>
+        <Grid container spacing={3} className={classes.gridBox}>
             <Grid item xs={9} sm={10} md={12}>
                 <Paper className={classes.paper} elevation={3}>
                     <IconButton style={{width: 48, alignSelf: "self-end"}}>

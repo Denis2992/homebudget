@@ -248,7 +248,6 @@ EnhancedTableToolbar.propTypes = {
 const useStyles = makeStyles((theme) => ({
     paper: {
         border: `2px solid ${theme.palette.success.main}`,
-
     },
     table: {
 
@@ -263,6 +262,13 @@ const useStyles = makeStyles((theme) => ({
         position: 'absolute',
         top: 20,
         width: 1,
+    },
+    gridBox: {
+        justifyContent: "center",
+        marginLeft: 28,
+        [theme.breakpoints.up('sm')]: {
+            marginLeft: 0
+        },
     },
 }));
 
@@ -410,7 +416,7 @@ export default function BudgetTableFull () {
                     setSelected
                 }}
             >
-                <Grid container spacing={2} style={{justifyContent: "center", marginLeft: 28}}>
+                <Grid container spacing={2} className={classes.gridBox}>
                     <Grid item xs={7} sm={10} md={12}>
                         <Paper className={classes.paper} elevation={3}>
                             <EnhancedTableToolbar

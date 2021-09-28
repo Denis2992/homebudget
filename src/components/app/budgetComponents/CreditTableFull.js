@@ -236,14 +236,18 @@ const useStyles = makeStyles((theme) => ({
         display: "flex",
         margin: theme.spacing(4)
     },
+    gridBox: {
+        justifyContent: "center",
+        marginLeft: 54,
+        [theme.breakpoints.up('sm')]: {
+            marginLeft: 0
+        },
+    },
     paper: {
         maxWidth: 1200,
         border: `2px solid ${theme.palette.warning.light}`,
         position: "relative",
         zIndex: 1
-    },
-    table: {
-
     },
     visuallyHidden: {
         border: 0,
@@ -403,7 +407,7 @@ export default function CreditTableFull() {
                 editMode
             }}
             >
-                <Grid container spacing={3} style={{justifyContent: "center", marginLeft: 54}}>
+                <Grid container spacing={3} className={classes.gridBox}>
                     <Grid item xs={6} sm={10} md={12}>
                         <Paper className={classes.paper} elevation={3}>
                             <EnhancedTableToolbar

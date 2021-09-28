@@ -48,6 +48,13 @@ const useStyles = makeStyles((theme) => ({
             top: "12vh",
         },
     },
+    gridBox: {
+        justifyContent: "center",
+        marginLeft: 22,
+        [theme.breakpoints.up('sm')]: {
+            marginLeft: 0
+        },
+    },
     form: {
         display: "flex",
         flexDirection: "column",
@@ -125,6 +132,7 @@ export default function BudgetNewItemForm () {
         setCategoriesList,
         setUsersData
     } = useContext(usersDataContext);
+    const classes = useStyles();
 
     const history = useHistory();
 
@@ -419,10 +427,10 @@ export default function BudgetNewItemForm () {
         history.push("/app/budget/dataBudget");
     }
 
-    const classes = useStyles();
+
 
     return (
-        <Grid container spacing={3} style={{justifyContent: "center", marginLeft: 22}}>
+        <Grid container spacing={3} className={classes.gridBox}>
         <Grid item xs={7}>
         <Paper className={classes.paper} elevation={3}>
             <IconButton style={{ alignSelf: "self-end"}} onClick={handleCloseForm}>

@@ -21,6 +21,13 @@ const useStyles = makeStyles((theme) => ({
         maxWidth: theme.spacing(130),
         margin: theme.spacing(0, 2)
     },
+    gridBox: {
+        justifyContent: "center",
+        marginLeft: 70,
+        [theme.breakpoints.up('sm')]: {
+            marginLeft: 0
+        },
+    },
     //this month income/expenses
     paperThisMonth: {
         padding: theme.spacing(2),
@@ -234,7 +241,7 @@ export default function Pulpit() {
     if (currentUserData) {
         return (
             <Box className={classes.box}>
-                <Grid container spacing={2} style={{justifyContent: "center", marginLeft: 70}}>
+                <Grid container spacing={2} className={classes.gridBox}>
                     <Grid item xs={9} sm={6} md={3}>
                 <Paper className={classes.paperThisMonth} elevation={3}>
                             <Typography color="textPrimary">W tym miesiącu</Typography>

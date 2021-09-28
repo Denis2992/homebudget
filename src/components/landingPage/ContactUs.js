@@ -66,8 +66,13 @@ const useStyles = makeStyles((theme) => ({
     textField: {
         marginLeft: theme.spacing(1),
         marginRight: theme.spacing(1),
-        width: '40ch',
+        width: theme.spacing(32),
         margin: theme.spacing(1.5, 0)
+    },
+    messageInput: {
+        maxWidth: theme.spacing(66),
+        width: "100%",
+        marginBottom: theme.spacing(2)
     },
     agreementBox: {
         display: "flex",
@@ -75,7 +80,7 @@ const useStyles = makeStyles((theme) => ({
     },
     agreementParagraph: {
         fontSize: 10,
-        width: 300
+        maxWidth: 400
     },
     agreementBtn: {
         marginTop: theme.spacing(3)
@@ -115,21 +120,32 @@ const ContactUs = () => {
                         >
                             Wyślij do nas wiadomość
                         </Typography>
+                        <div style={{display: "flex", justifyContent: "center", flexWrap: "wrap"}}>
+                            <TextField
+                                label="Imię"
+                                placeholder="Wpisz swoje imię"
+                                variant="outlined"
+                                id="outlined-basic"
+                                className={classes.textField}
+                                color="secondary"
+                            />
+                            <TextField
+                                label="Email"
+                                placeholder="Wpisz swój email"
+                                variant="outlined"
+                                id="outlined-basic"
+                                className={classes.textField}
+                                color="secondary"
+                            />
+                        </div>
                         <TextField
-                            label="Imię"
-                            placeholder="Wpisz swoje imię"
+                            id="outlined-multiline-static"
+                            label="Wiadomość"
                             variant="outlined"
-                            id="outlined-basic"
-                            className={classes.textField}
+                            multiline
                             color="secondary"
-                        />
-                        <TextField
-                            label="Email"
-                            placeholder="Wpisz swój email"
-                            variant="outlined"
-                            id="outlined-basic"
-                            className={classes.textField}
-                            color="secondary"
+                            rows={3}
+                            className={classes.messageInput}
                         />
                         <Box className={classes.agreementBox}>
                             <Checkbox />

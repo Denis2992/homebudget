@@ -236,12 +236,16 @@ const useStyles = makeStyles((theme) => ({
         display: "flex",
         margin: theme.spacing(4)
     },
+    gridBox: {
+        justifyContent: "center",
+        marginLeft: 54,
+        [theme.breakpoints.up('sm')]: {
+            marginLeft: 0
+        },
+    },
     paper: {
         maxWidth: 1200,
         border: `2px solid ${theme.palette.info.main}`,
-
-    },
-    table: {
 
     },
     visuallyHidden: {
@@ -397,7 +401,7 @@ export default function BudgetTableFull() {
                 newSavingData,
                 setNewSavingData
             }}>
-                <Grid container spacing={3} style={{justifyContent: "center", marginLeft: 54}}>
+                <Grid container spacing={3} className={classes.gridBox}>
                     <Grid item xs={9} sm={10} md={12}>
                         <Paper className={classes.paper} elevation={3}>
                             <EnhancedTableToolbar

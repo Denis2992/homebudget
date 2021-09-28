@@ -8,9 +8,15 @@ import SortPulpitBudget from "./SortPulpitBudget";
 
 const useStyles = makeStyles((theme) => ({
     mainContainer: {
-        maxWidth: theme.spacing(162.5),
+        maxWidth: theme.spacing(130),
     },
-
+    gridBox: {
+        justifyContent: "center",
+        marginLeft: 54,
+        [theme.breakpoints.up('sm')]: {
+            marginLeft: 0
+        },
+    }
 }));
 
 export const datesContext = createContext("");
@@ -62,7 +68,7 @@ export default function BudgetPulpit () {
             years, setYears
         }}>
             <Container className={classes.mainContainer}>
-                <Grid container spacing={2} style={{justifyContent: "center", marginLeft: 54}}>
+                <Grid container spacing={2} className={classes.gridBox}>
                     <Grid item xs={8} sm={12} md={6}><SortPulpitBudget /></Grid>
                     <Grid item xs={8} sm={12} md={6}><Savings /></Grid>
                     <Grid item xs={9} sm={12} md={6}><BudgetTableSummary /></Grid>
