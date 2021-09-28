@@ -6,13 +6,12 @@ import {
     Typography,
     Button,
     makeStyles,
-    IconButton, List, ListItem
+    IconButton, List, ListItem, Grid
 } from "@material-ui/core";
 import HighlightOffIcon from '@material-ui/icons/HighlightOff';
 import {useHistory} from "react-router-dom";
 import {newCreditDataContext} from "./CreditTableFull";
 import {usersApiUrl, usersDataContext} from "../../../App";
-import validator from "validator/es";
 import isDecimal from "validator/es/lib/isDecimal";
 
 const useStyles = makeStyles((theme) => ({
@@ -23,11 +22,17 @@ const useStyles = makeStyles((theme) => ({
         border: `2px solid ${theme.palette.warning.light}`,
         display: "flex",
         flexDirection: "column",
-        margin: theme.spacing(0, 4),
-        position: "absolute",
-        left: "20%",
-        top: "10%",
         zIndex: 2,
+        [theme.breakpoints.up('sm')]: {
+            position: "absolute",
+            left: "25vw",
+            top: "12vh",
+        },
+        [theme.breakpoints.up('md')]: {
+            position: "absolute",
+            left: "40vw",
+            top: "12vh",
+        },
 
     },
     form: {
@@ -94,10 +99,6 @@ export default function CreditNewItemForm () {
     const checkIfFormValid = () => {
         const newErrorList = [];
         const {creditTitle, creditSumm, paidSumm, leftSumm, monthlyPayment, leftPayments} = newCreditData;
-
-        if (!validator.isAlpha(creditTitle, "pl-PL")) {
-            newErrorList.push("Nazwa nie może zawierać liczb lub znaków");
-        }
 
         if (creditTitle.length < 3) {
             newErrorList.push("Nazwa musi zawierać minimum 3 litery");
@@ -320,6 +321,8 @@ export default function CreditNewItemForm () {
     const classes = useStyles();
 
     return (
+        <Grid container spacing={3} style={{justifyContent: "center", marginLeft: 54}}>
+            <Grid item xs={6}>
             <Paper className={classes.paper} elevation={3}>
                 <IconButton style={{width: 48, alignSelf: "self-end"}} onClick={handleCloseForm}>
                     <HighlightOffIcon color="error" />
@@ -389,5 +392,7 @@ export default function CreditNewItemForm () {
                     <Button className={classes.formBtn} type="submit">Zapisz i zamknij</Button>
                 </form>
             </Paper>
+            </Grid>
+        </Grid>
     )
 }

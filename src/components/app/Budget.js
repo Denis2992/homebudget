@@ -1,4 +1,4 @@
-import React, {createContext, useContext, useState} from "react";
+import React, {useContext} from "react";
 import {HashRouter, Route, Switch} from "react-router-dom";
 import BudgetPulpit from "./budgetComponents/BudgetPulpit";
 import BudgetTableFull from "./budgetComponents/BudgetTableFull"
@@ -12,7 +12,6 @@ import {Typography} from "@material-ui/core";
 
 export default function Budget() {
     const {currentUserData} = useContext(usersDataContext);
-
     if (currentUserData){
         return (
             <>
@@ -27,7 +26,6 @@ export default function Budget() {
             </>
         );
     } else {
-        return <Typography>Loading</Typography>
+        return <Typography>Loading...</Typography>
     }
-
 }

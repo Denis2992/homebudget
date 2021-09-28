@@ -1,7 +1,7 @@
 import React, {createContext, useEffect, useState} from "react";
 import BudgetTableSummary from "./BudgetTableSummary";
 import CreditTableSummary from "./CreditTableSummary";
-import {makeStyles, Container, Box} from "@material-ui/core";
+import {makeStyles, Container, Grid} from "@material-ui/core";
 import Savings from "./Savings";
 import SortPulpitBudget from "./SortPulpitBudget";
 
@@ -21,7 +21,6 @@ export default function BudgetPulpit () {
     const [year, setYear] = useState('');
     const [months, setMonths] = useState([]);
     const [years, setYears] = useState([]);
-
 
     useEffect(() => {
         fetch("http://localhost:3001/months")
@@ -55,8 +54,6 @@ export default function BudgetPulpit () {
         setMonth("0" + (date.getMonth() + 1));
     }, []);
 
-
-
     return (
         <datesContext.Provider value={{
             month, setMonth,
@@ -65,15 +62,12 @@ export default function BudgetPulpit () {
             years, setYears
         }}>
             <Container className={classes.mainContainer}>
-                <Box style={{display: "flex", justifyContent: "space-between", flexWrap: "wrap"}}>
-                    <SortPulpitBudget />
-                    <Savings />
-                </Box>
-
-                <Box style={{display: "flex", justifyContent: "space-between", maxWidth: 1300}}>
-                    <BudgetTableSummary />
-                    <CreditTableSummary />
-                </Box>
+                <Grid container spacing={2} style={{justifyContent: "center", marginLeft: 54}}>
+                    <Grid item xs={8} sm={12} md={6}><SortPulpitBudget /></Grid>
+                    <Grid item xs={8} sm={12} md={6}><Savings /></Grid>
+                    <Grid item xs={9} sm={12} md={6}><BudgetTableSummary /></Grid>
+                    <Grid item xs={9} sm={12} md={6}><CreditTableSummary /></Grid>
+                </Grid>
             </Container>
         </datesContext.Provider>
     )

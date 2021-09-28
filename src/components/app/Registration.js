@@ -35,22 +35,24 @@ const useStyles = makeStyles((theme) => ({
         marginTop: theme.spacing(4)
     },
     box: {
-        width: "100%"
+        width: "100%",
+        display: "flex",
+        justifyContent: "center"
     },
     paper: {
-        maxWidth: theme.spacing(70),
-        margin: "56px auto",
+        maxWidth: theme.spacing(55),
+        margin: "56px 16px",
         border: `2px solid ${theme.palette.secondary.main}`,
         display: "flex",
-        flexDirection: "column"
+        flexDirection: "column",
+
     },
     form: {
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        padding: theme.spacing(3),
-        paddingTop: 0
-
+        padding: theme.spacing(2),
+        paddingTop: 0,
     },
     closeBtn: {
         alignSelf: "flex-end"
@@ -90,13 +92,9 @@ const Registration = () => {
     const history = useHistory();
     const {usersData} = useContext(usersDataContext);
 
-
     const handleChange = (prop) => (event) => {
         setValues({ ...values, [prop]: event.target.value });
     };
-
-
-
 
     const handleClickShowPassword = () => {
         setValues({ ...values, showPassword: !values.showPassword });
@@ -221,7 +219,12 @@ const Registration = () => {
                     <ul>
                         {errorList.map((singleError, index) => (
                             <li key={index}>
-                                <Typography variant="body2" style={{color: "red"}}>{singleError}</Typography>
+                                <Typography
+                                    variant="body2"
+                                    style={{color: "red", textAlign: "center"}}
+                                >
+                                    {singleError}
+                                </Typography>
                             </li>
                         ))}
                     </ul>
@@ -371,7 +374,11 @@ const Registration = () => {
                     </FormControl>
                     {getErrorToRender()}
                     <Box className={classes.agreement}>
-                        <Typography variant="body2">Klikając zarejestruj się, zgadzasz się z warunkami
+                        <Typography
+                            variant="body2"
+                            style={{textAlign: "center"}}
+                        >
+                            Klikając zarejestruj się, zgadzasz się z warunkami
                             korzystania aplikacji.
                         </Typography>
                     </Box>

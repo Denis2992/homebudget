@@ -22,25 +22,23 @@ import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 import HomeIcon from "@material-ui/icons/Home";
 import DesktopWindowsIcon from '@material-ui/icons/DesktopWindows';
 import AccountBalanceWalletIcon from '@material-ui/icons/AccountBalanceWallet';
-import AccountBalanceIcon from '@material-ui/icons/AccountBalance';
-import LibraryBooksIcon from '@material-ui/icons/LibraryBooks';
 import {HashRouter, Link, NavLink, Route, Switch} from "react-router-dom";
 import ExitToAppIcon from '@material-ui/icons/ExitToApp';
 import StartWindow from "./StartWindow";
-import CreditCalculator from "./CreditCalculator";
-import Notes from "./Notes";
 import Pulpit from "./Pulpit";
 import Budget from "./Budget";
 import {usersDataContext} from "../../App";
 
 
 
-const drawerWidth = 240;
+const drawerWidth = 150;
 
 const useStyles = makeStyles((theme) => ({
     root: {
         display: 'flex',
-        maxWidth: theme.spacing(162.5),
+        justifyContent: "center",
+        width: "100%",
+        margin: theme.spacing(4, 0)
 
     },
     appBar: {
@@ -71,7 +69,7 @@ const useStyles = makeStyles((theme) => ({
         fontFamily: "'Courgette', cursive",
     },
     menuButton: {
-        marginRight: 36,
+        marginRight: 10,
     },
     hide: {
         display: 'none',
@@ -96,7 +94,7 @@ const useStyles = makeStyles((theme) => ({
         overflowX: 'hidden',
         width: theme.spacing(7) + 1,
         [theme.breakpoints.up('sm')]: {
-            width: theme.spacing(9) + 1,
+            width: theme.spacing(7) + 1,
         },
     },
     toolbar: {
@@ -114,14 +112,27 @@ const useStyles = makeStyles((theme) => ({
         padding: 0
     },
     avatar: {
-        color: theme.palette.primary.contrastText,
         backgroundColor: theme.palette.info.light,
-        marginRight: theme.spacing(2)
-
+        marginRight: theme.spacing(2),
+    },
+    avatarMobile: {
+        width: 30,
+        height: 30,
+        backgroundColor: theme.palette.info.light,
+        marginRight: theme.spacing(2),
     },
     userBox : {
-        display: "flex",
-        alignItems: "center"
+        display: "none",
+        alignItems: "center",
+        [theme.breakpoints.up('sm')]: {
+            display: "flex"
+        },
+    },
+    userInfoMobile: {
+        padding: 13,
+        [theme.breakpoints.up('sm')]: {
+            display: "none"
+        },
     },
     homeLink: {
         display: "flex",
@@ -133,8 +144,19 @@ const useStyles = makeStyles((theme) => ({
         color: theme.palette.primary.contrastText,
         marginTop: theme.spacing(0.8)
     },
+    exitLinkMobile: {
+        display: "flex",
+        paddingTop: 10,
+        textDecoration: "none",
+        color:theme.palette.text.secondary
+    },
+    exitBtnMobile: {
+        [theme.breakpoints.up('sm')]: {
+            display: "none"
+        },
+    },
     list: {
-        margin: theme.spacing(3, 1)
+        margin: theme.spacing(1, 0)
     },
     navLink: {
         display: "flex",
@@ -143,11 +165,12 @@ const useStyles = makeStyles((theme) => ({
         color: theme.palette.text.secondary,
         textDecoration: "none",
         fontSize: 20,
-        padding: theme.spacing(1.5, 0)
+        padding: theme.spacing(1.5, 0),
+        margin: 0
 
     },
     navLinkIcon: {
-        marginRight: theme.spacing(3.5)
+        marginRight: theme.spacing(2.2),
     }
 }));
 
@@ -247,6 +270,14 @@ export default function Header() {
                     </div>
                     <Divider />
                     <List className={classes.list}>
+                        <ListItem className={classes.userInfoMobile}>
+                            <Avatar
+                                className={classes.avatarMobile}
+                            >
+                                {localStorage.userName[0].toUpperCase()}
+                            </Avatar>
+                            <Typography>{localStorage.userName}</Typography>
+                        </ListItem>
                         <ListItem button >
                             <NavLink exact to="/app/"
                                      className={classes.navLink}
@@ -267,24 +298,14 @@ export default function Header() {
                                 Budget
                             </NavLink>
                         </ListItem>
-                        <ListItem button >
-                            <NavLink to="/app/creditCalculator"
-                                     className={classes.navLink}
-                                     activeStyle={{color: theme.palette.info.light}}
-
+                        <ListItem button onClick={handleExitApp} className={classes.exitBtnMobile}>
+                            <Link
+                                to="/app"
+                                className={classes.exitLinkMobile}
                             >
-                                <AccountBalanceIcon className={classes.navLinkIcon}/>
-                                Kalkulator<br/> kredytowy
-                            </NavLink>
-                        </ListItem>
-                        <ListItem button >
-                            <NavLink to="/app/notes"
-                                     className={classes.navLink}
-                                     activeStyle={{color: theme.palette.info.light}}
-                            >
-                                <LibraryBooksIcon className={classes.navLinkIcon}/>
-                                Notes
-                            </NavLink>
+                                <ExitToAppIcon color="error" style={{marginRight: 18}}/>
+                                <Typography>Wyjdź</Typography>
+                            </Link>
                         </ListItem>
                     </List>
                 </Drawer>
@@ -294,8 +315,6 @@ export default function Header() {
                         <Switch>
                             <Route exact path="/app/" component={Pulpit}/>
                             <Route path="/app/budget/" component={Budget}/>
-                            <Route path="/app/creditCalculator/" component={CreditCalculator}/>
-                            <Route path="/app/notes/" component={Notes}/>
                         </Switch>
                     </HashRouter>
                 </main>

@@ -17,6 +17,7 @@ import { Element } from 'react-scroll';
 const useStyles = makeStyles((theme) => ({
     containerData: {
         display: "flex",
+        flexWrap: "wrap",
         justifyContent: "space-around",
         maxWidth: theme.spacing(187.5),
         width: "100%",
@@ -25,18 +26,21 @@ const useStyles = makeStyles((theme) => ({
         minWidth: 250,
         maxWidth: 400,
         width: "100%",
-        background: `linear-gradient(60deg, ${theme.palette.primary.main} 20%, ${theme.palette.primary.contrastText} 80%)`,
-        // color: theme.palette.primary.contrastText,
+        background:
+            `linear-gradient(60deg,
+             ${theme.palette.primary.main} 20%,
+             ${theme.palette.primary.contrastText} 80%)`,
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        padding: theme.spacing(4)
+        padding: theme.spacing(4),
+        margin: theme.spacing(2,0)
     },
     paperContactHead: {
       fontWeight: 600,
         lineHeight: theme.spacing(0.25),
-        paddingBottom: theme.spacing(2)
+        paddingBottom: theme.spacing(2),
     },
     paperContactBoxInfo: {
         display: "flex",
@@ -45,14 +49,19 @@ const useStyles = makeStyles((theme) => ({
         minWidth: 300,
         maxWidth: 600,
         width: "100%",
-        background: `linear-gradient(60deg, ${theme.palette.primary.contrastText} 50%, ${theme.palette.primary.main} 90%)`,
+        background:
+            `linear-gradient(60deg,
+             ${theme.palette.primary.contrastText} 50%,
+             ${theme.palette.primary.main} 90%)`,
+        margin: theme.spacing(2,0)
     },
     form: {
         display: 'flex',
         flexDirection: "column",
         justifyContent: "center",
         alignItems: "center",
-        padding: theme.spacing(2)
+        padding: theme.spacing(2),
+
     },
     textField: {
         marginLeft: theme.spacing(1),
@@ -80,8 +89,15 @@ const ContactUs = () => {
         <Element name="contact">
             <Container className={classes.containerData} >
                 <Paper className={classes.paperContact}  elevation={3}>
-                    <Typography variant="h5" className={classes.paperContactHead}>Masz jakieś pytania?<br/>Skontaktuj sie z nami!</Typography>
-                    <Box className={classes.paperContactBoxInfo} style={{padding: theme.spacing(2,0)}}>
+                    <Typography
+                        variant="h5"
+                        className={classes.paperContactHead}
+                    >
+                        Masz jakieś pytania?<br/>Skontaktuj sie z nami!
+                    </Typography>
+                    <Box
+                        className={classes.paperContactBoxInfo}
+                        style={{padding: theme.spacing(2,0)}}>
                         <MailOutlineIcon />
                         <Typography>homebudget@gmail.com</Typography>
                     </Box>
@@ -93,7 +109,12 @@ const ContactUs = () => {
 
                 <Paper className={classes.paperForm}  elevation={3}>
                     <form className={classes.form} noValidate autoComplete="off">
-                        <Typography variant="h5" className={classes.paperContactHead}>Wyślij do nas wiadomość</Typography>
+                        <Typography
+                            variant="h5"
+                            className={classes.paperContactHead}
+                        >
+                            Wyślij do nas wiadomość
+                        </Typography>
                         <TextField
                             label="Imię"
                             placeholder="Wpisz swoje imię"
@@ -119,7 +140,13 @@ const ContactUs = () => {
                                 oraz przez podmioty trzecie.
                             </Typography>
                         </Box>
-                        <Button variant="contained" color="secondary" className={classes.agreementBtn}>Wyślij</Button>
+                        <Button
+                            variant="contained"
+                            color="secondary"
+                            className={classes.agreementBtn}
+                        >
+                            Wyślij
+                        </Button>
                     </form>
                 </Paper>
             </Container>

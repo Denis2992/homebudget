@@ -20,6 +20,7 @@ const useStyles = makeStyles((theme) =>({
         border: `2px solid ${theme.palette.secondary.main}`,
         margin: theme.spacing(2),
         display: "flex",
+        flexWrap: "wrap",
         alignItems: "center",
         justifyContent: "space-around"
     },
@@ -39,8 +40,8 @@ const useStyles = makeStyles((theme) =>({
         padding: theme.spacing(2)
     },
     diagramImg: {
-        width: 480,
-        height: 295,
+        width: 320,
+        height: 240,
         padding: theme.spacing(2)
     }
 }));

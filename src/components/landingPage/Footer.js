@@ -10,7 +10,7 @@ const useStyles = makeStyles((theme) => ({
     footerContainer: {
         maxWidth: theme.spacing(187.5),
         width: "100%",
-        height: 60,
+        minHeight: 60,
         backgroundColor: theme.palette.primary.main,
         marginTop: theme.spacing(5),
         borderTopLeftRadius: 20,
@@ -37,12 +37,12 @@ const Footer = () => {
 
     return (
         <Container className={classes.footerContainer}>
-            <Box>
+            <Box style={{padding: "8px 0"}}>
                 <Box className={classes.logoBox}>
                     <HomeIcon />
                     <Typography className={classes.logoBoxText}> BudgetDomowy</Typography>
                 </Box>
-                <Typography variant="body2">© 2021 BudgetDomowy LTD, All Rights Reserved</Typography>
+                <Typography variant="body2" style={{width: 200}}>© 2021 BudgetDomowy LTD,<br/> All Rights Reserved</Typography>
             </Box>
             <Box>
                 <FacebookIcon />

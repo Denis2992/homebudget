@@ -1,18 +1,24 @@
 import React, {useContext, useState} from 'react';
 import { makeStyles } from '@material-ui/core/styles';
-import {Typography, Paper, Button, IconButton, TextField} from "@material-ui/core";
+import {Typography, Paper, Button, IconButton, TextField, Box} from "@material-ui/core";
 import HighlightOffIcon from '@material-ui/icons/HighlightOff';
 import {Link, useHistory} from "react-router-dom";
 import {usersDataContext} from "../../App";
 
 
 const useStyles = makeStyles((theme) => ({
+    box: {
+        width: "100%",
+        display: "flex",
+        justifyContent: "center"
+    },
     paper: {
-        maxWidth: theme.spacing(70),
-        margin: "56px auto",
+        maxWidth: theme.spacing(55),
+        width: "100%",
+        margin: "56px 18px",
         border: `2px solid ${theme.palette.primary.main}`,
         display: "flex",
-        flexDirection: "column"
+        flexDirection: "column",
     },
     form: {
         display: "flex",
@@ -50,6 +56,7 @@ const Login = () => {
     const history = useHistory();
     const [error, setError] = useState("");
     const {usersData} = useContext(usersDataContext);
+    const classes = useStyles();
 
     const checkInputs = (e) => {
         e.preventDefault();
@@ -74,9 +81,8 @@ const Login = () => {
        }
     };
 
-
-    const classes = useStyles();
-        return (
+    return (
+        <Box className={classes.box}>
             <Paper className={classes.paper} elevation={3}>
                 <IconButton aria-label="close" className={classes.closeBtn}>
                     <Link to="/app" style={{height: 24}}>
@@ -112,7 +118,8 @@ const Login = () => {
                     </Button>
                 </form>
             </Paper>
-        )
+        </Box>
+    )
 };
 
 export default Login;

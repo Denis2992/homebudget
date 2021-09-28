@@ -1,5 +1,15 @@
 import React, {createContext, useContext, useEffect, useState} from "react";
-import {Checkbox, Paper, TableBody, TableCell, TableRow, Typography, TableContainer, Table} from "@material-ui/core"
+import {
+    Checkbox,
+    Paper,
+    TableBody,
+    TableCell,
+    TableRow,
+    Typography,
+    TableContainer,
+    Table,
+    Grid
+} from "@material-ui/core"
 import {usersApiUrl, usersDataContext} from "../../../App";
 import TableHead from "@material-ui/core/TableHead";
 import TableSortLabel from "@material-ui/core/TableSortLabel";
@@ -202,29 +212,21 @@ const EnhancedTableToolbar = (props) => {
             {numSelected > 0 ? (
                 <>
                     {numSelected > 1 ? (
-                        <>
-                            <IconButton disabled>
-                                <EditIcon />
-                            </IconButton>
-                            <IconButton disabled>
-                                <DeleteIcon />
-                            </IconButton>
-                        </>
-
+                        <IconButton disabled>
+                            <EditIcon />
+                        </IconButton>
                     ) : (
-                        <>
-                            <LightTooltip title="Edytuj">
-                                <IconButton aria-label="edit">
-                                    <EditIcon className={classes.editIcon} onClick={onEditItem}/>
-                                </IconButton>
-                            </LightTooltip>
-                            <LightTooltip title="Usuń">
-                                <IconButton aria-label="delete" onClick={onDeleteItem}>
-                                    <DeleteIcon color="error"/>
-                                </IconButton>
-                            </LightTooltip>
-                        </>
+                        <LightTooltip title="Edytuj">
+                            <IconButton aria-label="edit">
+                                <EditIcon className={classes.editIcon} onClick={onEditItem}/>
+                            </IconButton>
+                        </LightTooltip>
                     )}
+                    <LightTooltip title="Usuń">
+                        <IconButton aria-label="delete" onClick={onDeleteItem}>
+                            <DeleteIcon color="error"/>
+                        </IconButton>
+                    </LightTooltip>
                 </>
             ) : (
                 <Link to="/app/budget/dataBudget/add/">
@@ -244,14 +246,7 @@ EnhancedTableToolbar.propTypes = {
 };
 
 const useStyles = makeStyles((theme) => ({
-    root: {
-        width: '100%',
-        maxWidth: theme.spacing(172.5),
-        display: "flex",
-        margin: theme.spacing(4)
-    },
     paper: {
-        width: "100%",
         border: `2px solid ${theme.palette.success.main}`,
 
     },
@@ -284,9 +279,10 @@ export default function BudgetTableFull () {
         title: "",
         category: "",
         date: "",
-        summ: "",
+        type: "",
+        summ: ""
     });
-    const {currentUserData, setUsersData, usersData} = useContext(usersDataContext);
+    const {currentUserData, setUsersData, usersData, } = useContext(usersDataContext);
     const history = useHistory();
 
     useEffect(() => {
@@ -352,7 +348,7 @@ export default function BudgetTableFull () {
 
     const handleDeleteItem = () => {
         const dataToSend = {
-            budget: currentUserData.budget.filter(item => item.id !== selected[0])
+            budget: currentUserData.budget.filter(item => !selected.includes(item.id))
         };
 
         fetch(`${usersApiUrl}/${currentUserData.id}`, {
@@ -388,14 +384,15 @@ export default function BudgetTableFull () {
     };
 
     const handleEditItem = () => {
-       const singleData = currentUserData.budget.filter(item => item.id === selected[0]);
+        const singleData = currentUserData.budget.filter(item => item.id === selected[0]);
 
         setNewItemData({
             id: singleData[0].id,
             title: singleData[0].title,
             category: singleData[0].category,
             date: singleData[0].date,
-            summ: singleData[0].summ,
+            type: singleData[0].type,
+            summ: singleData[0].summ
         });
         setEditMode(true);
         history.push(`/app/budget/dataBudget/edit/${selected[0]}`)
@@ -413,74 +410,77 @@ export default function BudgetTableFull () {
                     setSelected
                 }}
             >
-            <div className={classes.root}>
-                <Paper className={classes.paper} elevation={3}>
-                    <EnhancedTableToolbar
-                        numSelected={selected.length}
-                        onDeleteItem={handleDeleteItem}
-                        onEditItem={handleEditItem}
-                    />
-                    <TableContainer>
-                        <Table
-                            className={classes.table}
-                            aria-labelledby="tableTitle"
-                            aria-label="enhanced table"
-                        >
-                            <EnhancedTableHead
-                                classes={classes}
+                <Grid container spacing={2} style={{justifyContent: "center", marginLeft: 28}}>
+                    <Grid item xs={7} sm={10} md={12}>
+                        <Paper className={classes.paper} elevation={3}>
+                            <EnhancedTableToolbar
                                 numSelected={selected.length}
-                                order={order}
-                                orderBy={orderBy}
-                                onSelectAllClick={handleSelectAllClick}
-                                onRequestSort={handleRequestSort}
-                                rowCount={currentUserData?.budget?.length}
+                                onDeleteItem={handleDeleteItem}
+                                onEditItem={handleEditItem}
                             />
-                            <TableBody>
-                                {stableSort(currentUserData?.budget, getComparator(order, orderBy))
-                                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                                    .map((row, index) => {
-                                        const isItemSelected = isSelected(row.id);
-                                        const labelId = `enhanced-table-checkbox-${index}`;
-                                        return (
-                                            <TableRow
-                                                hover
-                                                onClick={(event) => handleClick(event, row.id)}
-                                                role="checkbox"
-                                                aria-checked={isItemSelected}
-                                                tabIndex={-1}
-                                                key={row.id}
-                                                selected={isItemSelected}
-                                            >
-                                                <TableCell padding="checkbox">
-                                                    <Checkbox
-                                                        checked={isItemSelected}
-                                                        inputProps={{'aria-labelledby': labelId}}
-                                                    />
-                                                </TableCell>
-                                                <TableCell component="th" id={labelId} scope="row">
-                                                    {row.id}
-                                                </TableCell>
-                                                <TableCell>{row.title}</TableCell>
-                                                <TableCell>{row.category}</TableCell>
-                                                <TableCell>{row.summ}</TableCell>
-                                                <TableCell>{row.date}</TableCell>
-                                            </TableRow>
-                                        );
-                                    })}
-                            </TableBody>
-                        </Table>
-                    </TableContainer>
-                    <TablePagination
-                        rowsPerPageOptions={[10, 25, 50, 100]}
-                        component="div"
-                        count={currentUserData?.budget?.length}
-                        rowsPerPage={rowsPerPage}
-                        labelRowsPerPage="Wierszy na stronie"
-                        page={page}
-                        onPageChange={handleChangePage}
-                        onRowsPerPageChange={handleChangeRowsPerPage}
-                    />
-                </Paper>
+                            <TableContainer>
+                                <Table
+                                    className={classes.table}
+                                    aria-labelledby="tableTitle"
+                                    aria-label="enhanced table"
+                                >
+                                    <EnhancedTableHead
+                                        classes={classes}
+                                        numSelected={selected.length}
+                                        order={order}
+                                        orderBy={orderBy}
+                                        onSelectAllClick={handleSelectAllClick}
+                                        onRequestSort={handleRequestSort}
+                                        rowCount={currentUserData?.budget?.length}
+                                    />
+                                    <TableBody>
+                                        {stableSort(currentUserData?.budget, getComparator(order, orderBy))
+                                            .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                                            .map((row, index) => {
+                                                const isItemSelected = isSelected(row.id);
+                                                const labelId = `enhanced-table-checkbox-${index}`;
+                                                return (
+                                                    <TableRow
+                                                        hover
+                                                        onClick={(event) => handleClick(event, row.id)}
+                                                        role="checkbox"
+                                                        aria-checked={isItemSelected}
+                                                        tabIndex={-1}
+                                                        key={row.id}
+                                                        selected={isItemSelected}
+                                                    >
+                                                        <TableCell padding="checkbox">
+                                                            <Checkbox
+                                                                checked={isItemSelected}
+                                                                inputProps={{'aria-labelledby': labelId}}
+                                                            />
+                                                        </TableCell>
+                                                        <TableCell component="th" id={labelId} scope="row">
+                                                            {row.id}
+                                                        </TableCell>
+                                                        <TableCell>{row.title}</TableCell>
+                                                        <TableCell>{row.category}</TableCell>
+                                                        <TableCell>{row.summ}</TableCell>
+                                                        <TableCell>{row.date}</TableCell>
+                                                    </TableRow>
+                                                );
+                                            })}
+                                    </TableBody>
+                                </Table>
+                            </TableContainer>
+                            <TablePagination
+                                rowsPerPageOptions={[10, 25, 50, 100]}
+                                component="div"
+                                count={currentUserData?.budget?.length}
+                                rowsPerPage={rowsPerPage}
+                                labelRowsPerPage="Wierszy na stronie"
+                                page={page}
+                                onPageChange={handleChangePage}
+                                onRowsPerPageChange={handleChangeRowsPerPage}
+                            />
+                        </Paper>
+                    </Grid>
+                </Grid>
                 <HashRouter>
                     <Switch>
                         <Route path="/app/budget/dataBudget/add/" component={BudgetNewItemForm}/>
@@ -488,7 +488,6 @@ export default function BudgetTableFull () {
 
                     </Switch>
                 </HashRouter>
-            </div>
             </newDataItemContext.Provider>
         );
     } else {

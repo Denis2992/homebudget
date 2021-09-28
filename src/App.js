@@ -42,15 +42,6 @@ function App() {
             .catch(err => console.log("Błąd!", err));
     }, []);
 
-    // const ids = usersData[1]?.budget.map(el => el.id);
-    // if (ids?.length) {
-    //     console.log(Math.max(...ids) + 1)
-    // }
-
-    if (currentUserData) {
-
-    }
-
     return (
       <usersDataContext.Provider
           value={{

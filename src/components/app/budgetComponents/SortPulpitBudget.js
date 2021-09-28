@@ -16,13 +16,13 @@ const useStyles = makeStyles((theme) => ({
     paper: {
         padding: theme.spacing(2),
         border:`2px solid ${theme.palette.warning.dark}`,
-        height: theme.spacing(15),
-        margin: theme.spacing(4, 2, 2, 3),
+        minHeight: theme.spacing(15),
     },
     form: {
         display: "flex",
         flexWrap: "wrap",
-        alignItems: "center"
+        alignItems: "center",
+        justifyContent: "center"
     },
     input: {
         margin: theme.spacing(2, 1, 0, 1),

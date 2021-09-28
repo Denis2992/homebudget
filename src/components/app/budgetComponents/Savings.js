@@ -1,5 +1,5 @@
 import React, {useContext} from "react";
-import {Button, Paper, Typography, makeStyles} from "@material-ui/core";
+import {Button, Paper, Typography, makeStyles, Box} from "@material-ui/core";
 import {DoubleArrow} from "@material-ui/icons";
 import {Link} from "react-router-dom";
 import {usersDataContext} from "../../../App";
@@ -10,17 +10,17 @@ const useStyles = makeStyles((theme) => ({
         textAlign: 'center',
         color: theme.palette.text.secondary,
         border: `2px solid ${theme.palette.info.light}`,
-        maxWidth: theme.spacing(58),
-        margin: theme.spacing(4, 4, 2, 3),
         display: "flex",
-        alignItems: "center"
+        alignItems: "center",
+        justifyContent: "space-around",
+        flexWrap: "wrap",
     },
     paddingStyle: {
-        padding:theme.spacing(0, 2)
+        padding:theme.spacing(1)
     },
     styleBtn: {
         padding: "6px 30px",
-        marginRight: 16,
+        marginBottom: theme.spacing(2),
         "&:hover": {
             backgroundColor: theme.palette.info.main
         }
@@ -28,6 +28,12 @@ const useStyles = makeStyles((theme) => ({
     link: {
         color: theme.palette.primary.contrastText,
         textDecoration: "none"
+    },
+    icon: {
+        display: "none",
+        [theme.breakpoints.up('sm')]: {
+            display: "flex"
+        },
     }
 }))
 
@@ -50,15 +56,18 @@ export default function Savings () {
             >
                 Twoje oszczędności: <br/>{total}
             </Typography>
-            <Typography className={classes.paddingStyle}>Zobacz pewną informacje</Typography>
-            <DoubleArrow fontSize="large" color="secondary" className={classes.paddingStyle}/>
-            <Button
-                variant="contained"
-                color="secondary"
-                className={classes.styleBtn}
-            >
-                <Link to="/app/budget/dataSavings/" className={classes.link}>Przejdź</Link>
-            </Button>
+            <DoubleArrow fontSize="large" color="secondary" className={classes.icon}/>
+            <Box >
+                <Typography className={classes.paddingStyle}>Zobacz pewną informacje</Typography>
+                <Button
+                    variant="contained"
+                    color="secondary"
+                    className={classes.styleBtn}
+                >
+                    <Link to="/app/budget/dataSavings/" className={classes.link}>Przejdź</Link>
+                </Button>
+            </Box>
+
         </Paper>
     );
 }

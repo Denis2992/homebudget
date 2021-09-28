@@ -23,6 +23,7 @@ import EditIcon from '@material-ui/icons/Edit';
 import {HashRouter, Link, Route, Switch, useHistory} from "react-router-dom";
 import SavingsNewItemForm from "./SavingsNewItemForm";
 import {usersApiUrl, usersDataContext} from "../../../App";
+import {Grid} from "@material-ui/core";
 
 export const newSavingDataContext = createContext("");
 
@@ -195,31 +196,21 @@ const EnhancedTableToolbar = (props) => {
             {numSelected > 0 ? (
                 <>
                     {numSelected > 1 ? (
-                        <>
-                            <IconButton disabled>
-                                <EditIcon />
-                            </IconButton>
-                            <IconButton disabled>
-                                <DeleteIcon />
-                            </IconButton>
-                        </>
-
+                        <IconButton disabled>
+                            <EditIcon />
+                        </IconButton>
                     ) : (
-                        <>
-                            <LightTooltip title="Edytuj">
-                                <IconButton onClick={onEditItem}>
-                                    <EditIcon className={classes.editIcon} />
-                                </IconButton>
-                            </LightTooltip>
-                            <LightTooltip title="Usuń">
-                                <IconButton aria-label="delete" onClick={onDeleteItem}>
-                                    <DeleteIcon color="error"/>
-                                </IconButton>
-                            </LightTooltip>
-                        </>
-
+                        <LightTooltip title="Edytuj">
+                            <IconButton aria-label="edit">
+                                <EditIcon className={classes.editIcon} onClick={onEditItem}/>
+                            </IconButton>
+                        </LightTooltip>
                     )}
-
+                    <LightTooltip title="Usuń">
+                        <IconButton aria-label="delete" onClick={onDeleteItem}>
+                            <DeleteIcon color="error"/>
+                        </IconButton>
+                    </LightTooltip>
                 </>
             ) : (
                 <Link to="/app/budget/dataSavings/add/">
@@ -348,7 +339,7 @@ export default function BudgetTableFull() {
 
     const handleDeleteItem = () => {
         const dataToSend = {
-            savings: currentUserData.savings.filter(item => item.id !== selected[0])
+            savings: currentUserData.savings.filter(item => !selected.includes(item.id))
         };
 
         fetch(`${usersApiUrl}/${currentUserData.id}`, {
@@ -406,8 +397,8 @@ export default function BudgetTableFull() {
                 newSavingData,
                 setNewSavingData
             }}>
-                <div className={classes.root}>
-                    <div>
+                <Grid container spacing={3} style={{justifyContent: "center", marginLeft: 54}}>
+                    <Grid item xs={9} sm={10} md={12}>
                         <Paper className={classes.paper} elevation={3}>
                             <EnhancedTableToolbar
                                 numSelected={selected.length}
@@ -474,14 +465,14 @@ export default function BudgetTableFull() {
                                 onRowsPerPageChange={handleChangeRowsPerPage}
                             />
                         </Paper>
-                    </div>
-                    <HashRouter>
-                        <Switch>
-                            <Route path="/app/budget/dataSavings/add/" component={SavingsNewItemForm}/>
-                            <Route path="/app/budget/dataSavings/edit/" component={SavingsNewItemForm}/>
-                        </Switch>
-                    </HashRouter>
-                </div>
+                    </Grid>
+                </Grid>
+                <HashRouter>
+                    <Switch>
+                        <Route path="/app/budget/dataSavings/add/" component={SavingsNewItemForm}/>
+                        <Route path="/app/budget/dataSavings/edit/" component={SavingsNewItemForm}/>
+                    </Switch>
+                </HashRouter>
             </newSavingDataContext.Provider>
         )
     } else {

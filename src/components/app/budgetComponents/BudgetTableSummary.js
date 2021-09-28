@@ -14,7 +14,7 @@ import Typography from '@material-ui/core/Typography';
 import Paper from '@material-ui/core/Paper';
 import IconButton from '@material-ui/core/IconButton';
 import Tooltip from '@material-ui/core/Tooltip';
-import {withStyles, Container} from "@material-ui/core";
+import {withStyles} from "@material-ui/core";
 import {Link} from "react-router-dom";
 import StorageIcon from '@material-ui/icons/Storage';
 import {usersDataContext} from "../../../App";
@@ -140,15 +140,11 @@ const EnhancedTableToolbar = ({monthProps, yearProps}) => {
 
 const useStyles = makeStyles((theme) => ({
     root: {
-        width: '100%',
-        maxWidth: 600
     },
     paper: {
         border: `2px solid ${theme.palette.success.main}`,
-        margin: theme.spacing(2, 0, 2, 0),
+        margin: 0,
 
-    },
-    table: {
     },
     visuallyHidden: {
         border: 0,
@@ -192,54 +188,50 @@ export default function BudgetTableSummary() {
     };
 
     return (
-        <Container style={{width: "100%"}}>
-        <div className={classes.root}>
-            <Paper className={classes.paper} elevation={3}>
-                <EnhancedTableToolbar monthProps={month} yearProps={year}/>
-                <TableContainer>
-                    <Table
-                        className={classes.table}
-                        aria-labelledby="tableTitle"
-                        aria-label="enhanced table"
-                    >
-                        <EnhancedTableHead
-                            classes={classes}
-                            order={order}
-                            orderBy={orderBy}
-                            onRequestSort={handleRequestSort}
-                            rowCount={monthlyBudget?.length}
-                        />
-                        <TableBody>
-                            {stableSort(monthlyBudget, getComparator(order, orderBy))
-                                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                                .map((row) => {
+        <Paper className={classes.paper} elevation={3}>
+            <EnhancedTableToolbar monthProps={month} yearProps={year}/>
+            <TableContainer>
+                <Table
+                    className={classes.table}
+                    aria-labelledby="tableTitle"
+                    aria-label="enhanced table"
+                >
+                    <EnhancedTableHead
+                        classes={classes}
+                        order={order}
+                        orderBy={orderBy}
+                        onRequestSort={handleRequestSort}
+                        rowCount={monthlyBudget?.length}
+                    />
+                    <TableBody>
+                        {stableSort(monthlyBudget, getComparator(order, orderBy))
+                            .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                            .map((row) => {
 
-                                    return (
-                                        <TableRow
-                                            hover
-                                            key={row.id}
-                                        >
-                                            <TableCell align="center">{row.title}</TableCell>
-                                            <TableCell align="center">{row.summ}</TableCell>
-                                        </TableRow>
-                                    );
-                                })}
+                                return (
+                                    <TableRow
+                                        hover
+                                        key={row.id}
+                                    >
+                                        <TableCell align="center">{row.title}</TableCell>
+                                        <TableCell align="center">{row.summ}</TableCell>
+                                    </TableRow>
+                                );
+                            })}
 
-                        </TableBody>
-                    </Table>
-                </TableContainer>
-                <TablePagination
-                    rowsPerPageOptions={[5, 10, 15, 20]}
-                    component="div"
-                    count={monthlyBudget?.length}
-                    rowsPerPage={rowsPerPage}
-                    labelRowsPerPage="Wierszy na stronie"
-                    page={page}
-                    onPageChange={handleChangePage}
-                    onRowsPerPageChange={handleChangeRowsPerPage}
-                />
-            </Paper>
-        </div>
-        </Container>
+                    </TableBody>
+                </Table>
+            </TableContainer>
+            <TablePagination
+                rowsPerPageOptions={[5, 10, 15, 20]}
+                component="div"
+                count={monthlyBudget?.length}
+                rowsPerPage={rowsPerPage}
+                labelRowsPerPage="Wierszy na stronie"
+                page={page}
+                onPageChange={handleChangePage}
+                onRowsPerPageChange={handleChangeRowsPerPage}
+            />
+        </Paper>
     );
 }

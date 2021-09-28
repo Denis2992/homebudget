@@ -6,18 +6,19 @@ import {
     Typography,
     Button,
     makeStyles,
-    IconButton, List, ListItem
+    IconButton,
+    List,
+    ListItem,
+    Grid
 } from "@material-ui/core";
 import HighlightOffIcon from '@material-ui/icons/HighlightOff';
 import {Link, useHistory} from "react-router-dom";
 import {newSavingDataContext} from "./SavingsTable";
 import {usersApiUrl, usersDataContext} from "../../../App";
 import isDecimal from "validator/es/lib/isDecimal";
-import validator from "validator/es";
 
 const useStyles = makeStyles((theme) => ({
     paper: {
-        margin: theme.spacing(0, 4),
         width: "100%",
         maxWidth: 380,
         minHeight: 550,
@@ -25,9 +26,16 @@ const useStyles = makeStyles((theme) => ({
         border: `2px solid ${theme.palette.info.main}`,
         display: "flex",
         flexDirection: "column",
-        position: "absolute",
-        left: "15%",
-        top: "10%"
+        [theme.breakpoints.up('sm')]: {
+            position: "absolute",
+            left: "25vw",
+            top: "12vh",
+        },
+        [theme.breakpoints.up('md')]: {
+            position: "absolute",
+            left: "40vw",
+            top: "12vh",
+        },
 
     },
     form: {
@@ -107,12 +115,9 @@ export default function SavingsNewItemForm () {
             newErrorList.push('Pole "Zostało" ma byc liczbą');
         }
 
-        if (!validator.isAlpha(name, "pl-PL")) {
-            newErrorList.push('Pole "Na co zbierasz" nie może zawierać liczb lub znaków');
-        }
 
         if (name.length < 3) {
-            newErrorList.push('Pole "Na co zbierasz" musi zawierać minimum 3 litery');
+            newErrorList.push('Nazwa musi zawierać minimum 3 litery');
         }
 
         if (!editMode) {
@@ -285,58 +290,62 @@ export default function SavingsNewItemForm () {
 
 
     return (
-        <Paper className={classes.paper} elevation={3}>
-            <IconButton style={{width: 48, alignSelf: "self-end"}}>
-                <Link to="/app/budget/dataSavings/" style={{height: 24}}>
-                    <HighlightOffIcon color="error" />
-                </Link>
-            </IconButton>
-            {editMode ? (
-                <Typography className={classes.headText} variant="h6">Edytuj</Typography>
-            ) : (
-                <Typography className={classes.headText} variant="h6">Nowy wpis</Typography>
-            )}
-            <Divider className={classes.divider} variant="middle"/>
-            <form className={classes.form} onSubmit={handleSendForm}>
-                <TextField
-                    label="Nazwa"
-                    name="name"
-                    value={newSavingData.name}
-                    variant="outlined"
-                    className={classes.inputs}
-                    onChange={handleValueChange}
-                    color="primary"
-                />
-                <TextField
-                    label="Aktualny stan"
-                    name="currentState"
-                    value={newSavingData.currentState}
-                    variant="outlined"
-                    color="primary"
-                    className={classes.inputs}
-                    onChange={handleValueChange}
-                />
-                <TextField
-                    label="Cel"
-                    name="goal"
-                    value={newSavingData.goal}
-                    variant="outlined"
-                    color="primary"
-                    className={classes.inputs}
-                    onChange={handleValueChange}
-                />
-                <TextField
-                    label="Zostało"
-                    name="leftSum"
-                    value={newSavingData.leftSum}
-                    variant="outlined"
-                    color="primary"
-                    className={classes.inputs}
-                    onChange={handleValueChange}
-                />
-                {getErrorsToRender()}
-                <Button className={classes.formBtn} type="submit">Zapisz i zamknij</Button>
-            </form>
-        </Paper>
+        <Grid container spacing={3} style={{justifyContent: "center", marginLeft: 54}}>
+            <Grid item xs={9} sm={10} md={12}>
+                <Paper className={classes.paper} elevation={3}>
+                    <IconButton style={{width: 48, alignSelf: "self-end"}}>
+                        <Link to="/app/budget/dataSavings/" style={{height: 24}}>
+                            <HighlightOffIcon color="error" />
+                        </Link>
+                    </IconButton>
+                    {editMode ? (
+                        <Typography className={classes.headText} variant="h6">Edytuj</Typography>
+                    ) : (
+                        <Typography className={classes.headText} variant="h6">Nowy wpis</Typography>
+                    )}
+                    <Divider className={classes.divider} variant="middle"/>
+                    <form className={classes.form} onSubmit={handleSendForm}>
+                        <TextField
+                            label="Nazwa"
+                            name="name"
+                            value={newSavingData.name}
+                            variant="outlined"
+                            className={classes.inputs}
+                            onChange={handleValueChange}
+                            color="primary"
+                        />
+                        <TextField
+                            label="Aktualny stan"
+                            name="currentState"
+                            value={newSavingData.currentState}
+                            variant="outlined"
+                            color="primary"
+                            className={classes.inputs}
+                            onChange={handleValueChange}
+                        />
+                        <TextField
+                            label="Cel"
+                            name="goal"
+                            value={newSavingData.goal}
+                            variant="outlined"
+                            color="primary"
+                            className={classes.inputs}
+                            onChange={handleValueChange}
+                        />
+                        <TextField
+                            label="Zostało"
+                            name="leftSum"
+                            value={newSavingData.leftSum}
+                            variant="outlined"
+                            color="primary"
+                            className={classes.inputs}
+                            onChange={handleValueChange}
+                        />
+                        {getErrorsToRender()}
+                        <Button className={classes.formBtn} type="submit">Zapisz i zamknij</Button>
+                    </form>
+                </Paper>
+            </Grid>
+        </Grid>
     )
 }

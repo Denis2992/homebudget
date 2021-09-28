@@ -15,6 +15,7 @@
           "title": "wrzesień3",
           "category": "Auto",
           "summ": "100",
+          "type": "expenses",
           "date": "2021-09-30"
         },
         {
@@ -22,20 +23,15 @@
           "title": "wrzesień1",
           "category": "Pensja",
           "summ": "100",
+          "type": "income",
           "date": "2021-09-01"
-        },
-        {
-          "id": 2,
-          "title": "wrzesień2",
-          "category": "Sklepy",
-          "summ": "100",
-          "date": "2021-09-15"
         },
         {
           "id": 5,
           "title": "sierpień1",
           "category": "Pensja",
           "summ": "200",
+          "type": "income",
           "date": "2021-08-01"
         },
         {
@@ -43,6 +39,7 @@
           "title": "sierpień2",
           "category": "Sklepy",
           "summ": "200",
+          "type": "expenses",
           "date": "2021-08-15"
         },
         {
@@ -50,6 +47,7 @@
           "title": "lipiec1",
           "category": "Pensja",
           "summ": "300",
+          "type": "income",
           "date": "2021-07-01"
         },
         {
@@ -57,21 +55,72 @@
           "title": "lipiec3",
           "category": "Auto",
           "summ": "300",
+          "type": "expenses",
           "date": "2021-07-31"
         },
         {
-          "id": 9,
-          "title": "lipiec2",
-          "category": "Sklepy",
-          "summ": "300",
-          "date": "2021-07-15"
+          "id": 11,
+          "title": "październik",
+          "category": "Zdrowie",
+          "summ": "400",
+          "type": "expenses",
+          "date": "2021-10-01"
         },
         {
-          "id": 7,
-          "title": "sierpień3",
+          "id": 14,
+          "title": "Naprawa auta",
           "category": "Auto",
-          "summ": "200",
-          "date": "2021-08-30"
+          "summ": "1200",
+          "type": "expenses",
+          "date": "2021-08-12"
+        },
+        {
+          "id": 13,
+          "title": "Opłata za wynajem",
+          "category": "Mieszkanie",
+          "summ": "2000",
+          "type": "expenses",
+          "date": "2021-09-01"
+        },
+        {
+          "id": 15,
+          "title": "Wycieczka do Pragi",
+          "category": "Odpoczynek",
+          "date": "2021-08-27",
+          "type": "expenses",
+          "summ": "1200"
+        },
+        {
+          "id": 2,
+          "title": "wrzesień2",
+          "category": "Odzież",
+          "date": "2021-09-15",
+          "type": "expenses",
+          "summ": "100"
+        },
+        {
+          "id": 16,
+          "title": "Pensja za sierpień",
+          "category": "Pensja",
+          "date": "2021-09-22",
+          "type": "income",
+          "summ": "5000"
+        },
+        {
+          "id": 17,
+          "title": "Na wakacje",
+          "category": "Odpoczynek",
+          "date": "2021-09-16",
+          "type": "saving",
+          "summ": "500"
+        },
+        {
+          "id": 18,
+          "title": "Kurtka",
+          "category": "cos",
+          "date": "2021-09-16",
+          "type": "expenses",
+          "summ": "350"
         }
       ],
       "credits": [
@@ -161,15 +210,15 @@
     },
     {
       "id": 2,
-      "categoryName": "Sklepy"
+      "categoryName": "Inne przychody"
     },
     {
       "id": 3,
-      "categoryName": "Auto"
+      "categoryName": "Oszczędzanie"
     },
     {
       "id": 4,
-      "categoryName": "Sklepy"
+      "categoryName": "Auto"
     },
     {
       "id": 5,
@@ -190,6 +239,22 @@
     {
       "id": 9,
       "categoryName": "Uroda"
+    },
+    {
+      "id": 10,
+      "categoryName": "Hobby"
+    },
+    {
+      "id": 11,
+      "categoryName": "Mieszkanie"
+    },
+    {
+      "id": 12,
+      "categoryName": "Odpoczynek"
+    },
+    {
+      "id": 13,
+      "categoryName": "cos"
     }
   ],
   "months": [

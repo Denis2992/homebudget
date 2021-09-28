@@ -1,28 +1,35 @@
 import React from "react";
-import {Box, Button, Divider, Paper} from "@material-ui/core";
+import {Box, Button, Paper} from "@material-ui/core";
 import Typography from "@material-ui/core/Typography";
 import {makeStyles} from "@material-ui/core/styles";
 import {Link} from "react-router-dom";
 
 const useStyles = makeStyles((theme) => ({
-    paper: {
-        maxWidth: theme.spacing(120),
+    box: {
         width: "100%",
         margin: "56px auto",
         display: "flex",
-        justifyContent: "space-around",
-        border: `2px solid ${theme.palette.info.main}`,
+        flexWrap: "wrap",
+        justifyContent: "center",
     },
     paperBox: {
         padding: theme.spacing(3),
+        margin: theme.spacing(0,2,4,2),
         display: "flex",
         flexDirection: "column",
         justifyContent: "center",
-        alignItems: "center"
+        alignItems: "center",
+        border: `2px solid ${theme.palette.info.main}`,
+        maxWidth: 370,
+        width: "100%"
+    },
+    head: {
+        textAlign: "center"
     },
     paperBoxText: {
         padding: theme.spacing(2, 0),
-        textAlign: "center"
+        textAlign: "center",
+        maxWidth: 240
     },
     link: {
         textDecoration: "none",
@@ -35,26 +42,25 @@ export default function Welcome() {
     const classes = useStyles();
 
     return(
-        <Paper className={classes.paper} elevation={3}>
-            <Box className={classes.paperBox}>
-                <Typography variant="h6">Witamy w aplikacji Budget Domowy! &#128578;</Typography>
+        <Box className={classes.box} elevation={3}>
+            <Paper className={classes.paperBox}>
+                <Typography variant="h6" className={classes.head}>Witamy w aplikacji Budget Domowy! &#128578;</Typography>
                 <Typography variant="body2" className={classes.paperBoxText}>Zanim zaczniesz, zaloguj się</Typography>
                 <Button variant="contained" color="primary">
                     <Link to="/app/login" className={classes.link}>Logowanie</Link>
                 </Button>
-            </Box>
-            <Divider orientation="vertical" variant="middle" flexItem />
+            </Paper>
 
-            <Box className={classes.paperBox}>
-                <Typography variant="h6">Nie masz konta? Żaden problem!</Typography>
+            <Paper className={classes.paperBox}>
+                <Typography variant="h6" className={classes.head}>Nie masz konta? Żaden problem!</Typography>
                 <Typography variant="body2" className={classes.paperBoxText}>
                     Naciśnij załóż konto i w pare minut
-                    będziesz<br/> mieć dostęp do aplikacji
+                    będziesz mieć dostęp do aplikacji
                 </Typography>
                 <Button variant="contained" color="secondary">
                     <Link to="/app/registration" className={classes.link}>Załóż konto</Link>
                 </Button>
-            </Box>
-        </Paper>
+            </Paper>
+        </Box>
     )
 }

@@ -1,10 +1,10 @@
 import React from 'react';
 import Paper from '@material-ui/core/Paper';
-import Grid from '@material-ui/core/Grid';
+
 import CheckCircleIcon from '@material-ui/icons/CheckCircle';
 import SearchIcon from '@material-ui/icons/Search';
 import MonetizationOnIcon from '@material-ui/icons/MonetizationOn';
-import {Typography, makeStyles} from "@material-ui/core";
+import {Typography, makeStyles, Container} from "@material-ui/core";
 import {theme} from "../../index";
 
 
@@ -15,16 +15,19 @@ const useStyles = makeStyles((theme) => ({
         width: "100%",
         margin: "24px auto",
     },
-    gridContainer: {
-        margin: "0 auto",
+    container: {
+        margin: "16px auto",
         display: "flex",
-        justifyContent: "space-around"
+        justifyContent: "space-around",
+        flexWrap: "wrap"
     },
     paper: {
         padding: theme.spacing(4, 3),
+        margin: theme.spacing(2),
         textAlign: 'center',
         color: theme.palette.text.primary,
-        maxWidth: 300,
+        width: 300,
+
         border: `2px solid ${theme.palette.info.main}`,
 
     },
@@ -43,55 +46,39 @@ const useStyles = makeStyles((theme) => ({
 const Benefits = () => {
     const classes = useStyles();
 
-    function FormRow() {
-        return (
-            <>
-                <Grid item xs={4} style={{flexBasis: "initial"}}>
-                    <Paper className={classes.paper} elevation={3}>
-                        <CheckCircleIcon className={classes.checkIcon} fontSize="large"/>
-                        <Typography variant="h5" className={classes.paperHead}>Lorem ipsum dolor</Typography>
-                        <Typography className={classes.paperParagraph}>Lorem ipsum dolor sit amet, consectetur
-                            adipiscing elit, sed do eiusmod tempor incididunt
-                            ut labore et dolore magna aliqua. Ut enim ad minim
-                            veniam, quis nostrud exercitation ullamco laboris
-                            nisi ut aliquip ex ea commodo consequat.
-                        </Typography>
-                    </Paper>
-                </Grid>
-                <Grid item xs={4} style={{flexBasis: "initial"}}>
-                    <Paper className={classes.paper} elevation={3} style={{borderColor: theme.palette.secondary.main}}>
-                        <SearchIcon color="secondary" fontSize="large" />
-                        <Typography variant="h5" className={classes.paperHead}>Lorem ipsum dolor</Typography>
-                        <Typography className={classes.paperParagraph}>Lorem ipsum dolor sit amet, consectetur
-                            adipiscing elit, sed do eiusmod tempor incididunt
-                            ut labore et dolore magna aliqua. Ut enim ad minim
-                            veniam, quis nostrud exercitation ullamco laboris
-                            nisi ut aliquip ex ea commodo consequat.
-                        </Typography>
-                    </Paper>
-                </Grid>
-                <Grid item xs={4} style={{flexBasis: "initial"}}>
-                    <Paper className={classes.paper} belevation={3} style={{borderColor: theme.palette.primary.main}}>
-                        <MonetizationOnIcon color="primary" fontSize="large"/>
-                        <Typography variant="h5" className={classes.paperHead}>Lorem ipsum dolor</Typography>
-                        <Typography className={classes.paperParagraph}>Lorem ipsum dolor sit amet, consectetur
-                            adipiscing elit, sed do eiusmod tempor incididunt
-                            ut labore et dolore magna aliqua. Ut enim ad minim
-                            veniam, quis nostrud exercitation ullamco laboris
-                            nisi ut aliquip ex ea commodo consequat.
-                        </Typography>
-                    </Paper>
-                </Grid>
-            </>
-        );
-    }
-
     return (
-        <div className={classes.root}>
-                <Grid container item xs={12} spacing={3} className={classes.gridContainer}>
-                    <FormRow />
-                </Grid>
-        </div>
+        <Container className={classes.container}>
+            <Paper className={classes.paper} elevation={3}>
+                <CheckCircleIcon className={classes.checkIcon} fontSize="large"/>
+                <Typography variant="h5" className={classes.paperHead}>Lorem ipsum dolor</Typography>
+                <Typography className={classes.paperParagraph}>Lorem ipsum dolor sit amet, consectetur
+                    adipiscing elit, sed do eiusmod tempor incididunt
+                    ut labore et dolore magna aliqua. Ut enim ad minim
+                    veniam, quis nostrud exercitation ullamco laboris
+                    nisi ut aliquip ex ea commodo consequat.
+                </Typography>
+            </Paper>
+            <Paper className={classes.paper} elevation={3} style={{borderColor: theme.palette.secondary.main}}>
+                <SearchIcon color="secondary" fontSize="large" />
+                <Typography variant="h5" className={classes.paperHead}>Lorem ipsum dolor</Typography>
+                <Typography className={classes.paperParagraph}>Lorem ipsum dolor sit amet, consectetur
+                    adipiscing elit, sed do eiusmod tempor incididunt
+                    ut labore et dolore magna aliqua. Ut enim ad minim
+                    veniam, quis nostrud exercitation ullamco laboris
+                    nisi ut aliquip ex ea commodo consequat.
+                </Typography>
+            </Paper>
+            <Paper className={classes.paper} belevation={3} style={{borderColor: theme.palette.primary.main}}>
+                <MonetizationOnIcon color="primary" fontSize="large"/>
+                <Typography variant="h5" className={classes.paperHead}>Lorem ipsum dolor</Typography>
+                <Typography className={classes.paperParagraph}>Lorem ipsum dolor sit amet, consectetur
+                    adipiscing elit, sed do eiusmod tempor incididunt
+                    ut labore et dolore magna aliqua. Ut enim ad minim
+                    veniam, quis nostrud exercitation ullamco laboris
+                    nisi ut aliquip ex ea commodo consequat.
+                </Typography>
+            </Paper>
+        </Container>
     );
 };
 

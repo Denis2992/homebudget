@@ -21,7 +21,10 @@ const useStyles = makeStyles((theme) =>({
         alignItems: "center",
         flexDirection: "column",
         borderTopLeftRadius: 0,
-        borderTopRightRadius: 0
+        borderTopRightRadius: 0,
+    },
+    head: {
+      textAlign: "center"
     },
     carouselParagraph: {
         padding: theme.spacing(2)
@@ -88,7 +91,7 @@ function Item(props) {
     const classes = useStyles();
     return (
         <Paper style={props.item.backgroundStyle} className={classes.carouselElement}>
-            <Typography variant="h4">{props.item.name}</Typography>
+            <Typography variant="h4" className={classes.head}>{props.item.name}</Typography>
             <Typography variant="subtitle1" className={classes.carouselParagraph}>{props.item.description}</Typography>
             <Button variant="contained" color="primary">
                 <a href="https://www.google.pl/" target="blank" className={classes.carouselLink}>Dowiedz się więcej</a>

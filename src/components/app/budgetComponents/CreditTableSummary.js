@@ -14,7 +14,7 @@ import Typography from '@material-ui/core/Typography';
 import Paper from '@material-ui/core/Paper';
 import IconButton from '@material-ui/core/IconButton';
 import Tooltip from '@material-ui/core/Tooltip';
-import {withStyles, Container} from "@material-ui/core";
+import {withStyles} from "@material-ui/core";
 import {Link} from "react-router-dom";
 import StorageIcon from '@material-ui/icons/Storage';
 import {usersDataContext} from "../../../App";
@@ -143,11 +143,9 @@ const EnhancedTableToolbar = () => {
 const useStyles = makeStyles((theme) => ({
     root: {
         width: '100%',
-        maxWidth: 600
     },
     paper: {
         border: `2px solid ${theme.palette.warning.light}`,
-        margin: theme.spacing(2, 0, 2, 0),
 
     },
     table: {
@@ -190,56 +188,52 @@ export default function CreditTableSummary() {
     };
 
     return (
-        <Container style={{width: "100%"}}>
-            <div className={classes.root}>
-                <Paper className={classes.paper} elevation={3}>
-                    <EnhancedTableToolbar />
-                    <TableContainer>
-                        <Table
-                            className={classes.table}
-                            aria-labelledby="tableTitle"
-                            aria-label="enhanced table"
-                        >
-                            <EnhancedTableHead
-                                classes={classes}
-                                order={order}
-                                orderBy={orderBy}
-                                onRequestSort={handleRequestSort}
-                                rowCount={currentUserData?.credits?.length}
-                            />
-                            <TableBody>
-                                {stableSort(currentUserData?.credits, getComparator(order, orderBy))
-                                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                                    .map((row) => {
-
-                                        return (
-                                            <TableRow
-                                                hover
-                                                key={row.id}
-                                            >
-                                                <TableCell>{row.creditTitle}</TableCell>
-                                                <TableCell>{row.leftSumm}</TableCell>
-                                                <TableCell>{row.monthlyPayment}</TableCell>
-                                                <TableCell>{row.leftPayments}</TableCell>
-                                            </TableRow>
-                                        );
-                                    })}
-
-                            </TableBody>
-                        </Table>
-                    </TableContainer>
-                    <TablePagination
-                        rowsPerPageOptions={[5, 10, 15]}
-                        component="div"
-                        count={currentUserData?.credits?.length}
-                        rowsPerPage={rowsPerPage}
-                        labelRowsPerPage="Wierszy na stronie"
-                        page={page}
-                        onPageChange={handleChangePage}
-                        onRowsPerPageChange={handleChangeRowsPerPage}
+        <Paper className={classes.paper} elevation={3}>
+            <EnhancedTableToolbar />
+            <TableContainer>
+                <Table
+                    className={classes.table}
+                    aria-labelledby="tableTitle"
+                    aria-label="enhanced table"
+                >
+                    <EnhancedTableHead
+                        classes={classes}
+                        order={order}
+                        orderBy={orderBy}
+                        onRequestSort={handleRequestSort}
+                        rowCount={currentUserData?.credits?.length}
                     />
-                </Paper>
-            </div>
-        </Container>
+                    <TableBody>
+                        {stableSort(currentUserData?.credits, getComparator(order, orderBy))
+                            .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                            .map((row) => {
+
+                                return (
+                                    <TableRow
+                                        hover
+                                        key={row.id}
+                                    >
+                                        <TableCell>{row.creditTitle}</TableCell>
+                                        <TableCell>{row.leftSumm}</TableCell>
+                                        <TableCell>{row.monthlyPayment}</TableCell>
+                                        <TableCell>{row.leftPayments}</TableCell>
+                                    </TableRow>
+                                );
+                            })}
+
+                    </TableBody>
+                </Table>
+            </TableContainer>
+            <TablePagination
+                rowsPerPageOptions={[5, 10, 15]}
+                component="div"
+                count={currentUserData?.credits?.length}
+                rowsPerPage={rowsPerPage}
+                labelRowsPerPage="Wierszy na stronie"
+                page={page}
+                onPageChange={handleChangePage}
+                onRowsPerPageChange={handleChangeRowsPerPage}
+            />
+        </Paper>
     );
 }

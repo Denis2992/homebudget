@@ -14,21 +14,26 @@ const useStyles = makeStyles((theme) => ({
         background: `linear-gradient(45deg, ${theme.palette.secondary.main} 20%, ${theme.palette.primary.main} 90%)`,
         display: "flex",
         justifyContent: "space-around",
-        alignItems: "center"
+        alignItems: "center",
+        padding: theme.spacing(0,2)
     },
     dataBoxText: {
         color: theme.palette.primary.contrastText,
         fontWeight: 600,
-        padding: theme.spacing(2, 1)
+        padding: theme.spacing(2, 1),
+        textAlign: "center"
     },
     dataBoxBtn: {
         backgroundColor: theme.palette.info.main,
-
+        "&:hover": {
+            backgroundColor: theme.palette.info.light
+        }
     },
     BtnLink: {
         textDecoration: "none",
         color: theme.palette.primary.contrastText,
-        padding: theme.spacing(0,1)
+        padding: theme.spacing(0,1),
+
     }
 }))
 

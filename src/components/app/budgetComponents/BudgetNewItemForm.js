@@ -13,6 +13,11 @@ import {
     IconButton,
     List,
     ListItem,
+    FormLabel,
+    FormControlLabel,
+    Radio,
+    RadioGroup,
+    Grid
 } from "@material-ui/core";
 import {useHistory} from "react-router-dom";
 import HighlightOffIcon from '@material-ui/icons/HighlightOff';
@@ -32,10 +37,16 @@ const useStyles = makeStyles((theme) => ({
         border: `2px solid ${theme.palette.success.main}`,
         display: "flex",
         flexDirection: "column",
-        margin: theme.spacing(0, 4),
-        position: "absolute",
-        left: "15vw",
-        top: "12vh"
+        [theme.breakpoints.up('sm')]: {
+            position: "absolute",
+            left: "25vw",
+            top: "12vh",
+        },
+        [theme.breakpoints.up('md')]: {
+            position: "absolute",
+            left: "40vw",
+            top: "12vh",
+        },
     },
     form: {
         display: "flex",
@@ -56,6 +67,7 @@ const useStyles = makeStyles((theme) => ({
     inputs: {
         margin: theme.spacing(2, 0),
         width: theme.spacing(35),
+
     },
     formBtn: {
         backgroundColor: theme.palette.secondary.main,
@@ -124,7 +136,7 @@ export default function BudgetNewItemForm () {
     // inputs validation
     const checkIfFormValid = () => {
         const newErrorList = [];
-        const {title, category, date, summ} = newItemData;
+        const {title, category, date, type, summ} = newItemData;
 
         if (title.length < 3) {
             newErrorList.push("Tytuł musi zawierać minimum 3 litery");
@@ -144,9 +156,14 @@ export default function BudgetNewItemForm () {
             newErrorList.push("Data ma byc wybrana");
         }
 
+        if (type === "") {
+            newErrorList.push("Rodzaj wpisu ma byc zaznaczony");
+        }
+
         if (!isDecimal(summ)) {
             newErrorList.push("Suma ma byc liczbą i może byc liczba dziesiętną");
         }
+
 
         setErrorList(newErrorList);
 
@@ -187,8 +204,9 @@ export default function BudgetNewItemForm () {
                     id: currentUserData.budget.length === 0 ? 1 : (Math.max(...ids) + 1),
                     title: newItemData.title,
                     category: newItemData.category,
-                    summ: newItemData.summ,
-                    date: newItemData.date
+                    date: newItemData.date,
+                    type: newItemData.type,
+                    summ: newItemData.summ
                 }
             ]
         };
@@ -219,7 +237,8 @@ export default function BudgetNewItemForm () {
                 title: "",
                 category: "",
                 date: "",
-                summ: "",
+                type: "",
+                summ: ""
             });
 
             history.push("/app/budget/dataBudget");
@@ -247,8 +266,9 @@ export default function BudgetNewItemForm () {
                     id: newItemData.id,
                     title: newItemData.title,
                     category: newItemData.category,
-                    summ: newItemData.summ,
-                    date: newItemData.date
+                    date: newItemData.date,
+                    type: newItemData.type,
+                    summ: newItemData.summ
                 }
             ]
         };
@@ -279,6 +299,7 @@ export default function BudgetNewItemForm () {
                 title: "",
                 category: "",
                 date: "",
+                type: "",
                 summ: "",
             });
 
@@ -391,7 +412,8 @@ export default function BudgetNewItemForm () {
             title: "",
             category: "",
             date: "",
-            summ: "",
+            type: "",
+            summ: ""
         });
         setEditMode(false);
         history.push("/app/budget/dataBudget");
@@ -400,6 +422,8 @@ export default function BudgetNewItemForm () {
     const classes = useStyles();
 
     return (
+        <Grid container spacing={3} style={{justifyContent: "center", marginLeft: 22}}>
+        <Grid item xs={7}>
         <Paper className={classes.paper} elevation={3}>
             <IconButton style={{ alignSelf: "self-end"}} onClick={handleCloseForm}>
                     <HighlightOffIcon color="error" />
@@ -490,6 +514,26 @@ export default function BudgetNewItemForm () {
                     className={classes.inputs}
                     onChange={handleValueChange}
                 />
+                <FormControl component="fieldset">
+                    <FormLabel
+                        component="legend"
+                        color="secondary"
+                        style={{textAlign: "center"}}
+                    >
+                        Rodzaj
+                    </FormLabel>
+                    <RadioGroup
+                        row
+                        aria-label="type"
+                        name="type"
+                        value={newItemData.type}
+                        onChange={handleValueChange}
+                        style={{justifyContent: "center"}}>
+                        <FormControlLabel value="income" control={<Radio />} label="Przychód" />
+                        <FormControlLabel value="expenses" control={<Radio />} label="Wydatek" />
+                        <FormControlLabel value="saving" control={<Radio />} label="Oszczędzanie" />
+                    </RadioGroup>
+                </FormControl>
                 <TextField
                     label="Suma"
                     name="summ"
@@ -504,5 +548,7 @@ export default function BudgetNewItemForm () {
                 <Button className={classes.formBtn} type="submit">Zapisz i zamknij</Button>
             </form>
         </Paper>
+        </Grid>
+        </Grid>
     )
 }

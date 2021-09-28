@@ -22,7 +22,7 @@ import AddCircleIcon from '@material-ui/icons/AddCircle';
 import EditIcon from '@material-ui/icons/Edit';
 import {HashRouter, Link, Route, Switch, useHistory} from "react-router-dom";
 import CreditNewItemForm from "./CreditNewItemForm";
-import {Container} from "@material-ui/core";
+import {Grid} from "@material-ui/core";
 import {usersApiUrl, usersDataContext} from "../../../App";
 
 export const newCreditDataContext = createContext("")
@@ -198,29 +198,21 @@ const EnhancedTableToolbar = (props) => {
             {numSelected > 0 ? (
                 <>
                     {numSelected > 1 ? (
-                        <>
-                            <IconButton disabled>
-                                <EditIcon />
-                            </IconButton>
-                            <IconButton disabled>
-                                <DeleteIcon />
-                            </IconButton>
-                        </>
-
+                        <IconButton disabled>
+                            <EditIcon />
+                        </IconButton>
                     ) : (
-                        <>
-                            <LightTooltip title="Edytuj">
-                                <IconButton aria-label="edit">
-                                    <EditIcon className={classes.editIcon} onClick={onEditItem}/>
-                                </IconButton>
-                            </LightTooltip>
-                            <LightTooltip title="Usuń">
-                                <IconButton aria-label="delete" onClick={onDeleteItem}>
-                                    <DeleteIcon color="error"/>
-                                </IconButton>
-                            </LightTooltip>
-                        </>
+                        <LightTooltip title="Edytuj">
+                            <IconButton aria-label="edit">
+                                <EditIcon className={classes.editIcon} onClick={onEditItem}/>
+                            </IconButton>
+                        </LightTooltip>
                     )}
+                    <LightTooltip title="Usuń">
+                        <IconButton aria-label="delete" onClick={onDeleteItem}>
+                            <DeleteIcon color="error"/>
+                        </IconButton>
+                    </LightTooltip>
                 </>
             ) : (
                 <LightTooltip title="Dodaj nowy wpis">
@@ -349,7 +341,7 @@ export default function CreditTableFull() {
 
     const handleDeleteItem = () => {
         const dataToSend = {
-            credits: currentUserData.credits.filter(item => item.id !== selected[0])
+            credits: currentUserData.credits.filter(item => !selected.includes(item.id))
         };
 
         fetch(`${usersApiUrl}/${currentUserData.id}`, {
@@ -411,8 +403,8 @@ export default function CreditTableFull() {
                 editMode
             }}
             >
-                <Container style={{width: "100%"}}>
-                    <div className={classes.root}>
+                <Grid container spacing={3} style={{justifyContent: "center", marginLeft: 54}}>
+                    <Grid item xs={6} sm={10} md={12}>
                         <Paper className={classes.paper} elevation={3}>
                             <EnhancedTableToolbar
                                 numSelected={selected.length}
@@ -481,14 +473,14 @@ export default function CreditTableFull() {
                                 onRowsPerPageChange={handleChangeRowsPerPage}
                             />
                         </Paper>
-                        <HashRouter>
-                            <Switch>
-                                <Route path="/app/budget/dataCredit/add/" component={CreditNewItemForm}/>
-                                <Route path="/app/budget/dataCredit/edit/" component={CreditNewItemForm}/>
-                            </Switch>
-                        </HashRouter>
-                    </div>
-                </Container>
+                    </Grid>
+                </Grid>
+                <HashRouter>
+                    <Switch>
+                        <Route path="/app/budget/dataCredit/add/" component={CreditNewItemForm}/>
+                        <Route path="/app/budget/dataCredit/edit/" component={CreditNewItemForm}/>
+                    </Switch>
+                </HashRouter>
             </newCreditDataContext.Provider>
         )
     } else {
