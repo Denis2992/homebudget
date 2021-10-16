@@ -55,8 +55,8 @@ function App() {
       >
       <HashRouter>
           <Switch>
-              <Route exact path="/app/" component={StartWindow}/>
-              <Route path="/app" component={Header} />
+              <Route exact path="/app" component={Header}/>
+              <Route path="/app" component={StartWindow} />
           </Switch>
       </HashRouter>
       </usersDataContext.Provider>

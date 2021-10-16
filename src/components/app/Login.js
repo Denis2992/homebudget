@@ -1,10 +1,14 @@
-import React, {useContext, useState} from 'react';
+import React, {useContext} from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import {Typography, Paper, Button, IconButton, TextField, Box} from "@material-ui/core";
 import HighlightOffIcon from '@material-ui/icons/HighlightOff';
 import {Link, useHistory} from "react-router-dom";
-import {usersDataContext} from "../../App";
-
+import {CurrentUserContext} from "../../index";
+import { useForm, Controller } from "react-hook-form";
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from "yup";
+import useInput from "../hooks/useInput";
+import getFirebase from "../firebase/firebase";
 
 const useStyles = makeStyles((theme) => ({
     box: {
@@ -29,8 +33,9 @@ const useStyles = makeStyles((theme) => ({
 
     },
     textField: {
-        marginTop: theme.spacing(4),
-        width: "35ch"
+        marginTop: theme.spacing(2),
+        width: "35ch",
+        height: 60
     },
     loginBtn: {
         marginTop: theme.spacing(2)
@@ -50,35 +55,45 @@ const useStyles = makeStyles((theme) => ({
     }
 }));
 
+const schema = yup.object({
+    email: yup
+        .string()
+        .email("Wprowadź poprawny email")
+        .max(50, "Maksymalna długość 50 znaków")
+        .required("Wprowadź email"),
+    password: yup
+        .string()
+        .required("Wprowadź hasło")
+}).required()
+
 const Login = () => {
-    const [userLogin, setUserLogin] = useState("");
-    const [password, setPassword] = useState("");
+    const [email, resetEmail] = useInput("");
+    const [password, resetPassword] = useInput("");
     const history = useHistory();
-    const [error, setError] = useState("");
-    const {usersData} = useContext(usersDataContext);
+    const {setCurrentUser} = useContext(CurrentUserContext);
     const classes = useStyles();
+    const firebaseInstance = getFirebase();
 
-    const checkInputs = (e) => {
-        e.preventDefault();
-       if (usersData.some(user => {
-           return user.login === userLogin && user.password === password
-       })) {
+    const {control, register, handleSubmit, formState:{ errors } } = useForm({
+        resolver: yupResolver(schema)
+    });
 
-           localStorage.clear();
-           let userInfo = {
-               login: userLogin,
-               password: password,
-           };
+    const signIn = async () => {
 
-           localStorage.setItem("userName", userInfo.login);
-           localStorage.setItem("userPassword", userInfo.password);
-
-           history.push("/app");
-
-
-       } else {
-           setError("Niepoprawny login lub hasło")
-       }
+        try {
+            if (firebaseInstance) {
+                const user = await firebaseInstance
+                    .auth()
+                    .signInWithEmailAndPassword(email.value, password.value);
+                console.log("user", user);
+                setCurrentUser(email.value);
+                resetEmail();
+                resetPassword();
+                history.push("/app");
+            }
+        } catch (error) {
+            console.log("error", error);
+        }
     };
 
     return (
@@ -89,25 +104,76 @@ const Login = () => {
                         <HighlightOffIcon className={classes.iconStyle} />
                     </Link>
                 </IconButton>
-                <form className={classes.form} noValidate autoComplete="off" onSubmit={checkInputs}>
-                    <Typography variant="h5">Wprowadź login i hasło</Typography>
-                    <TextField
-                        className={classes.textField}
-                        id="outlined-basic"
-                        label="Login"
-                        variant="outlined"
-                        onChange={e => setUserLogin(e.target.value)}
-                    />
-                    <TextField
-                        className={classes.textField}
-                        id="standard-password-input"
-                        label="Hasło"
-                        type="password"
-                        autoComplete="current-password"
-                        variant="outlined"
-                        onChange={e => setPassword(e.target.value)}
-                    />
-                    <Typography className={classes.errorMsg} variant="body2">{error}</Typography>
+                <form className={classes.form} noValidate autoComplete="off" onSubmit={handleSubmit(signIn)}>
+                    <Typography variant="h5" style={{marginBottom: 16}}>Wprowadź login i hasło</Typography>
+                    {errors?.email ? (
+                        <Controller
+                            name="email"
+                            control={control}
+                            render={() => (
+                                <TextField
+                                    error
+                                    className={classes.textField}
+                                    label="Email"
+                                    size="small"
+                                    helperText={errors?.email?.message}
+                                    variant="outlined"
+                                    {...register("email")}
+                                    {...email}
+                                />
+                            )}
+                        />
+                    ) : (
+                        <Controller
+                            name="email"
+                            control={control}
+                            render={() => (
+                                <TextField
+                                    className={classes.textField}
+                                    label="Email"
+                                    size="small"
+                                    variant="outlined"
+                                    {...register("email")}
+                                    {...email}
+                                />
+                            )}
+                        />
+                    )}
+                    {errors?.password ? (
+                        <Controller
+                            name="password"
+                            control={control}
+                            render={() => (
+                                <TextField
+                                    error
+                                    className={classes.textField}
+                                    label="Hasło"
+                                    type="password"
+                                    size="small"
+                                    variant="outlined"
+                                    helperText={errors?.password?.message}
+                                    {...register("password")}
+                                    {...password}
+                                />
+                            )}
+                        />
+                    ) : (
+                        <Controller
+                            name="password"
+                            control={control}
+                            render={() => (
+                                <TextField
+                                    className={classes.textField}
+                                    label="Hasło"
+                                    type="password"
+                                    size="small"
+                                    variant="outlined"
+                                    {...register("password")}
+                                    {...password}
+                                />
+                            )}
+                        />
+                    )}
                     <Button
                         className={classes.loginBtn}
                         variant="contained"
