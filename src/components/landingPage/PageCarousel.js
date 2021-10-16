@@ -96,7 +96,6 @@ function Item(props) {
             <Button variant="contained" color="primary">
                 <a href="https://www.google.pl/" target="blank" className={classes.carouselLink}>Dowiedz się więcej</a>
             </Button>
-
         </Paper>
     )
 }

@@ -35,7 +35,10 @@ const useStyles = makeStyles((theme) => ({
         alignItems: "center",
         justifyContent: "center",
         padding: theme.spacing(4),
-        margin: theme.spacing(2,0)
+        margin: theme.spacing(2,0),
+        [theme.breakpoints.down('sm')]: {
+            maxWidth: 535
+        },
     },
     paperContactHead: {
       fontWeight: 600,
@@ -53,26 +56,25 @@ const useStyles = makeStyles((theme) => ({
             `linear-gradient(60deg,
              ${theme.palette.primary.contrastText} 50%,
              ${theme.palette.primary.main} 90%)`,
-        margin: theme.spacing(2,0)
+        margin: theme.spacing(2,0),
     },
     form: {
         display: 'flex',
         flexDirection: "column",
         justifyContent: "center",
         alignItems: "center",
-        padding: theme.spacing(2),
-
+        padding: theme.spacing(2, 3)
     },
     textField: {
-        marginLeft: theme.spacing(1),
-        marginRight: theme.spacing(1),
-        width: theme.spacing(32),
-        margin: theme.spacing(1.5, 0)
+        minWidth: theme.spacing(32),
+        margin: theme.spacing(1.5, 0),
+        [theme.breakpoints.down('sm')]: {
+            width: "100%",
+        },
     },
     messageInput: {
-        maxWidth: theme.spacing(66),
         width: "100%",
-        marginBottom: theme.spacing(2)
+        margin: theme.spacing(1.5, 0)
     },
     agreementBox: {
         display: "flex",
@@ -120,7 +122,7 @@ const ContactUs = () => {
                         >
                             Wyślij do nas wiadomość
                         </Typography>
-                        <div style={{display: "flex", justifyContent: "center", flexWrap: "wrap"}}>
+                        <div style={{display: "flex", justifyContent: "space-between", flexWrap: "wrap", width: "100%"}}>
                             <TextField
                                 label="Imię"
                                 placeholder="Wpisz swoje imię"

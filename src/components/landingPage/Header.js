@@ -109,7 +109,8 @@ export default function ButtonAppBar() {
                             Kontakt
                         </Link>
                     </li>
-                </ul><div className={classes.mobileMenu}><Button
+                </ul><div className={classes.mobileMenu}>
+                    <Button
                     id="demo-positioned-button"
                     aria-controls="demo-positioned-menu"
                     aria-haspopup="true"
@@ -118,7 +119,8 @@ export default function ButtonAppBar() {
                     className={classes.menuBtn}
                 >
                     MENU
-                </Button><Menu
+                </Button>
+                    <Menu
                     id="demo-positioned-menu"
                     aria-labelledby="demo-positioned-button"
                     anchorEl={anchorEl}
