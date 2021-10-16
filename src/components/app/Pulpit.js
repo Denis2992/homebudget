@@ -204,8 +204,6 @@ const MaxExpensesProgressBar = withStyles((theme) => ({
 export default function Pulpit() {
     const classes = useStyles();
     const {currentUserData} = useContext(usersDataContext);
-
-
     //budget data sort to render
     const budgetDataSorted = currentUserData?.budget?.sort((a,b) => {
         return b.id - a.id;
@@ -222,21 +220,38 @@ export default function Pulpit() {
     // monthly income, expenses, savings
     const date = new Date();
     const year = date.getFullYear();
-    const month = "0" + (date.getMonth() + 1);
-    const getMonthlyBudget = currentUserData?.budget?.filter(item => item.date.includes(`${year}-${month}`));
+    const month = date.getMonth() + 1;
+    const correctMonth = () => {
+        if (month > 9) {
+            return month;
+        } else {
+            return `0${month}`
+        }
+    };
+
+    const getMonthlyBudget = currentUserData?.budget?.filter(item => item.date.includes(`${year}-${correctMonth()}`));
 
     const monthlyIncomeData = getMonthlyBudget?.filter(item => item.type === "income");
     const monthlyExpensesData = getMonthlyBudget?.filter(item => item.type === "expenses");
     const monthlySavingsData = getMonthlyBudget?.filter(item => item.type === "saving");
 
+
     const income = monthlyIncomeData?.map(item => item.summ);
     const expenses = monthlyExpensesData?.map(item => item.summ);
     const savings = monthlySavingsData?.map(item => item.summ);
 
-    const incomeSum = income?.reduce((sum, prev) => +sum + +prev);
-    const expensesSum = expenses?.reduce((sum, prev) => +sum + +prev);
-    const savingsSum = savings?.length > 1 ? expenses?.reduce((prev, sum) => +prev + +sum) : savings;
+    const incomeSum = income?.reduce((sum, prev) => +sum + +prev, 0);
+    const expensesSum = expenses?.reduce((sum, prev) => +sum + +prev, 0);
+    const savingsSum = savings?.reduce((prev, sum) => +prev + +sum, 0);
 
+    const circleProgressValue = () => {
+        let progressValue = (+expensesSum + +savingsSum) / incomeSum * 100;
+        if (isNaN((+expensesSum + +savingsSum) / incomeSum * 100)) {
+            return 0;
+        } else {
+            return progressValue;
+        }
+    };
 
     if (currentUserData) {
         return (
@@ -282,12 +297,12 @@ export default function Pulpit() {
                             <Box className={classes.boxCircleProgress}>
                                 <CircularProgress
                                     variant="determinate"
-                                    value={(+expensesSum + +savingsSum) / incomeSum * 100}
+                                    value={circleProgressValue()}
                                     thickness={10}
                                     size="143px"
                                     className={classes.circleProgressInfo}
                                 />
-                                <Typography>{((+expensesSum + +savingsSum) / incomeSum * 100).toFixed(1)}%</Typography>
+                                <Typography>{circleProgressValue().toFixed(1)}%</Typography>
                             </Box>
                             <Typography>Reszta: {incomeSum - (+expensesSum + +savingsSum)}</Typography>
                         </Paper>

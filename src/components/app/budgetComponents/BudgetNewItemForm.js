@@ -468,7 +468,7 @@ export default function BudgetNewItemForm () {
                         onChange={handleValueChange}
                         >
                         <MenuItem value="" disabled>Wybierz</MenuItem>
-                        {categoriesList.map(category => (
+                   n     {categoriesList.map(category => (
                             <MenuItem
                                 key={category.id}
                                 value={category.categoryName}

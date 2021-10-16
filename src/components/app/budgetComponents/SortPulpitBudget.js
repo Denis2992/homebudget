@@ -20,9 +20,8 @@ const useStyles = makeStyles((theme) => ({
     },
     form: {
         display: "flex",
-        flexWrap: "wrap",
         alignItems: "center",
-        justifyContent: "center"
+        justifyContent: "center",
     },
     input: {
         margin: theme.spacing(2, 1, 0, 1),
@@ -35,7 +34,6 @@ const useStyles = makeStyles((theme) => ({
         },
 
     },
-    selected: {},
     rootMenuItem: {
         "&$selected": {
             backgroundColor: theme.palette.secondary.main,
@@ -136,7 +134,6 @@ export default function SortPulpitBudget () {
                             return (
                                 <MenuItem key={month.name}
                                           classes={{
-                                              selected: classes.selected,
                                               root: classes.rootMenuItem
                                           }}
                                           value={month.monthNumber}

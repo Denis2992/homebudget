@@ -121,6 +121,38 @@
           "date": "2021-09-16",
           "type": "expenses",
           "summ": "350"
+        },
+        {
+          "id": 19,
+          "title": "dddd",
+          "category": "Odzież",
+          "date": "2021-10-22",
+          "type": "expenses",
+          "summ": "333"
+        },
+        {
+          "id": 20,
+          "title": "pensja",
+          "category": "Pensja",
+          "date": "2021-10-08",
+          "type": "income",
+          "summ": "4000"
+        },
+        {
+          "id": 21,
+          "title": "buty",
+          "category": "Obuwie",
+          "date": "2021-10-12",
+          "type": "expenses",
+          "summ": "350.44"
+        },
+        {
+          "id": 22,
+          "title": "wakacje",
+          "category": "Oszczędzanie",
+          "date": "2021-10-13",
+          "type": "saving",
+          "summ": "500"
         }
       ],
       "credits": [

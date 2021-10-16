@@ -11,3 +11,8 @@ Used technologies and instruments: React, JSS, JSON Server, Fetch API, React Rou
 ## Lauch Home Budget
    - in the project directory, run```npm start```
    - in the directory ```/homebudget/database``` run ```json-server --watch db.json --port 3001```
+
+### Further development
+- add firebase authentication and all data will be sent to firestore
+- make decomposition if is nessesary
+- add new function: send message form, credit calculator
