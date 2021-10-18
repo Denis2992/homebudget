@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useContext} from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
@@ -9,6 +9,7 @@ import Registration from "./Registration";
 import Welcome from "./Welcome";
 import {HashRouter, NavLink, Route, Switch} from "react-router-dom";
 import Header from "./Header";
+import {CurrentUserContext} from "../../index";
 
 const useStyles = makeStyles((theme) => ({
 
@@ -44,8 +45,9 @@ const useStyles = makeStyles((theme) => ({
 
 export default function StartWindow() {
     const classes = useStyles();
+    const {currentUser} = useContext(CurrentUserContext)
 
-    if (localStorage.userName && localStorage.userPassword) {
+    if (currentUser) {
         return (
             <Header/>
         )

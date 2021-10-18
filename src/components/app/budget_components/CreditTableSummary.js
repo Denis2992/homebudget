@@ -227,12 +227,13 @@ export default function CreditTableSummary() {
             <TablePagination
                 rowsPerPageOptions={[5, 10, 15]}
                 component="div"
-                count={currentUserData?.credits?.length}
+                count={currentUserData?.credits?.length ? currentUserData?.credits?.length : 0}
                 rowsPerPage={rowsPerPage}
                 labelRowsPerPage="Wierszy na stronie"
                 page={page}
                 onPageChange={handleChangePage}
                 onRowsPerPageChange={handleChangeRowsPerPage}
+                style={{marginBottom: 16}}
             />
         </Paper>
     );

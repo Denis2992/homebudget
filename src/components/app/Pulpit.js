@@ -126,7 +126,6 @@ const useStyles = makeStyles((theme) => ({
         textAlign: 'center',
         color: theme.palette.text.secondary,
         border: `2px solid ${theme.palette.error.light}`,
-        height: theme.spacing(28),
     },
     singleCredit: {
         padding: theme.spacing(1, 0),
@@ -253,27 +252,30 @@ export default function Pulpit() {
         }
     };
 
+    const restIncome = incomeSum - (+expensesSum + +savingsSum)
+
+
     if (currentUserData) {
         return (
             <Box className={classes.box}>
                 <Grid container spacing={2} className={classes.gridBox}>
                     <Grid item xs={9} sm={6} md={3}>
-                <Paper className={classes.paperThisMonth} elevation={3}>
+                        <Paper className={classes.paperThisMonth} elevation={3}>
                             <Typography color="textPrimary">W tym miesiącu</Typography>
                             <Box className={classes.incomeBox}>
                                 <IncomeProgressBar variant="determinate" value={100}/>
                                 <ArrowDropUpIcon fontSize="large"/>
-                                <Typography>{incomeSum}</Typography>
+                                <Typography>{incomeSum ? incomeSum : 0}</Typography>
                             </Box>
                             <Box className={classes.expensesBox}>
                                 <ExpensesProgressBar variant="determinate" value={expensesSum / incomeSum * 100}/>
                                 <ArrowDropDownIcon fontSize="large"/>
-                                <Typography>{expensesSum}</Typography>
+                                <Typography>{expensesSum ? expensesSum : 0}</Typography>
                             </Box>
                             <Box className={classes.savingsBox}>
                                 <SavingsProgressBar variant="determinate" value={savingsSum / incomeSum * 100}/>
                                 <AddIcon style={{padding: "0 5px"}}/>
-                                <Typography>{savingsSum}</Typography>
+                                <Typography>{savingsSum ? savingsSum : 0}</Typography>
                             </Box>
                             <Box className={classes.paperSummaryBoxInfo}>
                                 <div className={classes.incomeBox}>
@@ -291,8 +293,9 @@ export default function Pulpit() {
                             </div>
                         </Paper>
                     </Grid>
+
                     <Grid item xs={9} sm={6} md={3}>
-                <Paper className={classes.paperExpenses} elevation={3}>
+                        <Paper className={classes.paperExpenses} elevation={3}>
                             <Typography color="textPrimary">Wykorzystano środków</Typography>
                             <Box className={classes.boxCircleProgress}>
                                 <CircularProgress
@@ -304,13 +307,13 @@ export default function Pulpit() {
                                 />
                                 <Typography>{circleProgressValue().toFixed(1)}%</Typography>
                             </Box>
-                            <Typography>Reszta: {incomeSum - (+expensesSum + +savingsSum)}</Typography>
+                            <Typography>Reszta: {restIncome ? restIncome : 0}</Typography>
                         </Paper>
                     </Grid>
-                    <Grid item xs={9} sm={6} md={6}>
-                <Paper className={classes.lastExpenses} elevation={3}>
-                            <Typography color="textPrimary">Ostatnie wydatki i przychody</Typography>
 
+                    <Grid item xs={9} sm={6} md={6}>
+                        <Paper className={classes.lastExpenses} elevation={3}>
+                            <Typography color="textPrimary">Ostatnie wydatki i przychody</Typography>
                             {budgetDataSorted?.map((item, i) => i < 5 ? (
                                 <div key={item.id}>
                                     <LightTooltip title="Nazwa Kategoria Suma" >
@@ -326,8 +329,9 @@ export default function Pulpit() {
                             )}
                         </Paper>
                     </Grid>
+
                     <Grid item xs={9} sm={6} md={6}>
-                <Paper className={classes.theBiggestExpenses} elevation={3}>
+                        <Paper className={classes.theBiggestExpenses} elevation={3}>
                             <Typography color="textPrimary">Twoje największe wydatki przez cały czas</Typography>
                             {budgetSortBySum?.map((item, i) => i < 5 ? (
                                 <Box className={classes.theBiggestExpensesSingleBox} key={item.id}>
@@ -342,8 +346,9 @@ export default function Pulpit() {
                             ) : null )}
                         </Paper>
                     </Grid >
+
                     <Grid item xs={9} sm={6} md={3}>
-                <Paper className={classes.credits} elevation={3}>
+                        <Paper className={classes.credits} elevation={3}>
                             <Typography color="textPrimary">Aktualne kredyty</Typography>
                             {currentUserData?.credits?.map((item, i) => i < 5 ? (
                                     <div key={item.id}>
@@ -360,8 +365,10 @@ export default function Pulpit() {
                             )}
                         </Paper>
                     </Grid>
+
                     <Grid item xs={9} sm={6} md={3}>
-                <Paper className={classes.savings} elevation={3}>
+                        <Paper className={classes.savings} elevation={3}>
+                            <Typography color="textPrimary">Oszczędności</Typography>
                             {savingDataSorted?.map((item, i) => i < 1 ? (
                                 <Box key={item.id}>
                                     <Typography color="textPrimary">
@@ -380,7 +387,7 @@ export default function Pulpit() {
                                 ) : null
                             )}
                         </Paper>
-                </Grid>
+                    </Grid>
                 </Grid>
             </Box>
         );

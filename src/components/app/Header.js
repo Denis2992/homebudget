@@ -1,4 +1,4 @@
-import React, {useContext, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import clsx from 'clsx';
 import {
     makeStyles,
@@ -188,7 +188,8 @@ export default function Header() {
     const theme = useTheme();
     const [open, setOpen] = useState(false);
     const {currentUser, setCurrentUser} = useContext(CurrentUserContext);
-    const firebaseInstance = getFirebase();
+    const firebase = getFirebase();
+
 
     const handleDrawerOpen = () => {
         setOpen(true);
@@ -201,9 +202,8 @@ export default function Header() {
     const handleExitApp = async () => {
 
             try {
-                if (firebaseInstance) {
-                    await firebaseInstance.auth().signOut();
-                    alert("Successfully signed out!");
+                if (firebase) {
+                    await firebase.auth().signOut();
                 }
                 setCurrentUser(null);
             } catch (error) {

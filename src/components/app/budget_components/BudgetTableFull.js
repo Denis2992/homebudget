@@ -1,45 +1,41 @@
-import React, {createContext, useContext, useEffect, useState} from 'react';
-import PropTypes from 'prop-types';
-import clsx from 'clsx';
-import { lighten, makeStyles, withStyles } from '@material-ui/core/styles';
-import Table from '@material-ui/core/Table';
-import TableBody from '@material-ui/core/TableBody';
-import TableCell from '@material-ui/core/TableCell';
-import TableContainer from '@material-ui/core/TableContainer';
-import TableHead from '@material-ui/core/TableHead';
-import TablePagination from '@material-ui/core/TablePagination';
-import TableRow from '@material-ui/core/TableRow';
-import TableSortLabel from '@material-ui/core/TableSortLabel';
-import Toolbar from '@material-ui/core/Toolbar';
-import Typography from '@material-ui/core/Typography';
-import Paper from '@material-ui/core/Paper';
-import Checkbox from '@material-ui/core/Checkbox';
-import IconButton from '@material-ui/core/IconButton';
-import Tooltip from '@material-ui/core/Tooltip';
-import DeleteIcon from '@material-ui/icons/Delete';
-import PlayCircleFilledIcon from '@material-ui/icons/PlayCircleFilled';
-import AddCircleIcon from '@material-ui/icons/AddCircle';
-import EditIcon from '@material-ui/icons/Edit';
-import {HashRouter, Link, Route, Switch, useHistory} from "react-router-dom";
-import CreditNewItemForm from "./CreditNewItemForm";
-import {Grid} from "@material-ui/core";
+import React, {createContext, useContext, useEffect, useState} from "react";
+import {
+    Checkbox,
+    Paper,
+    TableBody,
+    TableCell,
+    TableRow,
+    Typography,
+    TableContainer,
+    Table,
+    Grid
+} from "@material-ui/core"
 import {usersApiUrl, usersDataContext} from "../../../App";
+import TableHead from "@material-ui/core/TableHead";
+import TableSortLabel from "@material-ui/core/TableSortLabel";
+import PropTypes from "prop-types";
+import {lighten, makeStyles, withStyles} from "@material-ui/core/styles";
+import Toolbar from "@material-ui/core/Toolbar";
+import clsx from "clsx";
+import {HashRouter, Link, Route, Switch, useHistory} from "react-router-dom";
+import IconButton from "@material-ui/core/IconButton";
+import PlayCircleFilledIcon from "@material-ui/icons/PlayCircleFilled";
+import EditIcon from "@material-ui/icons/Edit";
+import DeleteIcon from "@material-ui/icons/Delete";
+import AddCircleIcon from "@material-ui/icons/AddCircle";
+import Tooltip from "@material-ui/core/Tooltip";
+import TablePagination from "@material-ui/core/TablePagination";
+import BudgetNewItemForm from "./BudgetNewItemForm";
 
-export const newCreditDataContext = createContext("")
-
-const headCells = [
-    { id: 'creditTitle', label: 'Tytuł' },
-    { id: 'creditSumm', label: 'Całkowita suma' },
-    { id: 'paidSumm', label: 'Spłacono' },
-    { id: 'leftSumm', label: 'Zostało' },
-    { id: 'singlePayment', label: 'Miesięczna rata' },
-    { id: 'leftPayments', label: 'Zostało rat' }
-];
+export const newDataItemContext = createContext("");
 
 function descendingComparator(a, b, orderBy) {
     const isNumber = !isNaN(a[orderBy]);
     let first = isNumber ? +a[orderBy] : a[orderBy];
     let second = isNumber ? +b[orderBy] : b[orderBy];
+    // if (orderBy === "date") {
+    //     first = new Date()
+    // }
 
     if (second < first) {
         return -1;
@@ -75,6 +71,14 @@ const LightTooltip = withStyles((theme) => ({
         fontSize: 11,
     },
 }))(Tooltip);
+
+const headCells = [
+    { id: "id", label: 'ID' },
+    { id: 'title', label: 'Tytuł' },
+    { id: 'category', label: 'Kategoria' },
+    { id: 'summ', label: 'Suma' },
+    { id: 'date', label: 'Data' },
+];
 
 function EnhancedTableHead(props) {
     const { classes, onSelectAllClick, order, orderBy, numSelected, rowCount, onRequestSort } = props;
@@ -160,10 +164,20 @@ const useToolbarStyles = makeStyles((theme) => ({
         color: theme.palette.warning.dark
     }
 }));
+
+EnhancedTableHead.propTypes = {
+    classes: PropTypes.object.isRequired,
+    numSelected: PropTypes.number.isRequired,
+    onRequestSort: PropTypes.func.isRequired,
+    onSelectAllClick: PropTypes.func.isRequired,
+    order: PropTypes.oneOf(['asc', 'desc']).isRequired,
+    orderBy: PropTypes.string.isRequired,
+    rowCount: PropTypes.number.isRequired,
+};
+
 const EnhancedTableToolbar = (props) => {
     const classes = useToolbarStyles();
-    const { numSelected, onDeleteItem, onEditItem} = props;
-    const history = useHistory();
+    const { numSelected, onDeleteItem, onEditItem } = props;
 
     return (
         <Toolbar
@@ -189,7 +203,7 @@ const EnhancedTableToolbar = (props) => {
                         </LightTooltip>
                     </Link>
                     <Typography className={classes.titleToolbar} variant="h6" id="tableTitle" component="div">
-                        Kredyty i pożyczki
+                        Wydatki i przychody
                     </Typography>
                 </>
 
@@ -215,11 +229,13 @@ const EnhancedTableToolbar = (props) => {
                     </LightTooltip>
                 </>
             ) : (
-                <LightTooltip title="Dodaj nowy wpis">
-                    <IconButton onClick={() => history.push("/app/budget/dataCredit/add/")}>
-                        <AddCircleIcon fontSize="large" className={classes.addBtn}/>
-                    </IconButton>
-                </LightTooltip>
+                <Link to="/app/budget/dataBudget/add/">
+                    <LightTooltip title="Dodaj nowy wpis">
+                        <IconButton>
+                            <AddCircleIcon fontSize="large" className={classes.addBtn}/>
+                        </IconButton>
+                    </LightTooltip>
+                </Link>
             )}
         </Toolbar>
     );
@@ -230,24 +246,11 @@ EnhancedTableToolbar.propTypes = {
 };
 
 const useStyles = makeStyles((theme) => ({
-    root: {
-        width: '100%',
-        maxWidth: theme.spacing(162.5),
-        display: "flex",
-        margin: theme.spacing(4)
-    },
-    gridBox: {
-        justifyContent: "center",
-        marginLeft: 54,
-        [theme.breakpoints.up('sm')]: {
-            marginLeft: 0
-        },
-    },
     paper: {
-        maxWidth: 1200,
-        border: `2px solid ${theme.palette.warning.light}`,
-        position: "relative",
-        zIndex: 1
+        border: `2px solid ${theme.palette.success.main}`,
+    },
+    table: {
+
     },
     visuallyHidden: {
         border: 0,
@@ -260,26 +263,32 @@ const useStyles = makeStyles((theme) => ({
         top: 20,
         width: 1,
     },
+    gridBox: {
+        justifyContent: "center",
+        marginLeft: 28,
+        [theme.breakpoints.up('sm')]: {
+            marginLeft: 0
+        },
+    },
 }));
 
-export default function CreditTableFull() {
+export default function BudgetTableFull () {
     const classes = useStyles();
     const [order, setOrder] = useState('asc');
     const [orderBy, setOrderBy] = useState('');
     const [selected, setSelected] = useState([]);
-    const [editMode, setEditMode] = useState(false);
     const [page, setPage] = useState(0);
-    const [rowsPerPage, setRowsPerPage] = useState(5);
-    const {currentUserData, setUsersData, usersData} = useContext(usersDataContext);
-    const [newCreditData, setNewCreditData] = useState({
+    const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [editMode, setEditMode] = useState(false)
+    const [newItemData, setNewItemData] = useState({
         id: "",
-        creditTitle: "",
-        creditSumm: "",
-        paidSumm: "",
-        leftSumm: "",
-        monthlyPayment: "",
-        leftPayments: ""
+        title: "",
+        category: "",
+        date: "",
+        type: "",
+        summ: ""
     });
+    const {currentUserData, setUsersData, usersData, } = useContext(usersDataContext);
     const history = useHistory();
 
     useEffect(() => {
@@ -305,7 +314,7 @@ export default function CreditTableFull() {
 
     const handleSelectAllClick = (event) => {
         if (event.target.checked) {
-            const newSelecteds = currentUserData.credits.map((n) => n.id);
+            const newSelecteds = currentUserData.budget.map((n) => n.id);
             setSelected(newSelecteds);
             return;
         }
@@ -345,7 +354,7 @@ export default function CreditTableFull() {
 
     const handleDeleteItem = () => {
         const dataToSend = {
-            credits: currentUserData.credits.filter(item => !selected.includes(item.id))
+            budget: currentUserData.budget.filter(item => !selected.includes(item.id))
         };
 
         fetch(`${usersApiUrl}/${currentUserData.id}`, {
@@ -381,34 +390,34 @@ export default function CreditTableFull() {
     };
 
     const handleEditItem = () => {
-        const singleData = currentUserData.credits.filter(item => item.id === selected[0]);
+        const singleData = currentUserData.budget.filter(item => item.id === selected[0]);
 
-        setNewCreditData({
+        setNewItemData({
             id: singleData[0].id,
-            creditTitle: singleData[0].creditTitle,
-            creditSumm: singleData[0].creditSumm,
-            paidSumm: singleData[0].paidSumm,
-            leftSumm: singleData[0].leftSumm,
-            monthlyPayment: singleData[0].monthlyPayment,
-            leftPayments: singleData[0].leftPayments
+            title: singleData[0].title,
+            category: singleData[0].category,
+            date: singleData[0].date,
+            type: singleData[0].type,
+            summ: singleData[0].summ
         });
-
         setEditMode(true);
-        history.push(`/app/budget/dataCredit/edit/${selected[0]}`)
+        history.push(`/app/budget/dataBudget/edit/${selected[0]}`)
     };
 
-    if (currentUserData) {
+
+    if (currentUserData){
         return (
-            <newCreditDataContext.Provider value={{
-                newCreditData,
-                setNewCreditData,
-                setSelected,
-                setEditMode,
-                editMode
-            }}
+            <newDataItemContext.Provider
+                value= {{
+                    newItemData,
+                    setNewItemData,
+                    editMode,
+                    setEditMode,
+                    setSelected
+                }}
             >
-                <Grid container spacing={3} className={classes.gridBox}>
-                    <Grid item xs={6} sm={10} md={12}>
+                <Grid container spacing={2} className={classes.gridBox}>
+                    <Grid item xs={7} sm={10} md={12}>
                         <Paper className={classes.paper} elevation={3}>
                             <EnhancedTableToolbar
                                 numSelected={selected.length}
@@ -428,10 +437,10 @@ export default function CreditTableFull() {
                                         orderBy={orderBy}
                                         onSelectAllClick={handleSelectAllClick}
                                         onRequestSort={handleRequestSort}
-                                        rowCount={currentUserData?.credits?.length}
+                                        rowCount={currentUserData?.budget?.length}
                                     />
                                     <TableBody>
-                                        {stableSort(currentUserData?.credits, getComparator(order, orderBy))
+                                        {stableSort(currentUserData?.budget, getComparator(order, orderBy))
                                             .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                                             .map((row, index) => {
                                                 const isItemSelected = isSelected(row.id);
@@ -453,13 +462,12 @@ export default function CreditTableFull() {
                                                             />
                                                         </TableCell>
                                                         <TableCell component="th" id={labelId} scope="row">
-                                                            {row.creditTitle}
+                                                            {row.id}
                                                         </TableCell>
-                                                        <TableCell>{row.creditSumm}</TableCell>
-                                                        <TableCell>{row.paidSumm}</TableCell>
-                                                        <TableCell>{row.leftSumm}</TableCell>
-                                                        <TableCell>{row.monthlyPayment}</TableCell>
-                                                        <TableCell>{row.leftPayments}</TableCell>
+                                                        <TableCell>{row.title}</TableCell>
+                                                        <TableCell>{row.category}</TableCell>
+                                                        <TableCell>{row.summ}</TableCell>
+                                                        <TableCell>{row.date}</TableCell>
                                                     </TableRow>
                                                 );
                                             })}
@@ -467,9 +475,9 @@ export default function CreditTableFull() {
                                 </Table>
                             </TableContainer>
                             <TablePagination
-                                rowsPerPageOptions={[5, 10]}
+                                rowsPerPageOptions={[10, 25, 50, 100]}
                                 component="div"
-                                count={currentUserData?.credits?.length}
+                                count={currentUserData?.budget?.length ? currentUserData?.budget?.length : 0}
                                 rowsPerPage={rowsPerPage}
                                 labelRowsPerPage="Wierszy na stronie"
                                 page={page}
@@ -481,14 +489,15 @@ export default function CreditTableFull() {
                 </Grid>
                 <HashRouter>
                     <Switch>
-                        <Route path="/app/budget/dataCredit/add/" component={CreditNewItemForm}/>
-                        <Route path="/app/budget/dataCredit/edit/" component={CreditNewItemForm}/>
+                        <Route path="/app/budget/dataBudget/add/" component={BudgetNewItemForm}/>
+                        <Route path="/app/budget/dataBudget/edit/" component={BudgetNewItemForm}/>
+
                     </Switch>
                 </HashRouter>
-            </newCreditDataContext.Provider>
-        )
+            </newDataItemContext.Provider>
+        );
     } else {
-        return <Typography>Loading...</Typography>
+        return <Typography>Loading</Typography>
     }
 
 }

@@ -1,31 +1,23 @@
-import React, {useContext} from "react";
+import React from "react";
 import {HashRouter, Route, Switch} from "react-router-dom";
-import BudgetPulpit from "./budgetComponents/BudgetPulpit";
-import BudgetTableFull from "./budgetComponents/BudgetTableFull"
-import CreditTableFull from "./budgetComponents/CreditTableFull";
-import SavingsTable from "./budgetComponents/SavingsTable";
-import {usersDataContext} from "../../App";
-import {Typography} from "@material-ui/core";
-
-
+import BudgetPulpit from "./budget_components/BudgetPulpit";
+import BudgetTableFull from "./budget_components/BudgetTableFull"
+import CreditTableFull from "./budget_components/CreditTableFull";
+import SavingsTable from "./budget_components/SavingsTable";
 
 
 export default function Budget() {
-    const {currentUserData} = useContext(usersDataContext);
-    if (currentUserData){
-        return (
-            <>
-                <HashRouter>
-                    <Switch>
-                        <Route exact path="/app/budget/" component={BudgetPulpit} />
-                        <Route path="/app/budget/dataBudget/" component={BudgetTableFull} />
-                        <Route path="/app/budget/dataCredit/" component={CreditTableFull} />
-                        <Route path="/app/budget/dataSavings/" component={SavingsTable} />
-                    </Switch>
-                </HashRouter>
-            </>
-        );
-    } else {
-        return <Typography>Loading...</Typography>
-    }
+
+    return (
+        <>
+            <HashRouter>
+                <Switch>
+                    <Route exact path="/app/budget/" component={BudgetPulpit} />
+                    <Route path="/app/budget/dataBudget/" component={BudgetTableFull} />
+                    <Route path="/app/budget/dataCredit/" component={CreditTableFull} />
+                    <Route path="/app/budget/dataSavings/" component={SavingsTable} />
+                </Switch>
+            </HashRouter>
+        </>
+    );
 }

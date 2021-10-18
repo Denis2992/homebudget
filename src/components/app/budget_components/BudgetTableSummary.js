@@ -225,12 +225,13 @@ export default function BudgetTableSummary() {
             <TablePagination
                 rowsPerPageOptions={[5, 10, 15, 20]}
                 component="div"
-                count={monthlyBudget?.length}
+                count={monthlyBudget?.length ? monthlyBudget?.length : 0}
                 rowsPerPage={rowsPerPage}
                 labelRowsPerPage="Wierszy na stronie"
                 page={page}
                 onPageChange={handleChangePage}
                 onRowsPerPageChange={handleChangeRowsPerPage}
+                style={{marginBottom: 16}}
             />
         </Paper>
     );

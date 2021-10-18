@@ -1,4 +1,4 @@
-import React, {useContext, useState} from "react";
+import React, {useState} from "react";
 import {
     Button,
     Typography,
@@ -10,7 +10,8 @@ import {
     makeStyles, List, ListItem,
 } from "@material-ui/core";
 import {lighten} from "@material-ui/core/styles";
-import {datesContext} from "./BudgetPulpit";
+import months from "./date_data/monthData";
+import years from "./date_data/yearData";
 
 const useStyles = makeStyles((theme) => ({
     paper: {
@@ -66,7 +67,6 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export default function SortPulpitBudget () {
-    const {setMonth, setYear, months, years} = useContext(datesContext);
     const [errorList, setErrorList] = useState([]);
     const [dateParams, setDateParams] = useState({
         month: "",
@@ -105,8 +105,6 @@ export default function SortPulpitBudget () {
     const handleFilterData = (e) => {
         e.preventDefault();
         if (validSelectInputs()) {
-            setMonth(dateParams.month);
-            setYear(dateParams.year);
             setDateParams({
                 month: "",
                 year: "",

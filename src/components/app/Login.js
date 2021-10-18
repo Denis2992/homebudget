@@ -1,4 +1,4 @@
-import React, {useContext} from 'react';
+import React, {useContext, useState} from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import {Typography, Paper, Button, IconButton, TextField, Box} from "@material-ui/core";
 import HighlightOffIcon from '@material-ui/icons/HighlightOff';
@@ -30,7 +30,6 @@ const useStyles = makeStyles((theme) => ({
         alignItems: "center",
         padding: theme.spacing(3),
         paddingTop: 0
-
     },
     textField: {
         marginTop: theme.spacing(2),
@@ -38,7 +37,7 @@ const useStyles = makeStyles((theme) => ({
         height: 60
     },
     loginBtn: {
-        marginTop: theme.spacing(2)
+        marginTop: theme.spacing(1)
     },
     closeBtn: {
         color: theme.palette.error.main,
@@ -48,10 +47,6 @@ const useStyles = makeStyles((theme) => ({
     iconStyle: {
         color: theme.palette.error.main,
         height: 24
-    },
-    errorMsg: {
-        color: theme.palette.error.main,
-        paddingTop: theme.spacing(2)
     }
 }));
 
@@ -73,6 +68,7 @@ const Login = () => {
     const {setCurrentUser} = useContext(CurrentUserContext);
     const classes = useStyles();
     const firebaseInstance = getFirebase();
+    const [sendErr, setSendErr] = useState(false);
 
     const {control, register, handleSubmit, formState:{ errors } } = useForm({
         resolver: yupResolver(schema)
@@ -89,10 +85,12 @@ const Login = () => {
                 setCurrentUser(email.value);
                 resetEmail();
                 resetPassword();
+                setSendErr(false);
                 history.push("/app");
             }
         } catch (error) {
             console.log("error", error);
+            setSendErr(true);
         }
     };
 
@@ -174,6 +172,11 @@ const Login = () => {
                             )}
                         />
                     )}
+                    <Box style={{height:20, marginTop: 8}}>
+                        {sendErr ? (
+                            <Typography variant="caption" color="error">Dane zostały niepoprawnie wprowadzone</Typography>
+                        ) : null}
+                    </Box>
                     <Button
                         className={classes.loginBtn}
                         variant="contained"

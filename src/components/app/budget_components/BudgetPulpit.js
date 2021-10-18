@@ -1,4 +1,4 @@
-import React, {createContext, useEffect, useState} from "react";
+import React, {createContext, useState} from "react";
 import BudgetTableSummary from "./BudgetTableSummary";
 import CreditTableSummary from "./CreditTableSummary";
 import {makeStyles, Container, Grid} from "@material-ui/core";
@@ -25,46 +25,16 @@ export default function BudgetPulpit () {
     const classes = useStyles();
     const [month, setMonth] = useState('');
     const [year, setYear] = useState('');
-    const [months, setMonths] = useState([]);
-    const [years, setYears] = useState([]);
 
-    useEffect(() => {
-        fetch("http://localhost:3001/months")
-            .then((resp) => {
-                if (resp.ok) {
-                    return resp.json();
-                } else {
-                    throw new Error("Błąd sieci!");
-                }
-            })
-            .then((data) => {
-                setMonths(data);
-            })
-            .catch(err => console.log("Błąd!", err));
+    const [years, setYears] = useState([
+        2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025
+    ]);
 
-        fetch("http://localhost:3001/years")
-            .then((resp) => {
-                if (resp.ok) {
-                    return resp.json();
-                } else {
-                    throw new Error("Błąd sieci!");
-                }
-            })
-            .then((data) => {
-                setYears(data);
-            })
-            .catch(err => console.log("Błąd!", err));
-
-        const date = new Date();
-        setYear(date.getFullYear());
-        setMonth("0" + (date.getMonth() + 1));
-    }, []);
 
     return (
         <datesContext.Provider value={{
             month, setMonth,
             year, setYear,
-            months, setMonths,
             years, setYears
         }}>
             <Container className={classes.mainContainer}>

@@ -26,6 +26,8 @@ import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from "yup";
 import getFirebase from "../firebase/firebase";
+// import ReCAPTCHA from "react-google-recaptcha";
+
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -67,13 +69,7 @@ const useStyles = makeStyles((theme) => ({
     },
     chooseGender: {
         flexDirection: "row",
-    },
-    agreement: {
-        display: "flex",
-        alignItems: "center",
-        margin: theme.spacing(3, 0)
-    },
-
+    }
 }));
 
 const schema = yup.object({
@@ -117,9 +113,12 @@ const Registration = () => {
         showPassword: false,
         showConfirmPassword: false
     });
+    // const [captcha, setCaptcha] = useState(false);
+    const [sendErr, setSendErr] = useState(false);
     const history = useHistory();
     const {setCurrentUser} = useContext(CurrentUserContext);
     const firebaseInstance = getFirebase();
+
 
     const handleClickShowPassword = () => {
         setValues({ ...values, showPassword: !values.showPassword });
@@ -133,6 +132,9 @@ const Registration = () => {
         resolver: yupResolver(schema)
     });
 
+    // const captchaOnChange = () => {
+    //     setCaptcha(true)
+    // }
 
     const onSubmit = async () => {
         console.log("ok");
@@ -144,9 +146,11 @@ const Registration = () => {
                 console.log("user", user);
                 setCurrentUser(email.value);
                 const db = firebaseInstance.firestore();
-                const docRef = db.collection(`${email.value}`).doc();
+                const docUserData = db.collection(`${email.value}UserData`).doc();
+                const docCreateCategory = db.collection(`${email.value}Category`).doc();
 
-                await docRef.set(
+
+                await docUserData.set(
                     {
                         name: name.value,
                         surname: surname.value,
@@ -156,6 +160,14 @@ const Registration = () => {
                     },
                     {merge: true}
                 );
+                await docCreateCategory.set({
+                    1: "Pensja",
+                    2: "Auto",
+                    3: "Zdrowie",
+                    4: "Oszczędzanie",
+                    5: "Zdrowie",
+                    6: "Zakupy"
+                })
                 resetName();
                 resetSurname();
                 resetEmail();
@@ -163,10 +175,12 @@ const Registration = () => {
                 resetConfirmPassword();
                 resetBirthDate();
                 resetGender();
+                setSendErr(false);
                 history.push("/app");
             }
         } catch (error) {
             console.log("error", error);
+            setSendErr(true);
         }
     };
 
@@ -507,16 +521,31 @@ const Registration = () => {
                                     />
                                 </RadioGroup>
                     </FormControl>
-                    <Box className={classes.agreement}>
-                        <Typography
-                            variant="body2"
-                            style={{textAlign: "center"}}
-                        >
-                            Klikając załóż konto, zgadzasz się z warunkami
-                            korzystania aplikacji.
-                        </Typography>
+                    <Typography
+                        variant="body2"
+                        style={{textAlign: "center", marginTop: 24}}
+                    >
+                        Klikając załóż konto, zgadzasz się z warunkami
+                        korzystania aplikacji.
+                    </Typography>
+                    {/*<ReCAPTCHA*/}
+                    {/*    sitekey="Your client site key"*/}
+                    {/*    onChange={captchaOnChange}*/}
+                    {/*    style={{marginBottom: 24}}*/}
+                    {/*/>*/}
+                    <Box style={{height:20, margin: "8px 0"}}>
+                        {sendErr ? (
+                            <Typography variant="caption" color="error">Rejestracja się nie powiodła</Typography>
+                        ) : null}
                     </Box>
-                    <Button variant="contained" color="secondary" type="submit">Zarejestruj się</Button>
+                    <Button
+                        variant="contained"
+                        color="secondary"
+                        type="submit"
+                        style={{marginBottom: 8}}
+                    >
+                        Zarejestruj się
+                    </Button>
                 </form>
             </Paper>
         </Box>
