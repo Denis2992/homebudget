@@ -137,7 +137,6 @@ const Registration = () => {
     // }
 
     const onSubmit = async () => {
-        console.log("ok");
         try {
             if (firebaseInstance) {
                 const user = await firebaseInstance
@@ -146,8 +145,8 @@ const Registration = () => {
                 console.log("user", user);
                 setCurrentUser(email.value);
                 const db = firebaseInstance.firestore();
-                const docUserData = db.collection(`${email.value}UserData`).doc();
-                const docCreateCategory = db.collection(`${email.value}Category`).doc();
+                const docUserData = db.collection(`${email.value}`)
+                    .doc("userData");
 
 
                 await docUserData.set(
@@ -160,14 +159,51 @@ const Registration = () => {
                     },
                     {merge: true}
                 );
-                await docCreateCategory.set({
-                    1: "Pensja",
-                    2: "Auto",
-                    3: "Zdrowie",
-                    4: "Oszczędzanie",
-                    5: "Zdrowie",
-                    6: "Zakupy"
-                })
+
+                const categoriesRef =
+                    db.collection(`${email.value}`)
+                        .doc("userData")
+                        .collection('category');
+
+                categoriesRef
+                    .doc()
+                    .set({
+                        id: 1,
+                        name: "Pensja"
+                    })
+                    .then(function () {
+                        console.log('Document Added');
+                    })
+                    .catch(function (error) {
+                        console.error('Error adding document: ', error);
+                    });
+
+                categoriesRef
+                    .doc()
+                    .set({
+                        id: 2,
+                        name: "Zakupy"
+                    })
+                    .then(function () {
+                        console.log('Document Added');
+                    })
+                    .catch(function (error) {
+                        console.error('Error adding document: ', error);
+                    });
+
+                categoriesRef
+                    .doc()
+                    .set({
+                        id: 3,
+                        name: "Auto"
+                    })
+                    .then(function () {
+                        console.log('Document Added');
+                    })
+                    .catch(function (error) {
+                        console.error('Error adding document: ', error);
+                    });
+
                 resetName();
                 resetSurname();
                 resetEmail();
@@ -194,268 +230,136 @@ const Registration = () => {
                 </IconButton>
                 <form className={classes.form} onSubmit={handleSubmit(onSubmit)}>
                     <Typography variant="h5" style={{marginBottom: 16}}>Wprowadź swoje dane</Typography>
-                    <Box>
-                        {errors?.email ? (
-                            <Controller
-                                name="email"
-                                control={control}
-                                render={() => (
-                                    <TextField
-                                        error
-                                        variant="outlined"
-                                        size="small"
-                                        label="Email"
-                                        helperText={errors?.email?.message}
-                                        className={classes.textField}
-                                        {...register("email")}
-                                        {...email}
-                                    />
-                                )}
-                            />
-                        ) : (
-                            <Controller
-                                name="email"
-                                control={control}
-                                render={() => (
-                                    <TextField
-                                        variant="outlined"
-                                        size="small"
-                                        color="secondary"
-                                        label="Email"
-                                        className={classes.textField}
-                                        {...register("email")}
-                                        {...email}
-                                    />
-                                )}
+                    <Controller
+                        name="email"
+                        control={control}
+                        render={() => (
+                            <TextField
+                                error={errors?.email ? true : false}
+                                color={errors?.email ? "error" : "secondary"}
+                                variant="outlined"
+                                size="small"
+                                label="Email"
+                                helperText={errors?.email?.message}
+                                className={classes.textField}
+                                {...register("email")}
+                                {...email}
                             />
                         )}
-                    </Box>
-                    <Box>
-                        {errors?.name ? (
-                            <Controller
-                                name="name"
-                                control={control}
-                                render={() => (
-                                    <TextField
-                                        error
-                                        variant="outlined"
-                                        size="small"
-                                        label="Imię"
-                                        helperText={errors?.name?.message}
-                                        className={classes.textField}
-                                        {...register("name")}
-                                        {...name}
-                                    />
-                                )}
-                            />
-                        ) : (
-                            <Controller
-                                name="name"
-                                control={control}
-                                render={() => (
-                                    <TextField
-                                        variant="outlined"
-                                        size="small"
-                                        color="secondary"
-                                        label="Imię"
-                                        className={classes.textField}
-                                        {...register("name")}
-                                        {...name}
-                                    />
-                                )}
+                    />
+                    <Controller
+                        name="name"
+                        control={control}
+                        render={() => (
+                            <TextField
+                                error={errors?.name ? true : false}
+                                color={errors?.name ? "error" : "secondary"}
+                                variant="outlined"
+                                size="small"
+                                label="Imię"
+                                helperText={errors?.name?.message}
+                                className={classes.textField}
+                                {...register("name")}
+                                {...name}
                             />
                         )}
-                    </Box>
-                    <Box>
-                        {errors?.surname ? (
-                            <Controller
-                                name="surname"
-                                control={control}
-                                render={() => (
-                                    <TextField
-                                        error
-                                        variant="outlined"
-                                        size="small"
-                                        label="Nazwisko"
-                                        helperText={errors?.surname?.message}
-                                        className={classes.textField}
-                                        {...register("surname")}
-                                        {...surname}
-                                    />
-                                )}
-                            />
-                        ) : (
-                            <Controller
-                                name="surname"
-                                control={control}
-                                render={() => (
-                                    <TextField
-                                        variant="outlined"
-                                        size="small"
-                                        color="secondary"
-                                        label="Nazwisko"
-                                        className={classes.textField}
-                                        {...register("surname")}
-                                        {...surname}
-                                    />
-                                )}
+                    />
+                    <Controller
+                        name="surname"
+                        control={control}
+                        render={() => (
+                            <TextField
+                                error={errors?.surname ? true : false}
+                                color={errors?.surname ? "error" : "secondary"}
+                                variant="outlined"
+                                size="small"
+                                label="Nazwisko"
+                                helperText={errors?.surname?.message}
+                                className={classes.textField}
+                                {...register("surname")}
+                                {...surname}
                             />
                         )}
-                    </Box>
-                    <Box>
-                        {errors?.password ? (
-                            <Controller
-                                name="password"
-                                control={control}
-                                render={() => (
-                                    <FormControl
-                                        className={classes.textField}
-                                        variant="outlined"
-                                        error
-                                        size="small"
+                    />
+                    <Controller name="password" control={control} render={() => (
+                        <FormControl
+                            className={classes.textField}
+                            variant="outlined"
+                            error={errors?.password ? true : false}
+                            color={errors?.password ? "error" : "secondary"}
+                            size="small"
+                        >
+                            <InputLabel htmlFor="enterPassword">Wprowadź hasło</InputLabel>
+                            <OutlinedInput
+                                id="enterPassword"
+                                type={values.showPassword ? 'text' : 'password'}
+                                {...register("password")}
+                                {...password}
+                                endAdornment={
+                                    <IconButton
+                                        onClick={handleClickShowPassword}
+                                        onMouseDown={e => e.preventDefault()}
+                                        edge="end"
+                                        style={{height:40, width: 40}}
                                     >
-                                        <InputLabel htmlFor="enterPassword">Wprowadź hasło</InputLabel>
-                                        <OutlinedInput
-                                            id="enterPassword"
-                                            type={values.showPassword ? 'text' : 'password'}
-                                            {...register("password")}
-                                            {...password}
-                                            endAdornment={
-                                                <IconButton
-                                                    onClick={handleClickShowPassword}
-                                                    onMouseDown={e => e.preventDefault()}
-                                                    edge="end"
-                                                    style={{height:40, width: 40}}
-                                                >
-                                                    {values.showPassword ? <Visibility /> : <VisibilityOff />}
-                                                </IconButton>
+                                        {values.showPassword ? <Visibility /> : <VisibilityOff />}
+                                    </IconButton>
 
-                                            }
-                                            labelWidth={125}
-                                        />
-                                        <Typography
-                                            variant="caption"
-                                            color="error"
-                                            style={{padding: "4px 14px 0 14px"}}
-                                        >
-                                            {errors?.password?.message}
-                                        </Typography>
-                                    </FormControl>
-                                )}
+                                }
+                                labelWidth={125}
                             />
-                        ) : (
-                            <Controller
-                                name="password"
-                                control={control}
-                                render={() => (
-                                    <FormControl
-                                        className={classes.textField}
-                                        variant="outlined"
-                                        color="secondary"
-                                        size="small"
-                                    >
-                                        <InputLabel htmlFor="enterPassword">Wprowadź hasło</InputLabel>
-                                        <OutlinedInput
-                                            id="enterPassword"
-                                            type={values.showPassword ? 'text' : 'password'}
-                                            {...register("password")}
-                                            {...password}
-                                            endAdornment={
-                                                <IconButton
-                                                    onClick={handleClickShowPassword}
-                                                    onMouseDown={e => e.preventDefault()}
-                                                    edge="end"
-                                                    style={{height:40, width: 40,}}
-                                                >
-                                                    {values.showPassword ? <Visibility /> : <VisibilityOff />}
-                                                </IconButton>
+                            <Typography
+                                variant="caption"
+                                color="error"
+                                style={{padding: "4px 14px 0 14px"}}
+                            >
+                                {errors?.password?.message}
+                            </Typography>
+                        </FormControl>
+                    )}/>
+                    <Controller
+                        name="confirmPassword"
+                        control={control}
+                        render={() => (
+                            <FormControl className={classes.textField}
+                                         variant="outlined"
+                                         error={errors?.confirmPassword ? true : false}
+                                         color={errors?.confirmPassword ? "error" : "secondary"}
+                                         size="small"
+                            >
+                                <InputLabel htmlFor="confPassword">Powtórz hasło</InputLabel>
+                                <OutlinedInput
+                                    id="confPassword"
+                                    type={values.showConfirmPassword ? 'text' : 'password'}
+                                    {...register("confirmPassword")}
+                                    {...confirmPassword}
+                                    endAdornment={
+                                        <IconButton
+                                            aria-label="toggle password visibility"
+                                            onClick={handleClickShowConfirmPassword}
+                                            onMouseDown={e => e.preventDefault()}
+                                            edge="end"
+                                            style={{height: 40, width: 40}}
+                                        >
+                                            {values.showConfirmPassword ? <Visibility /> : <VisibilityOff />}
+                                        </IconButton>
+                                    }
+                                    labelWidth={105}
+                                    InputLabelProps={{
+                                        shrink: true,
+                                    }}
+                                />
+                                <Typography
+                                    variant="caption"
+                                    color="error"
+                                    style={{padding: "4px 14px 0 14px"}}
+                                >
+                                    {errors?.confirmPassword?.message}
+                                </Typography>
+                            </FormControl>
+                        )}
+                    />
 
-                                            }
-                                            labelWidth={125}
-                                        />
-                                    </FormControl>
-                                )}
-                            />
-                        )}
-                    </Box>
-                    <Box>
-                        {errors?.confirmPassword ? (
-                            <Controller
-                                name="confirmPassword"
-                                control={control}
-                                render={() => (
-                                    <FormControl className={classes.textField}
-                                                 variant="outlined"
-                                                 error
-                                                 size="small"
-                                    >
-                                        <InputLabel htmlFor="confPassword">Powtórz hasło</InputLabel>
-                                        <OutlinedInput
-                                            id="confPassword"
-                                            type={values.showConfirmPassword ? 'text' : 'password'}
-                                            {...register("confirmPassword")}
-                                            {...confirmPassword}
-                                            endAdornment={
-                                                <IconButton
-                                                    aria-label="toggle password visibility"
-                                                    onClick={handleClickShowConfirmPassword}
-                                                    onMouseDown={e => e.preventDefault()}
-                                                    edge="end"
-                                                    style={{height: 40, width: 40}}
-                                                >
-                                                    {values.showConfirmPassword ? <Visibility /> : <VisibilityOff />}
-                                                </IconButton>
-                                            }
-                                            labelWidth={105}
-                                            InputLabelProps={{
-                                                shrink: true,
-                                            }}
-                                        />
-                                        <Typography
-                                            variant="caption"
-                                            color="error"
-                                            style={{padding: "4px 14px 0 14px"}}
-                                        >
-                                            {errors?.confirmPassword?.message}
-                                        </Typography>
-                                    </FormControl>
-                                )}
-                            />
-                        ) : (
-                            <Controller
-                                name="confirmPassword"
-                                control={control}
-                                render={() => (
-                                    <FormControl className={classes.textField} variant="outlined" color="secondary"  size="small">
-                                        <InputLabel htmlFor="confPassword">Powtórz hasło</InputLabel>
-                                        <OutlinedInput
-                                            id="confPassword"
-                                            type={values.showConfirmPassword ? 'text' : 'password'}
-                                            {...register("confirmPassword")}
-                                            {...confirmPassword}
-                                            endAdornment={
-                                                <IconButton
-                                                    aria-label="toggle password visibility"
-                                                    onClick={handleClickShowConfirmPassword}
-                                                    onMouseDown={e => e.preventDefault()}
-                                                    edge="end"
-                                                    style={{height: 40, width: 40}}
-                                                >
-                                                    {values.showConfirmPassword ? <Visibility /> : <VisibilityOff />}
-                                                </IconButton>
-                                            }
-                                            labelWidth={105}
-                                            InputLabelProps={{
-                                                shrink: true,
-                                            }}
-                                        />
-                                    </FormControl>
-                                )}
-                            />
-                        )}
-                    </Box>
-                    <Box>
-                        {errors?.birthDate ? (
                             <Controller
                                 name="birthDate"
                                 control={control}
@@ -463,7 +367,8 @@ const Registration = () => {
                                     <TextField
                                         variant="outlined"
                                         size="small"
-                                        error
+                                        error={errors?.birthDate ? true : false}
+                                        color={errors?.birthDate ? "error" : "secondary"}
                                         label="Data urodzenia"
                                         type="date"
                                         defaultValue=""
@@ -477,30 +382,6 @@ const Registration = () => {
                                     />
                                 )}
                             />
-                        ) : (
-                            <Controller
-                                name="birthDate"
-                                control={control}
-                                render={() => (
-                                    <TextField
-                                        variant="outlined"
-                                        size="small"
-                                        color="secondary"
-
-                                        label="Data urodzenia"
-                                        type="date"
-                                        defaultValue=""
-                                        className={classes.textField}
-                                        {...register("birthDate")}
-                                        {...birthDate}
-                                        InputLabelProps={{
-                                            shrink: true,
-                                        }}
-                                    />
-                                )}
-                            />
-                        )}
-                    </Box>
                     <FormControl component="fieldset" className={classes.genderContainer}>
                         <FormLabel color="secondary" style={{width:30}}>Płeć</FormLabel>
                                 <RadioGroup

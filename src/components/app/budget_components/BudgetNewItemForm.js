@@ -1,4 +1,4 @@
-import React, {useContext, useState} from "react";
+import React, {useContext, useEffect, useState} from "react";
 import {
     Divider,
     FormControl,
@@ -20,14 +20,14 @@ import {
 import {useHistory} from "react-router-dom";
 import HighlightOffIcon from '@material-ui/icons/HighlightOff';
 import {lighten} from "@material-ui/core/styles";
-import {usersApiUrl} from "../../../App";
 import {CurrentUserContext} from "../../../index";
-import {categoriesApiUrl} from "../../../App";
 import {newDataItemContext} from "./BudgetTableFull";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from "yup";
 import useInput from "../../hooks/useInput";
+import getFirebase from "../../firebase/firebase";
+
 
 const useStyles = makeStyles((theme) => ({
     paper: {
@@ -72,7 +72,8 @@ const useStyles = makeStyles((theme) => ({
 
     },
     inputs: {
-        margin: theme.spacing(2, 0),
+        height: 60,
+        marginTop: theme.spacing(2),
         width: theme.spacing(35),
 
     },
@@ -115,23 +116,21 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const schema = yup.object({
-    // title: yup
-    //     .string()
-    //     .min(3, "Tytuł ma zawierać minimum 3 znaki")
-    //     .matches(/^[A-Za-z]+$/i, "Tytuł nie może mieć liczb")
-    //     .required("Pole nie może być puste"),
-    // category: yup
-    //     .string()
-    //     .matches(/^[A-Za-z]+$/i, "Kategoria nie może mieć liczb")
-    //     .required("Pole nie może być puste"),
-    // newCategory: yup
-    //     .string()
-    //     .min(3, "Minimalna długość 6 znaków")
-    //     .matches(/^[A-Za-z]+$/i, "Pole nie może mieć liczb")
-    //     .notOneOf([yup.ref("category")], "Taka kategoria juz istnieje"),
-    // date: yup.string().required("Wybierz date urodzenia"),
-    // type: yup.string().required(),
-    // sum: yup.number().required()
+    title: yup
+        .string()
+        .min(3, "Tytuł ma zawierać minimum 3 znaki")
+        .matches(/^[A-Za-z]+$/i, "Tytuł nie może mieć liczb")
+        .required("Pole nie może być puste"),
+    category: yup
+        .string()
+        .required("Pole nie może być puste")
+        .notOneOf(["addNew"], "Dodaj kategorię"),
+    date: yup
+        .string().required("Wybierz date urodzenia"),
+    sum: yup.number()
+        .typeError("Wpisz sumę")
+        .positive("Suma ma byc liczba dodatnią")
+        .required()
 }).required();
 
 export default function BudgetNewItemForm () {
@@ -142,49 +141,143 @@ export default function BudgetNewItemForm () {
         setNewItemData,
         editMode,
         setEditMode,
+        budget, setBudget,
         setSelected
     } = useContext(newDataItemContext);
     const {currentUser} = useContext(CurrentUserContext);
     const [categoriesList, setCategoriesList] = useState([]);
     const [title, resetTitle] = useInput("");
-    const [category, resetCategory] = useInput("");
-    const [newCategory, setNewCategory] = useState("");
+    const [category, setCategory] = useState("");
+    const [newCategory, resetNewCategory] = useInput("");
     const [date, resetDate] = useInput("");
-    const [type, resetType] = useInput("");
+    const [type, resetType] = useInput("expenses");
     const [sum, resetSum] = useInput("");
+    const [newCategoryErrors, setNewCategoryErrors] = useState([]);
+    const [newCategoryErrActive, setNewCategoryErrActive] =useState(false);
+    const firebase = getFirebase();
 
+    useEffect(() => {
+        const fetch = async () => {
+            try {
+                if (!firebase) return;
+                const db = firebase.firestore();
+                const ref = db.collection(`${currentUser}`);
+                await ref.get()
+                    .then(querySnapshot => {
+                        return querySnapshot.docs[0].ref.collection("category").get();
+                    })
+                    .then(querySnapshot => {
+                        querySnapshot.forEach(doc => {
+                            setCategoriesList(prevState => [...prevState, doc.data()])
+                        });
 
-    const handleValueChange = (event) => {
-        const {name, value} = event.target;
-        setNewItemData(prevState => ({...prevState, [name]: value}));
-    };
+                    })
+            } catch (error) {
+                console.log("error", error);
+            }
+        };
+        fetch();
+    }, [currentUser, firebase]);
 
     const {  control, register, formState: { errors }, handleSubmit } = useForm({
         resolver: yupResolver(schema)
     });
 
-    const handleAddNewItem = () => {
-        // const ids = currentUserData.budget.map(el => el.id);
-        // const dataToSend = {
-        //     budget: [
-        //         ...currentUserData.budget,
-        //         {
-        //             id: currentUserData.budget.length === 0 ? 1 : (Math.max(...ids) + 1),
-        //             title: newItemData.title,
-        //             category: newItemData.category,
-        //             date: newItemData.date,
-        //             type: newItemData.type,
-        //             summ: newItemData.summ
-        //         }
-        //     ]
-        // };
-        console.log("ok");
-        console.log(title.value);
-        console.log(category.value);
-        console.log(newCategory);
-        console.log(date.value);
-        console.log(type.value);
-        console.log(sum.value);
+    const newCategoryValid = () => {
+        const tab = [];
+        if (/\d/.test(newCategory.value)) {
+            tab.push("Pole nie może zawierać liczb");
+        }
+        if (newCategory.value === "") {
+            tab.push("Pole nie może byc puste");
+        }
+        if (newCategory.value.length < 3) {
+            tab.push("Minimalna długość - 3 litery")
+        }
+        if (categoriesList?.filter(el => el.name === newCategory.value).length > 0) {
+            tab.push("Taka kategoria juz istnieje")
+        }
+        setNewCategoryErrors(tab);
+        return tab.length === 0;
+    }
+
+    const handleAddNewCategory = async () => {
+        newCategoryValid();
+
+        if (newCategoryValid()) {
+            setNewCategoryErrActive(false);
+            const ids = categoriesList.map(el => el.id);
+            const dataToSend = {
+                id: (Math.max(...ids) + 1),
+                name: newCategory.value
+            };
+
+            if (firebase) {
+                try {
+                    const db = firebase.firestore();
+                    const categoriesRef = db.collection(`${currentUser}`)
+                        .doc("userData")
+                        .collection('category');
+
+                    categoriesRef.doc().set(dataToSend)
+                        .then(function () {
+                            console.log('Document Added');
+                        })
+                        .catch(function (error) {
+                            console.error('Error adding document: ', error);
+                        });
+                } catch (error) {
+                    console.log("error", error);
+                }
+            }
+
+            setCategoriesList(prevState => [...prevState, dataToSend])
+            setCategory(newCategory.value);
+            resetNewCategory();
+        } else {
+            setNewCategoryErrActive(true);
+        }
+
+    };
+
+    const handleAddNewItem = async () => {
+        const ids = budget?.map(el => el.id);
+
+        const dataToSend = {
+                    id: budget.length === 0 ? 1 : (Math.max(...ids) + 1),
+                    title: title.value,
+                    category: category,
+                    date: date.value,
+                    type: type.value,
+                    summ: sum.value
+        };
+
+        if (firebase) {
+            try {
+                const db = firebase.firestore()
+                const budgetRef = db.collection(`${currentUser}`)
+                    .doc("userData")
+                    .collection("budget");
+
+                budgetRef.doc().set(dataToSend)
+                    .then(function () {
+                        console.log('Document Added');
+                    })
+                    .catch(function (error) {
+                        console.error('Error adding document: ', error);
+                    });
+            } catch (error) {
+                console.log("error", error);
+            }
+        }
+
+        setBudget(prevState => [...prevState, dataToSend]);
+        resetTitle();
+        setCategory("");
+        resetDate();
+        resetType();
+        resetSum();
+        history.push("/app/budget/dataBudget")
     };
 
     // const handleSaveEditItem = () => {
@@ -259,37 +352,7 @@ export default function BudgetNewItemForm () {
     //     }
     // };
 
-    // const handleAddNewCategory = () => {
-    //
-    //         const ids = categoriesList.map(el => el.id);
-    //
-    //         fetch(categoriesApiUrl, {
-    //             method: "POST",
-    //             body: JSON.stringify({
-    //                 id: ids?.length && (Math.max(...ids) + 1),
-    //                 categoryName: newCategory
-    //
-    //             }),
-    //             headers: {
-    //                 "Content-Type": "application/json"
-    //             }
-    //         })
-    //             .then((response) => {
-    //                 if (response.ok) {
-    //                     return response.json();
-    //                 } else {
-    //                     throw new Error("Błąd")
-    //                 }
-    //             })
-    //             .then((data) => {
-    //                 setNewItemData(prevState => ({...prevState, category: data.categoryName}));
-    //                 setCategoriesList( prevState => [...prevState, data]);
-    //             })
-    //             .catch((err) => console.log("Błąd", err));
-    //
-    //         setNewCategory("");
-    //
-    // };
+
 
     const handleCloseForm = () => {
         setNewItemData({
@@ -321,112 +384,162 @@ export default function BudgetNewItemForm () {
 
             <Divider className={classes.divider} variant="middle"/>
             <form className={classes.form} onSubmit={handleSubmit(handleAddNewItem)}>
-                <TextField
+                <Controller
                     name="title"
-                    label="Tytuł"
-                    size="small"
-                    variant="outlined"
-                    className={classes.inputs}
-                    color="secondary"
-                    {...title}
-                />
-                <FormControl variant="outlined" size="small" className={classes.inputs}>
-                    <InputLabel id="category" color="secondary">Kategoria</InputLabel>
-                    <Select
-                        name="category"
-                        id="category"
-                        label="Kategoria"
-                        color="secondary"
-                        classes={{root: classes.selectRoot}}
-                        value={newItemData.category}
-                        {...category}
-                        >
-                        <MenuItem value="" disabled>Wybierz</MenuItem>
-                   n     {categoriesList.map(category => (
-                            <MenuItem
-                                key={category.id}
-                                value={category.categoryName}
-                                classes={{ selected: classes.selected, root: classes.rootMenuItem}}
-                            >
-                                {category.categoryName}
-                            </MenuItem>
-                        ))}
-                        <MenuItem
-                            classes={{
-                                selected: classes.selected,
-                                root: classes.rootMenuItem
-                            }}
-                            value="addNew"
-                        >
-                            Dodaj kategorię
-                        </MenuItem>
-                    </Select>
-                </FormControl>
-
-                {newItemData.category === "addNew" ? (
-                    <>
+                    control={control}
+                    render={() => (
                         <TextField
-                            label="Nowa kategoria"
-                            variant="outlined"
+                            error={errors?.title ? true : false}
+                            color={errors?.title ? "error" : "secondary"}
+                            label="Tytuł"
                             size="small"
+                            variant="outlined"
                             className={classes.inputs}
-                            style={{marginBottom: 8}}
-                            color="secondary"
-                            onChange={e => setNewCategory(e.target.value)}
+                            helperText={errors?.title?.message}
+                            {...register("title")}
+                            {...title}
                         />
+                    )}
+
+                />
+                <FormControl
+                    variant="outlined"
+                    size="small"
+                    error={errors?.category ? true : false}
+                    color={errors?.category ? "error" : "secondary"}
+                    className={classes.inputs}
+                >
+                    <InputLabel id="category" color="secondary">Kategoria</InputLabel>
+                    <Controller
+                        name="category"
+                        control={control}
+                        render={() => (
+                            <Select
+                                label="Kategoria"
+                                classes={{root: classes.selectRoot}}
+                                {...register("category")}
+                                value={category}
+                                onChange={e => setCategory(e.target.value)}
+                            >
+                                {categoriesList.map(category => (
+                                    <MenuItem
+                                        key={category.id}
+                                        value={category.name}
+                                        classes={{ selected: classes.selected, root: classes.rootMenuItem}}
+                                    >
+                                        {category.name}
+                                    </MenuItem>
+                                ))}
+                                <MenuItem
+                                    classes={{
+                                        selected: classes.selected,
+                                        root: classes.rootMenuItem
+                                    }}
+                                    value="addNew"
+                                >
+                                    Dodaj kategorię
+                                </MenuItem>
+                            </Select>
+                        )}
+                    />
+                    <Typography
+                        variant="caption"
+                        color="error"
+                        style={{height:20, margin: "4px 14px 0 14px"}}
+                    >
+                        {errors?.category?.message}
+                    </Typography>
+                </FormControl>
+                {category === "addNew" ? (
+                    <>
+                        <Controller
+                            name="newCategory"
+                            control={control}
+                            render={() => (
+                                <TextField
+                                    error={newCategoryErrActive ? true : false}
+                                    color={newCategoryErrActive ? "error" : "secondary"}
+                                    label="Nowa kategoria"
+                                    variant="outlined"
+                                    size="small"
+                                    helperText={newCategoryErrors[0]}
+                                    className={classes.inputs}
+                                    {...newCategory}
+                                />
+                            )}
+                        />
+
                         <Button
                             variant="contained"
                             color="secondary"
+                            onClick={handleAddNewCategory}
+                            className={classes.formBtn}
+                            style={{margin: "5px 0 0 0"}}
                         >
                             Dodaj
                         </Button>
                     </>
-                ) : null
-                }
-                <TextField
+                ) : null}
+                <Controller
                     name="date"
-                    label="Data"
-                    type="date"
-                    size="small"
-                    variant="outlined"
-                    color="secondary"
-                    value={newItemData.date}
-                    InputLabelProps={{
-                        shrink: true,
-                    }}
-                    className={classes.inputs}
-                    onChange={handleValueChange}
+                    control={control}
+                    render={() => (
+                        <TextField
+                            error={errors?.date ? true : false}
+                            color={errors?.date ? "error" : "secondary"}
+                            name="date"
+                            label="Data"
+                            type="date"
+                            size="small"
+                            variant="outlined"
+                            helperText={errors?.date?.message}
+                            value={newItemData.date}
+                            InputLabelProps={{
+                                shrink: true,
+                            }}
+                            className={classes.inputs}
+                            {...register("date")}
+                            {...date}
+                        />
+                    )}
                 />
-                <FormControl component="fieldset">
+                <FormControl component="fieldset" style={{marginTop: 5}}>
                     <FormLabel
                         component="legend"
                         color="secondary"
                         style={{textAlign: "center"}}
                     >
-                        Rodzaj
+                        Typ
                     </FormLabel>
                     <RadioGroup
                         row
                         aria-label="type"
-                        name="type"
-                        value={newItemData.type}
-                        onChange={handleValueChange}
+
+                        {...register("type")}
+                        {...type}
                         style={{justifyContent: "center"}}>
                         <FormControlLabel value="income" control={<Radio />} label="Przychód" />
                         <FormControlLabel value="expenses" control={<Radio />} label="Wydatek" />
                         <FormControlLabel value="saving" control={<Radio />} label="Oszczędzanie" />
                     </RadioGroup>
                 </FormControl>
-                <TextField
-                    label="Suma"
-                    name="summ"
-                    size="small"
-                    variant="outlined"
-                    color="secondary"
-                    value={newItemData.summ}
-                    className={classes.inputs}
-                    style={{marginBottom: 8}}
-                    onChange={handleValueChange}
+                <Controller
+                    name="sum"
+                    control={control}
+                    render={() => (
+                        <TextField
+                            error={errors?.sum ? true : false}
+                            color={errors?.sum ? "error" : "secondary"}
+                            label="Suma"
+                            size="small"
+                            variant="outlined"
+                            helperText={errors?.sum?.message}
+                            className={classes.inputs}
+                            style={{marginBottom: 8}}
+                            {...register("sum")}
+                            {...sum}
+                        />
+                    )}
                 />
                 <Button className={classes.formBtn} type="submit">Zapisz i zamknij</Button>
             </form>

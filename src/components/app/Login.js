@@ -104,74 +104,39 @@ const Login = () => {
                 </IconButton>
                 <form className={classes.form} noValidate autoComplete="off" onSubmit={handleSubmit(signIn)}>
                     <Typography variant="h5" style={{marginBottom: 16}}>Wprowadź login i hasło</Typography>
-                    {errors?.email ? (
-                        <Controller
-                            name="email"
-                            control={control}
-                            render={() => (
-                                <TextField
-                                    error
-                                    className={classes.textField}
-                                    label="Email"
-                                    size="small"
-                                    helperText={errors?.email?.message}
-                                    variant="outlined"
-                                    {...register("email")}
-                                    {...email}
-                                />
-                            )}
-                        />
-                    ) : (
-                        <Controller
-                            name="email"
-                            control={control}
-                            render={() => (
-                                <TextField
-                                    className={classes.textField}
-                                    label="Email"
-                                    size="small"
-                                    variant="outlined"
-                                    {...register("email")}
-                                    {...email}
-                                />
-                            )}
-                        />
-                    )}
-                    {errors?.password ? (
-                        <Controller
-                            name="password"
-                            control={control}
-                            render={() => (
-                                <TextField
-                                    error
-                                    className={classes.textField}
-                                    label="Hasło"
-                                    type="password"
-                                    size="small"
-                                    variant="outlined"
-                                    helperText={errors?.password?.message}
-                                    {...register("password")}
-                                    {...password}
-                                />
-                            )}
-                        />
-                    ) : (
-                        <Controller
-                            name="password"
-                            control={control}
-                            render={() => (
-                                <TextField
-                                    className={classes.textField}
-                                    label="Hasło"
-                                    type="password"
-                                    size="small"
-                                    variant="outlined"
-                                    {...register("password")}
-                                    {...password}
-                                />
-                            )}
-                        />
-                    )}
+                    <Controller
+                        name="email"
+                        control={control}
+                        render={() => (
+                            <TextField
+                                error={errors?.email ? true : false}
+                                className={classes.textField}
+                                label="Email"
+                                size="small"
+                                helperText={errors?.email?.message}
+                                variant="outlined"
+                                {...register("email")}
+                                {...email}
+                            />
+                        )}
+                    />
+                    <Controller
+                        name="password"
+                        control={control}
+                        render={() => (
+                            <TextField
+                                error={errors?.password ? true : false}
+                                className={classes.textField}
+                                label="Hasło"
+                                type="password"
+                                size="small"
+                                variant="outlined"
+                                helperText={errors?.password?.message}
+                                {...register("password")}
+                                {...password}
+                            />
+                        )}
+                    />
                     <Box style={{height:20, marginTop: 8}}>
                         {sendErr ? (
                             <Typography variant="caption" color="error">Dane zostały niepoprawnie wprowadzone</Typography>

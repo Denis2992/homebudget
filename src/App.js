@@ -19,9 +19,12 @@ function App() {
 
     useEffect( () => {
         const fetch = async () => {
-            await firebase.firestore()
+            await firebase
+                .firestore()
                 .collection(`${currentUser}`)
-                .doc("userData").get().then(snapshot => setCurrentUserData(snapshot.data()))
+                .doc("userData")
+                .get()
+                .then(snapshot => setCurrentUserData(snapshot.data()))
         };
 
         fetch();

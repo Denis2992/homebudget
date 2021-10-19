@@ -26,6 +26,8 @@ import AddCircleIcon from "@material-ui/icons/AddCircle";
 import Tooltip from "@material-ui/core/Tooltip";
 import TablePagination from "@material-ui/core/TablePagination";
 import BudgetNewItemForm from "./BudgetNewItemForm";
+import getFirebase from "../../firebase/firebase";
+import {CurrentUserContext} from "../../../index";
 
 export const newDataItemContext = createContext("");
 
@@ -279,7 +281,8 @@ export default function BudgetTableFull () {
     const [selected, setSelected] = useState([]);
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
-    const [editMode, setEditMode] = useState(false)
+    const [editMode, setEditMode] = useState(false);
+    const [budget, setBudget] = useState([]);
     const [newItemData, setNewItemData] = useState({
         id: "",
         title: "",
@@ -288,23 +291,35 @@ export default function BudgetTableFull () {
         type: "",
         summ: ""
     });
-    const {currentUserData, setUsersData, usersData, } = useContext(usersDataContext);
+    const {currentUserData, setUsersData, usersData} = useContext(usersDataContext);
+    const {currentUser} =useContext(CurrentUserContext);
     const history = useHistory();
+    const firebase = getFirebase();
+
 
     useEffect(() => {
-        fetch(usersApiUrl)
-            .then((resp) => {
-                if (resp.ok) {
-                    return resp.json();
-                } else {
-                    throw new Error("Błąd sieci!");
-                }
-            })
-            .then((data) => {
-                setUsersData(data);
-            })
-            .catch(err => console.log("Błąd!", err));
-    }, [setUsersData, usersData]);
+        const fetch = async () => {
+            try {
+                if (!firebase) return;
+                const db = firebase.firestore();
+                const ref = db.collection(`${currentUser}`);
+                await ref.get()
+                    .then(querySnapshot => {
+                        return querySnapshot.docs[0].ref.collection("budget").get();
+                    })
+                    .then(querySnapshot => {
+                        querySnapshot.forEach(doc => {
+                            setBudget(prevState => [...prevState, doc.data()])
+                        })
+                    })
+            } catch (error) {
+                console.log("error", error);
+            }
+        };
+
+        fetch();
+    }, [currentUser, firebase])
+
 
     const handleRequestSort = (event, property) => {
         const isAsc = orderBy === property && order === 'asc';
@@ -314,7 +329,7 @@ export default function BudgetTableFull () {
 
     const handleSelectAllClick = (event) => {
         if (event.target.checked) {
-            const newSelecteds = currentUserData.budget.map((n) => n.id);
+            const newSelecteds = budget.map((n) => n.id);
             setSelected(newSelecteds);
             return;
         }
@@ -413,7 +428,8 @@ export default function BudgetTableFull () {
                     setNewItemData,
                     editMode,
                     setEditMode,
-                    setSelected
+                    setSelected,
+                    budget, setBudget
                 }}
             >
                 <Grid container spacing={2} className={classes.gridBox}>
@@ -437,10 +453,10 @@ export default function BudgetTableFull () {
                                         orderBy={orderBy}
                                         onSelectAllClick={handleSelectAllClick}
                                         onRequestSort={handleRequestSort}
-                                        rowCount={currentUserData?.budget?.length}
+                                        rowCount={budget?.length}
                                     />
                                     <TableBody>
-                                        {stableSort(currentUserData?.budget, getComparator(order, orderBy))
+                                        {stableSort(budget, getComparator(order, orderBy))
                                             .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                                             .map((row, index) => {
                                                 const isItemSelected = isSelected(row.id);
@@ -466,7 +482,7 @@ export default function BudgetTableFull () {
                                                         </TableCell>
                                                         <TableCell>{row.title}</TableCell>
                                                         <TableCell>{row.category}</TableCell>
-                                                        <TableCell>{row.summ}</TableCell>
+                                                        <TableCell>{row.sum}</TableCell>
                                                         <TableCell>{row.date}</TableCell>
                                                     </TableRow>
                                                 );

@@ -26,16 +26,12 @@ export default function BudgetPulpit () {
     const [month, setMonth] = useState('');
     const [year, setYear] = useState('');
 
-    const [years, setYears] = useState([
-        2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025
-    ]);
 
 
     return (
         <datesContext.Provider value={{
             month, setMonth,
             year, setYear,
-            years, setYears
         }}>
             <Container className={classes.mainContainer}>
                 <Grid container spacing={2} className={classes.gridBox}>
