@@ -1,8 +1,9 @@
-import React, {useContext} from "react";
+import React, {useContext, useEffect, useState} from "react";
 import {Button, Paper, Typography, makeStyles, Box} from "@material-ui/core";
 import {DoubleArrow} from "@material-ui/icons";
 import {Link} from "react-router-dom";
-import {usersDataContext} from "../../../App";
+import {currentUserContext} from "../../../index";
+import getFirebase from "../../firebase/firebase";
 
 const useStyles = makeStyles((theme) => ({
     paper: {
@@ -39,9 +40,34 @@ const useStyles = makeStyles((theme) => ({
 
 export default function Savings () {
     const classes = useStyles();
-    const {currentUserData} = useContext(usersDataContext);
+    const [savings, setSavings] = useState([]);
+    const {currentUser} = useContext(currentUserContext);
+    const firebase = getFirebase();
 
-    const total = currentUserData?.savings?.map(item => item.currentState)
+    useEffect(() => {
+        const fetch = async () => {
+            try {
+                if (!firebase) return;
+                const db = firebase.firestore();
+                const ref = db.collection(`${currentUser}`);
+                await ref.get()
+                    .then(querySnapshot => {
+                        return querySnapshot.docs[0].ref.collection("savings").get();
+                    })
+                    .then(querySnapshot => {
+                        querySnapshot.forEach(doc => {
+                            setSavings(prevState => [...prevState, doc.data()])
+                        })
+                    })
+            } catch (error) {
+                console.log("error", error);
+            }
+        };
+
+        fetch();
+    }, [currentUser, firebase]);
+
+    const total = savings?.map(item => item.currentState)
         .reduce((sum, num) => {
             return +sum + +num;
         }, 0);

@@ -9,7 +9,7 @@ import Registration from "./Registration";
 import Welcome from "./Welcome";
 import {HashRouter, NavLink, Route, Switch} from "react-router-dom";
 import Header from "./Header";
-import {CurrentUserContext} from "../../index";
+import {currentUserContext} from "../../index";
 
 const useStyles = makeStyles((theme) => ({
 
@@ -45,7 +45,7 @@ const useStyles = makeStyles((theme) => ({
 
 export default function StartWindow() {
     const classes = useStyles();
-    const {currentUser} = useContext(CurrentUserContext)
+    const {currentUser} = useContext(currentUserContext)
 
     if (currentUser) {
         return (

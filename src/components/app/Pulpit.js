@@ -9,7 +9,6 @@ import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 import FiberManualRecordIcon from '@material-ui/icons/FiberManualRecord';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import AddIcon from '@material-ui/icons/Add';
-import {usersDataContext} from "../../App";
 import Tooltip from "@material-ui/core/Tooltip";
 
 
@@ -202,7 +201,7 @@ const MaxExpensesProgressBar = withStyles((theme) => ({
 
 export default function Pulpit() {
     const classes = useStyles();
-    const {currentUserData} = useContext(usersDataContext);
+    const currentUserData = (null);
     //budget data sort to render
     const budgetDataSorted = currentUserData?.budget?.sort((a,b) => {
         return b.id - a.id;

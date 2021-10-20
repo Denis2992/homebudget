@@ -1,4 +1,4 @@
-import React, {useContext, useState} from "react";
+import React, {useContext} from "react";
 import {
     Divider,
     Paper,
@@ -7,22 +7,22 @@ import {
     Button,
     makeStyles,
     IconButton,
-    List,
-    ListItem,
     Grid
 } from "@material-ui/core";
 import HighlightOffIcon from '@material-ui/icons/HighlightOff';
-import {Link, useHistory} from "react-router-dom";
+import {useHistory} from "react-router-dom";
 import {newSavingDataContext} from "./SavingsTable";
-import {usersApiUrl, usersDataContext} from "../../../App";
-import isDecimal from "validator/es/lib/isDecimal";
+import { useForm, Controller } from "react-hook-form";
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from "yup";
+import getFirebase from "../../firebase/firebase";
+import {currentUserContext} from "../../../index";
 
 const useStyles = makeStyles((theme) => ({
     paper: {
         width: "100%",
         maxWidth: 380,
-        minHeight: 550,
-        maxHeight: 1000,
+        maxHeight: 550,
         border: `2px solid ${theme.palette.info.main}`,
         display: "flex",
         flexDirection: "column",
@@ -61,8 +61,9 @@ const useStyles = makeStyles((theme) => ({
 
     },
     inputs: {
-        margin: theme.spacing(2, 0),
+        marginTop: theme.spacing(2),
         width: theme.spacing(35),
+        height: 60
     },
     formBtn: {
         backgroundColor: theme.palette.primary.main,
@@ -82,211 +83,131 @@ const useStyles = makeStyles((theme) => ({
     }
 }));
 
+const schema = yup.object({
+    name: yup
+        .string()
+        .min(3, "Tytuł ma zawierać minimum 3 znaki")
+        .matches(/^[A-Za-z]+$/i, "Tytuł nie może mieć liczb")
+        .required("Pole nie może być puste"),
+    currentState: yup
+        .number()
+        .typeError("Wpisz poprawną sumę")
+        .required(),
+    goal: yup
+        .number()
+        .typeError("Wpisz poprawną sumę")
+        .required(),
+    leftSum: yup
+        .number()
+        .typeError("Wpisz poprawną sumę")
+        .required()
+}).required();
+
 export default function SavingsNewItemForm () {
     const classes = useStyles();
     const {
+        savings, setSavings,
         newSavingData,
         setNewSavingData,
         editMode,
         setEditMode,
         setSelected
     } = useContext(newSavingDataContext);
-    const {currentUserData, setUsersData, setCurrentUserData} = useContext(usersDataContext);
-    const [errorList, setErrorList] = useState([]);
     const history = useHistory();
+    const firebase = getFirebase();
+    const {currentUser} = useContext(currentUserContext);
+
+    const {  control, register, formState: { errors }, handleSubmit } = useForm({
+        resolver: yupResolver(schema)
+    });
 
     const handleValueChange = (event) => {
         const {name, value} = event.target;
         setNewSavingData(prevState => ({...prevState, [name]: value}));
     };
 
-    // inputs validation
-    const checkIfFormValid = () => {
-        const newErrorList = [];
-        const {name, currentState, goal, leftSum} = newSavingData;
+    const handleAddNewItem = () => {
+        const ids = savings.map(el => el.id);
 
-        if (!currentState || !goal || !leftSum) {
-            newErrorList.push("Wszystkie pola maja byc wypełnione");
-        }
+        const dataToSend = {
+            id: savings.length === 0 ? 1 : (Math.max(...ids) + 1),
+            name: newSavingData.name,
+            currentState: newSavingData.currentState,
+            goal: newSavingData.goal,
+            leftSum: newSavingData.leftSum
+        };
 
-        if (!isDecimal(currentState)) {
-            newErrorList.push("Aktualny stan ma byc liczbą");
-        }
+        if (firebase) {
+            try {
+                const db = firebase.firestore()
+                const budgetRef = db.collection(`${currentUser}`)
+                    .doc("userData")
+                    .collection("savings");
 
-        if (!isDecimal(goal)) {
-            newErrorList.push("Cel ma byc liczbą");
-        }
-
-        if (!isDecimal(leftSum)) {
-            newErrorList.push('Pole "Zostało" ma byc liczbą');
-        }
-
-
-        if (name.length < 3) {
-            newErrorList.push('Nazwa musi zawierać minimum 3 litery');
-        }
-
-        if (!editMode) {
-            if (currentUserData.savings.some(el => el.name === name)) {
-                newErrorList.push("Taka nazwa juz istnieje");
+                budgetRef.doc().set(dataToSend)
+                    .then(function () {
+                        console.log('Document Added');
+                        setSavings(prevState => [...prevState, dataToSend]);
+                    })
+                    .catch(function (error) {
+                        console.error('Error adding document: ', error);
+                    });
+            } catch (error) {
+                console.log("error", error);
             }
         }
 
-        setErrorList(newErrorList);
-
-        return newErrorList.length === 0;
-    };
-
-    const getErrorsToRender = () => {
-        let errorsToRender
-
-        if (errorList.length > 0) {
-            errorsToRender = (
-                <List className={classes.list}>
-                    {errorList.map((err, i) => (
-                        <ListItem
-                            key={i}
-                            className={classes.listElement}
-                            variant="body2"
-                        >
-                            {err}
-                        </ListItem>
-                    ))}
-                </List>
-            );
-        } else {
-            errorsToRender = null;
-        }
-
-        return errorsToRender;
-    };
-
-    const handleAddNewItem = () => {
-        const ids = currentUserData.savings.map(el => el.id);
-
-        const dataToSend = {
-            savings: [
-                ...currentUserData.savings,
-                {
-                    id: currentUserData.savings.length === 0 ? 1 : (Math.max(...ids) + 1),
-                    name: newSavingData.name,
-                    currentState: newSavingData.currentState,
-                    goal: newSavingData.goal,
-                    leftSum: newSavingData.leftSum
-                }
-            ]
-        };
-
-        if (checkIfFormValid()) {
-            fetch(`${usersApiUrl}/${currentUserData.id}`, {
-                method: "PATCH",
-                body: JSON.stringify(dataToSend),
-                headers: {
-                    "Content-Type": "application/json"
-                }
-            })
-                .then((resp) => {
-                    if (resp.ok) {
-                        return resp.json();
-                    } else {
-                        throw new Error("Błąd")
-                    }
-                })
-                .then(data => {
-                    setCurrentUserData(data);
-
-                })
-                .catch((err) => console.log("Błąd", err));
-
-            setNewSavingData({
-                id: "",
-                name: "",
-                currentState: "",
-                goal: "",
-                leftSum: ""
-            });
-
-            history.push("/app/budget/dataSavings");
-
-            fetch(usersApiUrl)
-                .then((resp) => {
-                    if (resp.ok) {
-                        return resp.json();
-                    } else {
-                        throw new Error("Błąd sieci!");
-                    }
-                })
-                .then((data) => {
-                    setUsersData(data);
-                })
-                .catch(err => console.log("Błąd!", err));
-        }
+        setNewSavingData({
+            name: "",
+            currentState: "",
+            goal: "",
+            leftSum: ""
+        });
+        history.push("/app/budget/dataSavings")
     };
 
     const handleSaveEditItem = () => {
         const dataToSend = {
-            savings: [
-                ...currentUserData.savings.filter(item => item.id !== newSavingData.id),
-                {
-                    id: newSavingData.id,
-                    name: newSavingData.name,
-                    currentState: newSavingData.currentState,
-                    goal: newSavingData.goal,
-                    leftSum: newSavingData.leftSum
-                }
-            ]
+            id: newSavingData.id,
+            name: newSavingData.name,
+            currentState: newSavingData.currentState,
+            goal: newSavingData.goal,
+            leftSum: newSavingData.leftSum
         };
 
-        if (checkIfFormValid()) {
-            fetch(`${usersApiUrl}/${currentUserData.id}`, {
-                method: "PATCH",
-                body: JSON.stringify(dataToSend),
-                headers: {
-                    "Content-Type": "application/json"
-                }
+        const db = firebase.firestore();
+        const budgetRef = db.collection(`${currentUser}`)
+            .doc("userData").collection("savings");
+
+        budgetRef.where("id", "==", newSavingData.id)
+            .get()
+            .then(querySnapShot => {
+                querySnapShot.forEach(doc => {
+                    doc.ref.update(dataToSend).then(() => {
+                        console.log("Document successfully edited!");
+                        setSavings([...savings?.filter(item => item.id !== newSavingData.id), dataToSend]);
+                    }).catch(error => {
+                        console.log("Error removing document: ", error);
+                    });
+                });
             })
-                .then((resp) => {
-                    if (resp.ok) {
-                        return resp.json();
-                    } else {
-                        throw new Error("Błąd")
-                    }
-                })
-                .then(data => {
-                    setCurrentUserData(data);
+            .catch(error => {
+                console.log("Error getting documents: ", error);
+            })
 
-                })
-                .catch((err) => console.log("Błąd", err));
-
-            setCurrentUserData({
-                id: "",
-                name: "",
-                currentState: "",
-                goal: "",
-                leftSum: ""
-            });
-
-            setEditMode(false);
-            setSelected([]);
-            history.push("/app/budget/dataSavings");
-
-            fetch(usersApiUrl)
-                .then((resp) => {
-                    if (resp.ok) {
-                        return resp.json();
-                    } else {
-                        throw new Error("Błąd sieci!");
-                    }
-                })
-                .then((data) => {
-                    setUsersData(data);
-                })
-                .catch(err => console.log("Błąd!", err));
-        }
+        setEditMode(false);
+        setSelected([]);
+        setNewSavingData({
+            id: "",
+            name: "",
+            currentState: "",
+            goal: "",
+            leftSum: ""
+        });
+        history.push("/app/budget/dataSavings")
     };
 
-    const handleSendForm = (e) => {
-        e.preventDefault();
+    const handleSendForm = () => {
         if (editMode) {
             return handleSaveEditItem();
         } else {
@@ -294,15 +215,24 @@ export default function SavingsNewItemForm () {
         }
     };
 
+    const handleCloseForm = () => {
+        setNewSavingData({
+            id: "",
+            name: "",
+            currentState: "",
+            goal: "",
+            leftSum: ""
+        });
+        setEditMode(false);
+        history.push("/app/budget/dataSavings");
+    }
 
     return (
         <Grid container spacing={3} className={classes.gridBox}>
             <Grid item xs={9} sm={10} md={12}>
                 <Paper className={classes.paper} elevation={3}>
                     <IconButton style={{width: 48, alignSelf: "self-end"}}>
-                        <Link to="/app/budget/dataSavings/" style={{height: 24}}>
-                            <HighlightOffIcon color="error" />
-                        </Link>
+                            <HighlightOffIcon color="error" onClick={handleCloseForm}/>
                     </IconButton>
                     {editMode ? (
                         <Typography className={classes.headText} variant="h6">Edytuj</Typography>
@@ -310,44 +240,79 @@ export default function SavingsNewItemForm () {
                         <Typography className={classes.headText} variant="h6">Nowy wpis</Typography>
                     )}
                     <Divider className={classes.divider} variant="middle"/>
-                    <form className={classes.form} onSubmit={handleSendForm}>
-                        <TextField
-                            label="Nazwa"
+                    <form className={classes.form} onSubmit={handleSubmit(handleSendForm)}>
+                        <Controller
                             name="name"
-                            value={newSavingData.name}
-                            variant="outlined"
-                            className={classes.inputs}
-                            onChange={handleValueChange}
-                            color="primary"
+                            control={control}
+                            render={() => (
+                                <TextField
+                                    error={errors?.name ? true : false}
+                                    label="Nazwa"
+                                    value={newSavingData.name}
+                                    size="small"
+                                    variant="outlined"
+                                    helperText={errors?.name?.message}
+                                    className={classes.inputs}
+                                    {...register("name")}
+                                    onChange={handleValueChange}
+                                />
+                            )}
                         />
-                        <TextField
-                            label="Aktualny stan"
+                        <Controller
                             name="currentState"
-                            value={newSavingData.currentState}
-                            variant="outlined"
-                            color="primary"
-                            className={classes.inputs}
-                            onChange={handleValueChange}
+                            control={control}
+                            render={() => (
+                                <TextField
+                                    error={errors?.currentState ? true : false}
+                                    label="Aktualny stan"
+                                    value={newSavingData.currentState}
+                                    size="small"
+                                    variant="outlined"
+                                    helperText={errors?.currentState?.message}
+                                    className={classes.inputs}
+                                    {...register("currentState")}
+                                    onChange={handleValueChange}
+                                />
+                            )}
                         />
-                        <TextField
-                            label="Cel"
+                        <Controller
                             name="goal"
-                            value={newSavingData.goal}
-                            variant="outlined"
-                            color="primary"
-                            className={classes.inputs}
-                            onChange={handleValueChange}
+                            control={control}
+                            render={() => (
+                                <TextField
+                                    error={errors?.goal ? true : false}
+                                    label="Cel"
+                                    name="goal"
+                                    value={newSavingData.goal}
+                                    size="small"
+                                    variant="outlined"
+                                    helperText={errors?.goal?.message}
+                                    className={classes.inputs}
+                                    {...register("goal")}
+                                    onChange={handleValueChange}
+                                />
+                            )}
                         />
-                        <TextField
-                            label="Zostało"
+
+                        <Controller
                             name="leftSum"
-                            value={newSavingData.leftSum}
-                            variant="outlined"
-                            color="primary"
-                            className={classes.inputs}
-                            onChange={handleValueChange}
+                            control={control}
+                            render={() => (
+                                <TextField
+                                    error={errors?.leftSum ? true : false}
+                                    label="Zostało"
+
+                                    value={newSavingData.leftSum}
+                                    size="small"
+                                    variant="outlined"
+                                    helperText={errors?.leftSum?.message}
+
+                                    className={classes.inputs}
+                                    {...register("leftSum")}
+                                    onChange={handleValueChange}
+                                />
+                            )}
                         />
-                        {getErrorsToRender()}
                         <Button className={classes.formBtn} type="submit">Zapisz i zamknij</Button>
                     </form>
                 </Paper>

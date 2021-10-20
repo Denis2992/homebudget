@@ -22,8 +22,9 @@ import AddCircleIcon from '@material-ui/icons/AddCircle';
 import EditIcon from '@material-ui/icons/Edit';
 import {HashRouter, Link, Route, Switch, useHistory} from "react-router-dom";
 import SavingsNewItemForm from "./SavingsNewItemForm";
-import {usersApiUrl, usersDataContext} from "../../../App";
 import {Grid} from "@material-ui/core";
+import getFirebase from "../../firebase/firebase";
+import {currentUserContext} from "../../../index";
 
 export const newSavingDataContext = createContext("");
 
@@ -269,31 +270,40 @@ export default function BudgetTableFull() {
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(5);
     const [editMode, setEditMode] = useState(false);
+    const [savings, setSavings] = useState ([]);
     const [newSavingData, setNewSavingData] = useState({
         id: "",
         name: "",
         currentState: "",
         goal: "",
         leftSum: ""
-
     });
-    const {currentUserData, setUsersData, usersData} = useContext(usersDataContext);
     const history = useHistory();
+    const firebase = getFirebase();
+    const {currentUser} = useContext(currentUserContext);
 
     useEffect(() => {
-        fetch(usersApiUrl)
-            .then((resp) => {
-                if (resp.ok) {
-                    return resp.json();
-                } else {
-                    throw new Error("Błąd sieci!");
-                }
-            })
-            .then((data) => {
-                setUsersData(data);
-            })
-            .catch(err => console.log("Błąd!", err));
-    }, [setUsersData, usersData]);
+        const fetch = async () => {
+            try {
+                if (!firebase) return;
+                const db = firebase.firestore();
+                const ref = db.collection(`${currentUser}`);
+                await ref.get()
+                    .then(querySnapshot => {
+                        return querySnapshot.docs[0].ref.collection("savings").get();
+                    })
+                    .then(querySnapshot => {
+                        querySnapshot.forEach(doc => {
+                            setSavings(prevState => [...prevState, doc.data()])
+                        })
+                    })
+            } catch (error) {
+                console.log("error", error);
+            }
+        };
+
+        fetch();
+    }, [currentUser, firebase]);
 
     const handleRequestSort = (event, property) => {
         const isAsc = orderBy === property && order === 'asc';
@@ -303,7 +313,7 @@ export default function BudgetTableFull() {
 
     const handleSelectAllClick = (event) => {
         if (event.target.checked) {
-            const newSelecteds = currentUserData.savings.map((n) => n.id);
+            const newSelecteds = savings?.map((n) => n.id);
             setSelected(newSelecteds);
             return;
         }
@@ -342,44 +352,36 @@ export default function BudgetTableFull() {
     const isSelected = (name) => selected.indexOf(name) !== -1;
 
     const handleDeleteItem = () => {
-        const dataToSend = {
-            savings: currentUserData.savings.filter(item => !selected.includes(item.id))
-        };
+        const selectedObject = savings?.filter(item => selected.includes(item.id));
+        const ids = selectedObject.map(item => item.id);
 
-        fetch(`${usersApiUrl}/${currentUserData.id}`, {
-            method: "PATCH",
-            body: JSON.stringify(dataToSend),
-            headers: {
-                "Content-Type": "application/json"
-            }
+        let db = firebase.firestore();
+        let savingsRef = db.collection(`${currentUser}`)
+            .doc("userData").collection("savings");
+
+        ids.forEach(el => {
+            savingsRef.where("id", "==", el)
+                .get()
+                .then(querySnapshot => {
+                    querySnapshot.forEach(doc => {
+                        doc.ref.delete().then(() => {
+                            console.log("Document successfully deleted!");
+                            setSavings(savings.filter(item => !selected.includes(item.id)));
+                        }).catch(error => {
+                            console.log("Error removing document: ", error);
+                        });
+                    });
+                })
+                .catch(error => {
+                    console.log("Error getting documents: ", error);
+                })
         })
-            .then((resp) => {
-                if (resp.ok) {
-                    return resp.json();
-                } else {
-                    throw new Error("Błąd")
-                }
-            })
-            .catch((err) => console.log("Błąd", err));
 
         setSelected([]);
-
-        fetch(usersApiUrl)
-            .then((resp) => {
-                if (resp.ok) {
-                    return resp.json();
-                } else {
-                    throw new Error("Błąd sieci!");
-                }
-            })
-            .then((data) => {
-                setUsersData(data);
-            })
-            .catch(err => console.log("Błąd!", err));
     };
 
     const handleEditItem = () => {
-        const singleData = currentUserData.savings.filter(item => item.id === selected[0]);
+        const singleData = savings.filter(item => item.id === selected[0]);
 
         setNewSavingData({
             id:singleData[0].id,
@@ -392,14 +394,14 @@ export default function BudgetTableFull() {
         history.push(`/app/budget/dataSavings/edit/${selected[0]}`)
     };
 
-    if (currentUserData) {
+    if (currentUser) {
         return (
             <newSavingDataContext.Provider value={{
+                savings, setSavings,
                 setSelected,
                 editMode,
                 setEditMode,
-                newSavingData,
-                setNewSavingData
+                newSavingData, setNewSavingData
             }}>
                 <Grid container spacing={3} className={classes.gridBox}>
                     <Grid item xs={9} sm={10} md={12}>
@@ -422,10 +424,10 @@ export default function BudgetTableFull() {
                                         orderBy={orderBy}
                                         onSelectAllClick={handleSelectAllClick}
                                         onRequestSort={handleRequestSort}
-                                        rowCount={currentUserData?.savings?.length}
+                                        rowCount={savings?.length}
                                     />
                                     <TableBody>
-                                        {stableSort(currentUserData?.savings, getComparator(order, orderBy))
+                                        {stableSort(savings, getComparator(order, orderBy))
                                             .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                                             .map((row, index) => {
                                                 const isItemSelected = isSelected(row.id);
@@ -461,7 +463,7 @@ export default function BudgetTableFull() {
                             <TablePagination
                                 rowsPerPageOptions={[5, 10, 15, 20]}
                                 component="div"
-                                count={currentUserData?.savings?.length}
+                                count={savings?.length}
                                 rowsPerPage={rowsPerPage}
                                 labelRowsPerPage="Wierszy na stronie"
                                 page={page}

@@ -1,4 +1,4 @@
-import React, {useContext, useState} from "react";
+import React, {useContext} from "react";
 import {
     Divider,
     Paper,
@@ -6,19 +6,23 @@ import {
     Typography,
     Button,
     makeStyles,
-    IconButton, List, ListItem, Grid
+    IconButton,
+    Grid
 } from "@material-ui/core";
 import HighlightOffIcon from '@material-ui/icons/HighlightOff';
 import {useHistory} from "react-router-dom";
 import {newCreditDataContext} from "./CreditTableFull";
-import {usersApiUrl, usersDataContext} from "../../../App";
-import isDecimal from "validator/es/lib/isDecimal";
+import { useForm, Controller } from "react-hook-form";
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from "yup";
+import {currentUserContext} from "../../../index";
+import getFirebase from "../../firebase/firebase";
 
 const useStyles = makeStyles((theme) => ({
     paper: {
         width: "100%",
         maxWidth: 380,
-        minHeight: 720,
+        maxHeight: 720,
         border: `2px solid ${theme.palette.warning.light}`,
         display: "flex",
         flexDirection: "column",
@@ -58,8 +62,9 @@ const useStyles = makeStyles((theme) => ({
 
     },
     inputs: {
-        margin: theme.spacing(2, 0),
+        marginTop: theme.spacing(2),
         width: theme.spacing(35),
+        height: 60
     },
     formBtn: {
         backgroundColor: theme.palette.primary.main,
@@ -80,229 +85,149 @@ const useStyles = makeStyles((theme) => ({
     }
 }));
 
+const schema = yup.object({
+    title: yup
+        .string()
+        .min(3, "Tytuł ma zawierać minimum 3 znaki")
+        .matches(/^[A-Za-z]+$/i, "Tytuł nie może mieć liczb")
+        .required("Pole nie może być puste"),
+    creditSum: yup
+        .number()
+        .typeError("Wpisz sumę")
+        .required("Pole nie może być puste"),
+    paidSum: yup
+        .number()
+        .typeError("Wpisz sumę")
+        .required("Pole nie może być puste"),
+    leftSum: yup
+        .number()
+        .typeError("Wpisz sumę")
+        .required("Pole nie może być puste"),
+    monthlyPayment: yup
+        .number()
+        .typeError("Wpisz sumę")
+        .required("Pole nie może być puste"),
+    leftPayments: yup
+        .number()
+        .typeError("Wpisz sumę")
+        .integer("Liczba ma byc liczba całą")
+        .required("Pole nie może być puste")
+}).required();
+
 export default function CreditNewItemForm () {
+    const {currentUser} = useContext(currentUserContext);
     const {
-        currentUserData,
-        setCurrentUserData,
-        setUsersData
-    } = useContext(usersDataContext);
-    const {
+        credits, setCredits,
         newCreditData,
         setNewCreditData,
         setSelected,
         editMode,
         setEditMode
     } = useContext(newCreditDataContext);
-    const [errorList, setErrorList] = useState([]);
     const history = useHistory();
+    const firebase = getFirebase();
+
+    const {  control, register, formState: { errors }, handleSubmit } = useForm({
+        resolver: yupResolver(schema)
+    });
 
     const handleValueChange = (event) => {
         const {name, value} = event.target;
         setNewCreditData(prevState => ({...prevState, [name]: value}));
     };
 
-    // inputs validation
-    const checkIfFormValid = () => {
-        const newErrorList = [];
-        const {creditTitle, creditSumm, paidSumm, leftSumm, monthlyPayment, leftPayments} = newCreditData;
 
-        if (creditTitle.length < 3) {
-            newErrorList.push("Nazwa musi zawierać minimum 3 litery");
-        }
+    const handleAddNewItem = () => {
+        const ids = credits?.map(el => el.id);
 
-        if (!editMode) {
-            if (currentUserData.credits.some(el => el.creditTitle === creditTitle)) {
-                newErrorList.push("Taka nazwa juz istnieje")
+        const dataToSend = {
+            id: credits?.length === 0 ? 1 : (Math.max(...ids) + 1),
+            title: newCreditData.title,
+            creditSum: newCreditData.creditSum,
+            paidSum: newCreditData.paidSum,
+            leftSum: newCreditData.leftSum,
+            monthlyPayment: newCreditData.monthlyPayment,
+            leftPayments: newCreditData.leftPayments
+        };
+
+        if (firebase) {
+            try {
+                const db = firebase.firestore()
+                const creditsRef = db.collection(`${currentUser}`)
+                    .doc("userData")
+                    .collection("credits");
+
+                creditsRef.doc().set(dataToSend)
+                    .then(function () {
+                        console.log('Document Added');
+                        setCredits(prevState => [...prevState, dataToSend]);
+                    })
+                    .catch(function (error) {
+                        console.error('Error adding document: ', error);
+                    });
+            } catch (error) {
+                console.log("error", error);
             }
         }
 
-        if (!creditSumm || !paidSumm || !leftSumm || !monthlyPayment || !leftPayments) {
-            newErrorList.push("Wszystkie pola maja byc wypełnione")
-        }
-
-        if (!isDecimal(creditSumm)) {
-              newErrorList.push("Całkowita suma ma byc liczbą i może byc liczba dziesiętną");
-        }
-
-        if (!isDecimal(paidSumm)) {
-              newErrorList.push("Pole spłacono ma byc liczbą i może byc liczba dziesiętną");
-        }
-
-        if (!isDecimal(leftSumm)) {
-            newErrorList.push("Pole spłacono ma byc liczbą i może byc liczba dziesiętną");
-        }
-
-        if (!isDecimal(monthlyPayment)) {
-            newErrorList.push("Miesięczna rata ma byc liczbą i może byc liczba dziesiętną");
-        }
-
-        if (!isDecimal(leftPayments)) {
-              newErrorList.push("Pole zostało rat ma byc liczbą i może byc liczba dziesiętną");
-        }
-
-        setErrorList(newErrorList);
-
-        return newErrorList.length === 0;
-    };
-
-    const getErrorsToRender = () => {
-        let errorsToRender
-
-        if (errorList.length > 0) {
-            errorsToRender = (
-                <List className={classes.list}>
-                    {errorList.map((err, i) => (
-                        <ListItem
-                            key={i}
-                            className={classes.listElement}
-                            variant="body2"
-                        >
-                            {err}
-                        </ListItem>
-                    ))}
-                </List>
-            );
-        } else {
-            errorsToRender = null;
-        }
-
-        return errorsToRender;
-    };
-
-    const handleAddNewItem = () => {
-        const ids = currentUserData.credits.map(el => el.id);
-
-        const dataToSend = {
-            credits : [
-                ...currentUserData.credits,
-                {
-                    id: currentUserData.credits.length === 0 ? 1 : (Math.max(...ids) + 1),
-                    creditTitle: newCreditData.creditTitle,
-                    creditSumm: newCreditData.creditSumm,
-                    paidSumm: newCreditData.paidSumm,
-                    leftSumm: newCreditData.leftSumm,
-                    monthlyPayment: newCreditData.monthlyPayment,
-                    leftPayments: newCreditData.leftPayments
-                }
-            ]
-        };
-
-        if (checkIfFormValid()) {
-            fetch(`${usersApiUrl}/${currentUserData.id}`, {
-                method: "PATCH",
-                body: JSON.stringify(dataToSend),
-                headers: {
-                    "Content-Type": "application/json"
-                }
-            })
-                .then((resp) => {
-                    if (resp.ok) {
-                        return resp.json();
-                    } else {
-                        throw new Error("Błąd")
-                    }
-                })
-                .then(data => {
-                    setCurrentUserData(data);
-
-                })
-                .catch((err) => console.log("Błąd", err));
-
-            setNewCreditData({
-                id: "",
-                creditTitle: "",
-                creditSumm: "",
-                paidSumm: "",
-                leftSumm: "",
-                monthlyPayment: "",
-                leftPayments: ""
-            });
-
-            history.push("/app/budget/dataCredit");
-
-            fetch(usersApiUrl)
-                .then((resp) => {
-                    if (resp.ok) {
-                        return resp.json();
-                    } else {
-                        throw new Error("Błąd sieci!");
-                    }
-                })
-                .then((data) => {
-                    setUsersData(data);
-                })
-                .catch(err => console.log("Błąd!", err));
-        }
+        setNewCreditData({
+            title: "",
+            creditSum: "",
+            paidSum: "",
+            leftSum: "",
+            monthlyPayment: "",
+            leftPayments: ""
+        });
+        history.push("/app/budget/dataCredit");
     };
 
     const handleSaveEditItem = () => {
         const dataToSend = {
-            credits: [
-                ...currentUserData.credits.filter(item => item.id !== newCreditData.id),
-                {
-                    id: newCreditData.id,
-                    creditTitle: newCreditData.creditTitle,
-                    creditSumm: newCreditData.creditSumm,
-                    paidSumm: newCreditData.paidSumm,
-                    leftSumm: newCreditData.leftSumm,
-                    monthlyPayment: newCreditData.monthlyPayment,
-                    leftPayments: newCreditData.leftPayments
-                }
-            ]
+            id: newCreditData.id,
+            title: newCreditData.title,
+            creditSum: newCreditData.creditSum,
+            paidSum: newCreditData.paidSum,
+            leftSum: newCreditData.leftSum,
+            monthlyPayment: newCreditData.monthlyPayment,
+            leftPayments: newCreditData.leftPayments
         };
 
-        if (checkIfFormValid()) {
-            fetch(`${usersApiUrl}/${currentUserData.id}`, {
-                method: "PATCH",
-                body: JSON.stringify(dataToSend),
-                headers: {
-                    "Content-Type": "application/json"
-                }
+        const db = firebase.firestore();
+        const budgetRef = db.collection(`${currentUser}`)
+            .doc("userData").collection("credits");
+
+        budgetRef.where("id", "==", newCreditData.id)
+            .get()
+            .then(querySnapShot => {
+                querySnapShot.forEach(doc => {
+                    doc.ref.update(dataToSend).then(() => {
+                        console.log("Document successfully edited!");
+                        setCredits([...credits?.filter(item => item.id !== newCreditData.id), dataToSend]);
+                    }).catch(error => {
+                        console.log("Error removing document: ", error);
+                    });
+                });
             })
-                .then((resp) => {
-                    if (resp.ok) {
-                        return resp.json();
-                    } else {
-                        throw new Error("Błąd")
-                    }
-                })
-                .then(data => {
-                    setCurrentUserData(data);
+            .catch(error => {
+                console.log("Error getting documents: ", error);
+            })
 
-                })
-                .catch((err) => console.log("Błąd", err));
 
-            setNewCreditData({
-                id: "",
-                creditTitle: "",
-                creditSumm: "",
-                paidSumm: "",
-                leftSumm: "",
-                monthlyPayment: "",
-                leftPayments: ""
-            });
-
-            setEditMode(false);
-            setSelected([]);
-            history.push("/app/budget/dataCredit");
-
-            fetch(usersApiUrl)
-                .then((resp) => {
-                    if (resp.ok) {
-                        return resp.json();
-                    } else {
-                        throw new Error("Błąd sieci!");
-                    }
-                })
-                .then((data) => {
-                    setUsersData(data);
-                })
-                .catch(err => console.log("Błąd!", err));
-        }
+        setEditMode(false);
+        setSelected([]);
+        setNewCreditData({
+            id: "",
+            title: "",
+            creditSum: "",
+            paidSum: "",
+            leftSum: "",
+            monthlyPayment: "",
+            leftPayments: ""
+        });
+        history.push("/app/budget/dataCredit")
     };
 
-    const handleSendForm = (e) => {
-        e.preventDefault();
+    const handleSendForm = () => {
         if (editMode) {
             return handleSaveEditItem();
         } else {
@@ -339,62 +264,112 @@ export default function CreditNewItemForm () {
                     <Typography className={classes.headText} variant="h6">Nowy wpis</Typography>
                 )}
                 <Divider className={classes.divider} variant="middle"/>
-                <form className={classes.form} onSubmit={handleSendForm}>
-                    <TextField
-                        label="Nazwa"
-                        name="creditTitle"
-                        value={newCreditData.creditTitle}
-                        variant="outlined"
-                        className={classes.inputs}
-                        color="secondary"
-                        onChange={handleValueChange}
+                <form className={classes.form} onSubmit={handleSubmit(handleSendForm)}>
+                    <Controller
+                        name="title"
+                        control={control}
+                        render={() => (
+                            <TextField
+                                error={errors?.title ? true : false}
+                                label="Nazwa"
+                                value={newCreditData.title}
+                                helperText={errors?.title?.message}
+                                size="small"
+                                variant="outlined"
+                                className={classes.inputs}
+                                {...register("title")}
+                                onChange={handleValueChange}
+                            />
+                        )}
                     />
-                    <TextField
-                        label="Całkowita suma"
-                        name="creditSumm"
-                        value={newCreditData.creditSumm}
-                        variant="outlined"
-                        color="secondary"
-                        className={classes.inputs}
-                        onChange={handleValueChange}
+                    <Controller
+                        name="creditSum"
+                        control={control}
+                        render={() => (
+                            <TextField
+                                error={errors?.title ? true : false}
+                                label="Całkowita suma"
+                                value={newCreditData.creditSum}
+                                helperText={errors?.creditSum?.message}
+                                size="small"
+                                variant="outlined"
+                                className={classes.inputs}
+                                {...register("creditSum")}
+                                onChange={handleValueChange}
+                            />
+                        )}
                     />
-                    <TextField
-                        label="Spłacono"
-                        name="paidSumm"
-                        value={newCreditData.paidSumm}
-                        variant="outlined"
-                        color="secondary"
-                        className={classes.inputs}
-                        onChange={handleValueChange}
+                    <Controller
+                        name="paidSum"
+                        control={control}
+                        render={() => (
+                            <TextField
+                                error={errors?.paidSum ? true : false}
+
+                                label="Spłacono"
+                                value={newCreditData.paidSum}
+                                helperText={errors?.paidSum?.message}
+                                size="small"
+                                variant="outlined"
+                                className={classes.inputs}
+                                {...register("paidSum")}
+                                onChange={handleValueChange}
+                            />
+                        )}
                     />
-                    <TextField
-                        label="Zostało"
-                        name="leftSumm"
-                        value={newCreditData.leftSumm}
-                        variant="outlined"
-                        color="secondary"
-                        className={classes.inputs}
-                        onChange={handleValueChange}
+                    <Controller
+                        name="leftSum"
+                        control={control}
+                        render={() => (
+                            <TextField
+                                error={errors?.leftSum ? true : false}
+                                label="Zostało do spłaty"
+                                value={newCreditData.leftSum}
+                                helperText={errors?.leftSum?.message}
+                                size="small"
+                                variant="outlined"
+                                className={classes.inputs}
+                                {...register("leftSum")}
+                                onChange={handleValueChange}
+                            />
+                        )}
                     />
-                    <TextField
-                        label="Miesięczna rata"
+
+                    <Controller
                         name="monthlyPayment"
-                        value={newCreditData.monthlyPayment}
-                        variant="outlined"
-                        color="secondary"
-                        className={classes.inputs}
-                        onChange={handleValueChange}
+                        control={control}
+                        render={() => (
+                            <TextField
+                                error={errors?.monthlyPayment ? true : false}
+                                label="Miesięczna rata"
+                                value={newCreditData.monthlyPayment}
+                                helperText={errors?.monthlyPayment?.message}
+                                size="small"
+                                variant="outlined"
+                                className={classes.inputs}
+                                {...register("monthlyPayment")}
+                                onChange={handleValueChange}
+                            />
+                        )}
                     />
-                    <TextField
-                        label="Zostało rat"
+                    <Controller
                         name="leftPayments"
-                        value={newCreditData.leftPayments}
-                        variant="outlined"
-                        color="secondary"
-                        className={classes.inputs}
-                        onChange={handleValueChange}
+                        control={control}
+                        render={() => (
+                            <TextField
+                                error={errors?.leftPayments ? true : false}
+                                label="Zostało rat"
+                                value={newCreditData.leftPayments}
+                                helperText={errors?.leftPayments?.message}
+                                size="small"
+                                variant="outlined"
+                                className={classes.inputs}
+                                {...register("leftPayments")}
+                                onChange={handleValueChange}
+                            />
+                        )}
                     />
-                    {getErrorsToRender()}
+
                     <Button className={classes.formBtn} type="submit">Zapisz i zamknij</Button>
                 </form>
             </Paper>

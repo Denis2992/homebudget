@@ -10,7 +10,6 @@ import {
     Table,
     Grid
 } from "@material-ui/core"
-import {usersApiUrl, usersDataContext} from "../../../App";
 import TableHead from "@material-ui/core/TableHead";
 import TableSortLabel from "@material-ui/core/TableSortLabel";
 import PropTypes from "prop-types";
@@ -27,7 +26,7 @@ import Tooltip from "@material-ui/core/Tooltip";
 import TablePagination from "@material-ui/core/TablePagination";
 import BudgetNewItemForm from "./BudgetNewItemForm";
 import getFirebase from "../../firebase/firebase";
-import {CurrentUserContext} from "../../../index";
+import {currentUserContext} from "../../../index";
 
 export const newDataItemContext = createContext("");
 
@@ -283,19 +282,16 @@ export default function BudgetTableFull () {
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [editMode, setEditMode] = useState(false);
     const [budget, setBudget] = useState([]);
-    const [newItemData, setNewItemData] = useState({
-        id: "",
-        title: "",
-        category: "",
-        date: "",
-        type: "",
-        summ: ""
-    });
-    const {currentUserData, setUsersData, usersData} = useContext(usersDataContext);
-    const {currentUser} =useContext(CurrentUserContext);
+    const [id, setId] = useState("");
+    const [title, setTitle] = useState("");
+    const [category, setCategory] = useState("");
+    const [date, setDate] = useState("");
+    const [type, setType] = useState("expenses");
+    const [sum, setSum] = useState("");
+
+    const {currentUser} =useContext(currentUserContext);
     const history = useHistory();
     const firebase = getFirebase();
-
 
     useEffect(() => {
         const fetch = async () => {
@@ -318,8 +314,7 @@ export default function BudgetTableFull () {
         };
 
         fetch();
-    }, [currentUser, firebase])
-
+    }, [currentUser, firebase]);
 
     const handleRequestSort = (event, property) => {
         const isAsc = orderBy === property && order === 'asc';
@@ -368,64 +363,57 @@ export default function BudgetTableFull () {
     const isSelected = (name) => selected.indexOf(name) !== -1;
 
     const handleDeleteItem = () => {
-        const dataToSend = {
-            budget: currentUserData.budget.filter(item => !selected.includes(item.id))
-        };
+       const selectedObject = budget?.filter(item => selected.includes(item.id));
+       const ids = selectedObject.map(item => item.id);
 
-        fetch(`${usersApiUrl}/${currentUserData.id}`, {
-            method: "PATCH",
-            body: JSON.stringify(dataToSend),
-            headers: {
-                "Content-Type": "application/json"
-            }
+        let db = firebase.firestore();
+        let budgetRef = db.collection(`${currentUser}`)
+            .doc("userData").collection("budget");
+
+        ids.forEach(el => {
+            budgetRef.where("id", "==", el)
+                .get()
+                .then(querySnapshot => {
+                    querySnapshot.forEach(doc => {
+                        doc.ref.delete().then(() => {
+                            console.log("Document successfully deleted!");
+                            setBudget(budget.filter(item => !selected.includes(item.id)));
+                        }).catch(error => {
+                            console.log("Error removing document: ", error);
+                        });
+                    });
+                })
+                .catch(error => {
+                    console.log("Error getting documents: ", error);
+                })
         })
-            .then((resp) => {
-                if (resp.ok) {
-                    return resp.json();
-                } else {
-                    throw new Error("Błąd")
-                }
-            })
-            .catch((err) => console.log("Błąd", err));
 
         setSelected([]);
-
-        fetch(usersApiUrl)
-            .then((resp) => {
-                if (resp.ok) {
-                    return resp.json();
-                } else {
-                    throw new Error("Błąd sieci!");
-                }
-            })
-            .then((data) => {
-                setUsersData(data);
-            })
-            .catch(err => console.log("Błąd!", err));
     };
 
     const handleEditItem = () => {
-        const singleData = currentUserData.budget.filter(item => item.id === selected[0]);
-
-        setNewItemData({
-            id: singleData[0].id,
-            title: singleData[0].title,
-            category: singleData[0].category,
-            date: singleData[0].date,
-            type: singleData[0].type,
-            summ: singleData[0].summ
-        });
+        const singleData = budget.filter(item => item.id === selected[0]);
+        setId(singleData[0].id);
+        setTitle(singleData[0].title);
+        setCategory(singleData[0].category);
+        setDate(singleData[0].date);
+        setType(singleData[0].type);
+        setSum(singleData[0].sum);
         setEditMode(true);
         history.push(`/app/budget/dataBudget/edit/${selected[0]}`)
     };
 
 
-    if (currentUserData){
+    if (currentUser){
         return (
             <newDataItemContext.Provider
                 value= {{
-                    newItemData,
-                    setNewItemData,
+                    id, setId,
+                    title, setTitle,
+                    category, setCategory,
+                    date, setDate,
+                    type, setType,
+                    sum, setSum,
                     editMode,
                     setEditMode,
                     setSelected,
@@ -493,7 +481,7 @@ export default function BudgetTableFull () {
                             <TablePagination
                                 rowsPerPageOptions={[10, 25, 50, 100]}
                                 component="div"
-                                count={currentUserData?.budget?.length ? currentUserData?.budget?.length : 0}
+                                count={budget?.length ? budget?.length : 0}
                                 rowsPerPage={rowsPerPage}
                                 labelRowsPerPage="Wierszy na stronie"
                                 page={page}

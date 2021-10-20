@@ -3,7 +3,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import {Typography, Paper, Button, IconButton, TextField, Box} from "@material-ui/core";
 import HighlightOffIcon from '@material-ui/icons/HighlightOff';
 import {Link, useHistory} from "react-router-dom";
-import {CurrentUserContext} from "../../index";
+import {currentUserContext} from "../../index";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from "yup";
@@ -65,7 +65,7 @@ const Login = () => {
     const [email, resetEmail] = useInput("");
     const [password, resetPassword] = useInput("");
     const history = useHistory();
-    const {setCurrentUser} = useContext(CurrentUserContext);
+    const {setCurrentUser} = useContext(currentUserContext);
     const classes = useStyles();
     const firebaseInstance = getFirebase();
     const [sendErr, setSendErr] = useState(false);

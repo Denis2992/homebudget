@@ -1,9 +1,10 @@
-import React, {createContext, useState} from "react";
+import React, {createContext, useEffect, useState} from "react";
 import BudgetTableSummary from "./BudgetTableSummary";
 import CreditTableSummary from "./CreditTableSummary";
 import {makeStyles, Container, Grid} from "@material-ui/core";
 import Savings from "./Savings";
 import SortPulpitBudget from "./SortPulpitBudget";
+
 
 
 const useStyles = makeStyles((theme) => ({
@@ -26,7 +27,21 @@ export default function BudgetPulpit () {
     const [month, setMonth] = useState('');
     const [year, setYear] = useState('');
 
+    useEffect(() => {
+        const date = new Date();
+        const year = date.getFullYear();
+        const month = date.getMonth() + 1;
+        const correctMonth = () => {
+            if (month > 9) {
+                return month;
+            } else {
+                return `0${month}`
+            }
+        };
 
+        setMonth(correctMonth());
+        setYear(year);
+    }, [])
 
     return (
         <datesContext.Provider value={{

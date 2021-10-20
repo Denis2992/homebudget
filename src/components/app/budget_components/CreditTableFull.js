@@ -23,7 +23,8 @@ import EditIcon from '@material-ui/icons/Edit';
 import {HashRouter, Link, Route, Switch, useHistory} from "react-router-dom";
 import CreditNewItemForm from "./CreditNewItemForm";
 import {Grid} from "@material-ui/core";
-import {usersApiUrl, usersDataContext} from "../../../App";
+import getFirebase from "../../firebase/firebase";
+import {currentUserContext} from "../../../index";
 
 export const newCreditDataContext = createContext("")
 
@@ -270,32 +271,42 @@ export default function CreditTableFull() {
     const [editMode, setEditMode] = useState(false);
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(5);
-    const {currentUserData, setUsersData, usersData} = useContext(usersDataContext);
     const [newCreditData, setNewCreditData] = useState({
         id: "",
-        creditTitle: "",
-        creditSumm: "",
-        paidSumm: "",
-        leftSumm: "",
+        title: "",
+        creditSum: "",
+        paidSum: "",
+        leftSum: "",
         monthlyPayment: "",
         leftPayments: ""
     });
+    const [credits, setCredits] = useState([]);
     const history = useHistory();
+    const firebase = getFirebase();
+    const {currentUser} = useContext(currentUserContext);
 
     useEffect(() => {
-        fetch(usersApiUrl)
-            .then((resp) => {
-                if (resp.ok) {
-                    return resp.json();
-                } else {
-                    throw new Error("Błąd sieci!");
-                }
-            })
-            .then((data) => {
-                setUsersData(data);
-            })
-            .catch(err => console.log("Błąd!", err));
-    }, [setUsersData, usersData]);
+        const fetch = async () => {
+            try {
+                if (!firebase) return;
+                const db = firebase.firestore();
+                const ref = db.collection(`${currentUser}`);
+                await ref.get()
+                    .then(querySnapshot => {
+                        return querySnapshot.docs[0].ref.collection("credits").get();
+                    })
+                    .then(querySnapshot => {
+                        querySnapshot.forEach(doc => {
+                            setCredits(prevState => [...prevState, doc.data()])
+                        })
+                    })
+            } catch (error) {
+                console.log("error", error);
+            }
+        };
+
+        fetch();
+    }, [currentUser, firebase]);
 
     const handleRequestSort = (event, property) => {
         const isAsc = orderBy === property && order === 'asc';
@@ -305,7 +316,7 @@ export default function CreditTableFull() {
 
     const handleSelectAllClick = (event) => {
         if (event.target.checked) {
-            const newSelecteds = currentUserData.credits.map((n) => n.id);
+            const newSelecteds = credits.map((n) => n.id);
             setSelected(newSelecteds);
             return;
         }
@@ -344,51 +355,43 @@ export default function CreditTableFull() {
     const isSelected = (name) => selected.indexOf(name) !== -1;
 
     const handleDeleteItem = () => {
-        const dataToSend = {
-            credits: currentUserData.credits.filter(item => !selected.includes(item.id))
-        };
+        const selectedObject = credits?.filter(item => selected.includes(item.id));
+        const ids = selectedObject.map(item => item.id);
 
-        fetch(`${usersApiUrl}/${currentUserData.id}`, {
-            method: "PATCH",
-            body: JSON.stringify(dataToSend),
-            headers: {
-                "Content-Type": "application/json"
-            }
+        let db = firebase.firestore();
+        let budgetRef = db.collection(`${currentUser}`)
+            .doc("userData").collection("credits");
+
+        ids.forEach(el => {
+            budgetRef.where("id", "==", el)
+                .get()
+                .then(querySnapshot => {
+                    querySnapshot.forEach(doc => {
+                        doc.ref.delete().then(() => {
+                            console.log("Document successfully deleted!");
+                            setCredits(credits.filter(item => !selected.includes(item.id)));
+                        }).catch(error => {
+                            console.log("Error removing document: ", error);
+                        });
+                    });
+                })
+                .catch(error => {
+                    console.log("Error getting documents: ", error);
+                })
         })
-            .then((resp) => {
-                if (resp.ok) {
-                    return resp.json();
-                } else {
-                    throw new Error("Błąd")
-                }
-            })
-            .catch((err) => console.log("Błąd", err));
 
         setSelected([]);
-
-        fetch(usersApiUrl)
-            .then((resp) => {
-                if (resp.ok) {
-                    return resp.json();
-                } else {
-                    throw new Error("Błąd sieci!");
-                }
-            })
-            .then((data) => {
-                setUsersData(data);
-            })
-            .catch(err => console.log("Błąd!", err));
     };
 
     const handleEditItem = () => {
-        const singleData = currentUserData.credits.filter(item => item.id === selected[0]);
+        const singleData = credits.filter(item => item.id === selected[0]);
 
         setNewCreditData({
             id: singleData[0].id,
-            creditTitle: singleData[0].creditTitle,
-            creditSumm: singleData[0].creditSumm,
-            paidSumm: singleData[0].paidSumm,
-            leftSumm: singleData[0].leftSumm,
+            title: singleData[0].title,
+            creditSum: singleData[0].creditSum,
+            paidSum: singleData[0].paidSum,
+            leftSum: singleData[0].leftSum,
             monthlyPayment: singleData[0].monthlyPayment,
             leftPayments: singleData[0].leftPayments
         });
@@ -397,9 +400,10 @@ export default function CreditTableFull() {
         history.push(`/app/budget/dataCredit/edit/${selected[0]}`)
     };
 
-    if (currentUserData) {
+    if (currentUser) {
         return (
             <newCreditDataContext.Provider value={{
+                credits, setCredits,
                 newCreditData,
                 setNewCreditData,
                 setSelected,
@@ -428,10 +432,10 @@ export default function CreditTableFull() {
                                         orderBy={orderBy}
                                         onSelectAllClick={handleSelectAllClick}
                                         onRequestSort={handleRequestSort}
-                                        rowCount={currentUserData?.credits?.length}
+                                        rowCount={credits?.length}
                                     />
                                     <TableBody>
-                                        {stableSort(currentUserData?.credits, getComparator(order, orderBy))
+                                        {stableSort(credits, getComparator(order, orderBy))
                                             .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                                             .map((row, index) => {
                                                 const isItemSelected = isSelected(row.id);
@@ -453,11 +457,11 @@ export default function CreditTableFull() {
                                                             />
                                                         </TableCell>
                                                         <TableCell component="th" id={labelId} scope="row">
-                                                            {row.creditTitle}
+                                                            {row.title}
                                                         </TableCell>
-                                                        <TableCell>{row.creditSumm}</TableCell>
-                                                        <TableCell>{row.paidSumm}</TableCell>
-                                                        <TableCell>{row.leftSumm}</TableCell>
+                                                        <TableCell>{row.creditSum}</TableCell>
+                                                        <TableCell>{row.paidSum}</TableCell>
+                                                        <TableCell>{row.leftSum}</TableCell>
                                                         <TableCell>{row.monthlyPayment}</TableCell>
                                                         <TableCell>{row.leftPayments}</TableCell>
                                                     </TableRow>
@@ -469,7 +473,7 @@ export default function CreditTableFull() {
                             <TablePagination
                                 rowsPerPageOptions={[5, 10]}
                                 component="div"
-                                count={currentUserData?.credits?.length}
+                                count={credits?.length}
                                 rowsPerPage={rowsPerPage}
                                 labelRowsPerPage="Wierszy na stronie"
                                 page={page}

@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {useContext, useState} from "react";
 import {
     Button,
     Typography,
@@ -7,17 +7,21 @@ import {
     Select,
     MenuItem,
     Paper,
-    makeStyles, List, ListItem,
+    makeStyles,
 } from "@material-ui/core";
 import {lighten} from "@material-ui/core/styles";
 import months from "./date_data/monthData";
 import years from "./date_data/yearData";
+import { useForm, Controller } from "react-hook-form";
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from "yup";
+import {datesContext} from "./BudgetPulpit";
 
 const useStyles = makeStyles((theme) => ({
     paper: {
         padding: theme.spacing(2),
         border:`2px solid ${theme.palette.warning.dark}`,
-        minHeight: theme.spacing(15),
+        minHeight: theme.spacing(10),
     },
     form: {
         display: "flex",
@@ -27,6 +31,7 @@ const useStyles = makeStyles((theme) => ({
     input: {
         margin: theme.spacing(2, 1, 0, 1),
         width: theme.spacing(19.5),
+        height: 60
     },
     selectRoot: {
         "&:focus": {
@@ -36,7 +41,7 @@ const useStyles = makeStyles((theme) => ({
 
     },
     rootMenuItem: {
-        "&$selected": {
+        "&:selected": {
             backgroundColor: theme.palette.secondary.main,
             color: theme.palette.primary.contrastText,
             "&:hover": {
@@ -49,7 +54,7 @@ const useStyles = makeStyles((theme) => ({
     },
     sortBtn: {
         width: theme.spacing(12),
-        margin: theme.spacing(2, 2, 0, 2),
+        margin: theme.spacing(1, 2, 1.5, 2),
         "&:hover": {
             backgroundColor: theme.palette.warning.dark
         }
@@ -66,110 +71,126 @@ const useStyles = makeStyles((theme) => ({
     }
 }));
 
+const schema = yup.object({
+    monthSortValue: yup
+        .string()
+        .required("Wybierz miesiąc"),
+    yearSortValue: yup
+        .string()
+        .required("Wybierz rok"),
+}).required();
+
 export default function SortPulpitBudget () {
-    const [errorList, setErrorList] = useState([]);
-    const [dateParams, setDateParams] = useState({
-        month: "",
-        year: "",
-    })
+    const {setMonth, setYear} =useContext(datesContext);
+    const [monthSortValue, setMonthSortValue] = useState("");
+    const [yearSortValue, setYearSortValue] = useState("")
     const classes = useStyles();
 
-    const validSelectInputs = () => {
-        const newErrorList = [];
+    const {  control, register, formState: { errors }, handleSubmit } = useForm({
+        resolver: yupResolver(schema)
+    });
 
-        if (dateParams.year === "") {
-            newErrorList.push("Wybierz rok");
-        }
 
-        if (dateParams.month === "") {
-            newErrorList.push("Wybierz miesiąc");
-        }
-
-        setErrorList(newErrorList);
-
-        return newErrorList.length === 0;
-    };
-
-    const errorsToRender = () => {
-        if (errorList.length > 0) {
-            return (
-                <List className={classes.list}>
-                    {errorList.map((el, i) => (
-                        <ListItem key={i} className={classes.listElement}>{el}</ListItem>
-                    ))}
-                </List>
-            )
-        }
-    }
-
-    const handleFilterData = (e) => {
-        e.preventDefault();
-        if (validSelectInputs()) {
-            setDateParams({
-                month: "",
-                year: "",
-            })
-        }
+    const handleFilterData = () => {
+        setMonth(monthSortValue);
+        setYear(yearSortValue);
     };
 
     return (
         <Paper className={classes.paper}>
             <Typography align="center">Zobacz dane za inny miesiąc</Typography>
-            <form className={classes.form} onSubmit={handleFilterData}>
-                <FormControl fullWidth variant="outlined" className={classes.input}>
+            <form className={classes.form} onSubmit={handleSubmit(handleFilterData)}>
+
+                <FormControl
+                    fullWidth
+                    variant="outlined"
+                    className={classes.input}
+                    size="small"
+                    error={errors?.monthSortValue ? true : false}
+                    color={errors?.monthSortValue ? "error" : "secondary"}
+                >
                     <InputLabel id="month" color="secondary">Miesiąc</InputLabel>
-                    <Select
-                        labelId="month"
-                        id="month"
-                        value={dateParams.month}
-                        label="Miesiąc"
-                        classes={{root: classes.selectRoot}}
-                        color="secondary"
-                        onChange={e => setDateParams(prevState => ({...prevState, month: e.target.value}))}
-                        over
+                    <Controller
+                        name="monthSortValue"
+                        control={control}
+                        render={() => (
+                            <Select
+                                labelId="month"
+                                label="Miesiąc"
+                                classes={{root: classes.selectRoot}}
+                                value={monthSortValue}
+                                {...register("monthSortValue")}
+                                onChange={e => setMonthSortValue(e.target.value)}
+
+                            >
+                                {months.map(month => {
+                                    return (
+                                        <MenuItem key={month.name}
+                                                  classes={{
+                                                      root: classes.rootMenuItem
+                                                  }}
+                                                  value={month.monthNumber}
+                                        >
+                                            {month.name}
+                                        </MenuItem>
+                                    )
+                                })}
+                            </Select>
+                        )}
+                    />
+                    <Typography
+                        variant="caption"
+                        color="error"
+                        style={{height:20, margin: "4px 14px 0 14px"}}
                     >
-                        {months.map(month => {
-                            return (
-                                <MenuItem key={month.name}
-                                          classes={{
-                                              root: classes.rootMenuItem
-                                          }}
-                                          value={month.monthNumber}
-                                >
-                                    {month.name}
-                                </MenuItem>
-                            )
-                        })}
-
-
-                    </Select>
+                        {errors?.monthSortValue?.message}
+                    </Typography>
                 </FormControl>
-                <FormControl fullWidth className={classes.input} variant="outlined">
+                <FormControl
+                    fullWidth
+                    className={classes.input}
+                    variant="outlined"
+                    size="small"
+                    error={errors?.yearSortValue ? true : false}
+                    color={errors?.yearSortValue ? "error" : "secondary"}
+                >
                     <InputLabel id="year" color="secondary">Rok</InputLabel>
-                    <Select
-                        labelId="year"
-                        id="year"
-                        value={dateParams.year}
-                        label="Rok"
-                        variant="outlined"
-                        onChange={e => setDateParams(prevState => ({...prevState, year: e.target.value}))}
-                        color="secondary"
-                        classes={{root: classes.selectRoot}}
+                    <Controller
+                        name="yearSortValue"
+                        control={control}
+                        render={() => (
+                            <Select
+                                labelId="year"
+                                label="Rok"
+                                variant="outlined"
+                                color="secondary"
+                                value={yearSortValue}
+                                classes={{root: classes.selectRoot}}
+                                {...register("yearSortValue")}
+                                onChange={e => setYearSortValue(e.target.value)}
+                            >
+                                {years.map(year => {
+                                    return (
+                                        <MenuItem key={year.id}
+                                                  classes={{
+                                                      selected: classes.selected,
+                                                      root: classes.rootMenuItem
+                                                  }}
+                                                  value={year.yearNumber}
+                                        >
+                                            {year.yearNumber}
+                                        </MenuItem>
+                                    )
+                                })}
+                            </Select>
+                        )}
+                    />
+                    <Typography
+                        variant="caption"
+                        color="error"
+                        style={{height:20, margin: "4px 14px 0 14px"}}
                     >
-                        {years.map(year => {
-                            return (
-                                <MenuItem key={year.id}
-                                          classes={{
-                                              selected: classes.selected,
-                                              root: classes.rootMenuItem
-                                          }}
-                                          value={year.yearNumber}
-                                >
-                                    {year.yearNumber}
-                                </MenuItem>
-                            )
-                        })}
-                    </Select>
+                        {errors?.yearSortValue?.message}</Typography>
                 </FormControl>
                 <Button variant="contained"
                         color="secondary"
@@ -177,7 +198,6 @@ export default function SortPulpitBudget () {
                         type="submit"
                 >Filtruj</Button>
             </form>
-            {errorsToRender()}
         </Paper>
     )
 }

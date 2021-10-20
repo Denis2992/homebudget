@@ -1,4 +1,4 @@
-import React, {useContext, useEffect, useState} from 'react';
+import React, {useContext, useState} from 'react';
 import clsx from 'clsx';
 import {
     makeStyles,
@@ -27,7 +27,7 @@ import ExitToAppIcon from '@material-ui/icons/ExitToApp';
 import StartWindow from "./StartWindow";
 import Pulpit from "./Pulpit";
 import Budget from "./Budget";
-import {CurrentUserContext} from "../../index";
+import {currentUserContext} from "../../index";
 import getFirebase from "../firebase/firebase";
 
 
@@ -187,7 +187,7 @@ export default function Header() {
     const classes = useStyles();
     const theme = useTheme();
     const [open, setOpen] = useState(false);
-    const {currentUser, setCurrentUser} = useContext(CurrentUserContext);
+    const {currentUser, setCurrentUser} = useContext(currentUserContext);
     const firebase = getFirebase();
 
 

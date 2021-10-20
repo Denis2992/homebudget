@@ -20,7 +20,7 @@ import {
 import {useHistory} from "react-router-dom";
 import HighlightOffIcon from '@material-ui/icons/HighlightOff';
 import {lighten} from "@material-ui/core/styles";
-import {CurrentUserContext} from "../../../index";
+import {currentUserContext} from "../../../index";
 import {newDataItemContext} from "./BudgetTableFull";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -137,21 +137,20 @@ export default function BudgetNewItemForm () {
     const classes = useStyles();
     const history = useHistory();
     const {
-        newItemData,
-        setNewItemData,
+        id, setId,
+        title, setTitle,
+        category, setCategory,
+        date, setDate,
+        type, setType,
+        sum, setSum,
         editMode,
         setEditMode,
         budget, setBudget,
         setSelected
     } = useContext(newDataItemContext);
-    const {currentUser} = useContext(CurrentUserContext);
+    const {currentUser} = useContext(currentUserContext);
     const [categoriesList, setCategoriesList] = useState([]);
-    const [title, resetTitle] = useInput("");
-    const [category, setCategory] = useState("");
     const [newCategory, resetNewCategory] = useInput("");
-    const [date, resetDate] = useInput("");
-    const [type, resetType] = useInput("expenses");
-    const [sum, resetSum] = useInput("");
     const [newCategoryErrors, setNewCategoryErrors] = useState([]);
     const [newCategoryErrActive, setNewCategoryErrActive] =useState(false);
     const firebase = getFirebase();
@@ -245,11 +244,11 @@ export default function BudgetNewItemForm () {
 
         const dataToSend = {
                     id: budget.length === 0 ? 1 : (Math.max(...ids) + 1),
-                    title: title.value,
+                    title: title,
                     category: category,
-                    date: date.value,
-                    type: type.value,
-                    summ: sum.value
+                    date: date,
+                    type: type,
+                    sum: sum
         };
 
         if (firebase) {
@@ -262,6 +261,7 @@ export default function BudgetNewItemForm () {
                 budgetRef.doc().set(dataToSend)
                     .then(function () {
                         console.log('Document Added');
+                        setBudget(prevState => [...prevState, dataToSend]);
                     })
                     .catch(function (error) {
                         console.error('Error adding document: ', error);
@@ -271,98 +271,75 @@ export default function BudgetNewItemForm () {
             }
         }
 
-        setBudget(prevState => [...prevState, dataToSend]);
-        resetTitle();
+
+        setTitle("");
         setCategory("");
-        resetDate();
-        resetType();
-        resetSum();
+        setDate("");
+        setType("expenses");
+        setSum("");
         history.push("/app/budget/dataBudget")
     };
 
-    // const handleSaveEditItem = () => {
-    //     const dataToSend = {
-    //         budget: [
-    //             ...currentUserData.budget.filter(item => item.id !== newItemData.id),
-    //             {
-    //                 id: newItemData.id,
-    //                 title: newItemData.title,
-    //                 category: newItemData.category,
-    //                 date: newItemData.date,
-    //                 type: newItemData.type,
-    //                 summ: newItemData.summ
-    //             }
-    //         ]
-    //     };
-    //
-    //         fetch(`${usersApiUrl}/${currentUserData.id}`, {
-    //             method: "PATCH",
-    //             body: JSON.stringify(dataToSend),
-    //             headers: {
-    //                 "Content-Type": "application/json"
-    //             }
-    //         })
-    //             .then((resp) => {
-    //                 if (resp.ok) {
-    //                     return resp.json();
-    //                 } else {
-    //                     throw new Error("Błąd")
-    //                 }
-    //             })
-    //             .then(data => {
-    //                 setCurrentUserData(data);
-    //
-    //             })
-    //             .catch((err) => console.log("Błąd", err));
-    //
-    //         setNewItemData({
-    //             id: "",
-    //             title: "",
-    //             category: "",
-    //             date: "",
-    //             type: "",
-    //             summ: "",
-    //         });
-    //
-    //         setEditMode(false);
-    //         setSelected([]);
-    //         history.push("/app/budget/dataBudget");
-    //
-    //         fetch(usersApiUrl)
-    //             .then((resp) => {
-    //                 if (resp.ok) {
-    //                     return resp.json();
-    //                 } else {
-    //                     throw new Error("Błąd sieci!");
-    //                 }
-    //             })
-    //             .then((data) => {
-    //                 setUsersData(data);
-    //             })
-    //             .catch(err => console.log("Błąd!", err));
-    //
-    // };
+    const handleSaveEditItem = () => {
 
-    // const handleSendForm = (e) => {
-    //     e.preventDefault();
-    //     if (editMode) {
-    //         return handleSaveEditItem();
-    //     } else {
-    //         return handleAddNewItem();
-    //     }
-    // };
+        const dataToSend = {
+            id: id,
+            title: title,
+            category: category,
+            date: date,
+            type: type,
+            sum: sum
+        };
+
+        const db = firebase.firestore();
+        const budgetRef = db.collection(`${currentUser}`)
+            .doc("userData").collection("budget");
+
+        budgetRef.where("id", "==", id)
+            .get()
+            .then(querySnapShot => {
+                querySnapShot.forEach(doc => {
+                    doc.ref.update(dataToSend).then(() => {
+                        console.log("Document successfully edited!");
+                        setBudget([...budget?.filter(item => item.id !== id), dataToSend]);
+                    }).catch(error => {
+                        console.log("Error removing document: ", error);
+                    });
+                });
+            })
+            .catch(error => {
+                console.log("Error getting documents: ", error);
+            })
+
+
+        setEditMode(false);
+        setSelected([]);
+        setId("");
+        setTitle("");
+        setCategory("");
+        setDate("");
+        setType("expenses");
+        setSum("");
+        history.push("/app/budget/dataBudget");
+    };
+
+    const handleSendForm = () => {
+        if (editMode) {
+            return handleSaveEditItem();
+        } else {
+            return handleAddNewItem();
+        }
+    };
 
 
 
     const handleCloseForm = () => {
-        setNewItemData({
-            id: "",
-            title: "",
-            category: "",
-            date: "",
-            type: "",
-            summ: ""
-        });
+        setId("");
+        setTitle("");
+        setCategory("");
+        setDate("");
+        setType("expenses");
+        setSum("");
         setEditMode(false);
         history.push("/app/budget/dataBudget");
     }
@@ -383,7 +360,7 @@ export default function BudgetNewItemForm () {
             )}
 
             <Divider className={classes.divider} variant="middle"/>
-            <form className={classes.form} onSubmit={handleSubmit(handleAddNewItem)}>
+            <form className={classes.form} onSubmit={handleSubmit(handleSendForm)}>
                 <Controller
                     name="title"
                     control={control}
@@ -397,7 +374,8 @@ export default function BudgetNewItemForm () {
                             className={classes.inputs}
                             helperText={errors?.title?.message}
                             {...register("title")}
-                            {...title}
+                            value={title}
+                            onChange={e => setTitle(e.target.value)}
                         />
                     )}
 
@@ -493,13 +471,13 @@ export default function BudgetNewItemForm () {
                             size="small"
                             variant="outlined"
                             helperText={errors?.date?.message}
-                            value={newItemData.date}
                             InputLabelProps={{
                                 shrink: true,
                             }}
                             className={classes.inputs}
                             {...register("date")}
-                            {...date}
+                            value={date}
+                            onChange={e => setDate(e.target.value)}
                         />
                     )}
                 />
@@ -516,7 +494,8 @@ export default function BudgetNewItemForm () {
                         aria-label="type"
 
                         {...register("type")}
-                        {...type}
+                        value={type}
+                        onChange={e => setType(e.target.value)}
                         style={{justifyContent: "center"}}>
                         <FormControlLabel value="income" control={<Radio />} label="Przychód" />
                         <FormControlLabel value="expenses" control={<Radio />} label="Wydatek" />
@@ -537,7 +516,8 @@ export default function BudgetNewItemForm () {
                             className={classes.inputs}
                             style={{marginBottom: 8}}
                             {...register("sum")}
-                            {...sum}
+                            value={sum}
+                            onChange={e => setSum(e.target.value)}
                         />
                     )}
                 />

@@ -20,7 +20,7 @@ import Visibility from '@material-ui/icons/Visibility';
 import VisibilityOff from '@material-ui/icons/VisibilityOff';
 import HighlightOffIcon from '@material-ui/icons/HighlightOff';
 import {Link, useHistory} from "react-router-dom";
-import {CurrentUserContext} from "../../index";
+import {currentUserContext} from "../../index";
 import useInput from "../hooks/useInput";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -116,7 +116,7 @@ const Registration = () => {
     // const [captcha, setCaptcha] = useState(false);
     const [sendErr, setSendErr] = useState(false);
     const history = useHistory();
-    const {setCurrentUser} = useContext(CurrentUserContext);
+    const {setCurrentUser} = useContext(currentUserContext);
     const firebaseInstance = getFirebase();
 
 
@@ -163,7 +163,7 @@ const Registration = () => {
                 const categoriesRef =
                     db.collection(`${email.value}`)
                         .doc("userData")
-                        .collection('category');
+                        .collection("category");
 
                 categoriesRef
                     .doc()

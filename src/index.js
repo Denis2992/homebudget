@@ -33,7 +33,7 @@ export const theme = createTheme({
     },
 });
 
-export const CurrentUserContext = createContext(null);
+export const currentUserContext = createContext(null);
 
 const Index = () => {
     const [currentUser, setCurrentUser] = useState(null);
@@ -53,7 +53,7 @@ const Index = () => {
     }, []);
 
     return (
-        <CurrentUserContext.Provider value={{
+        <currentUserContext.Provider value={{
             currentUser, setCurrentUser
         }}>
             <HashRouter>
@@ -62,7 +62,7 @@ const Index = () => {
                     <Route path="/app" component={App} />
                 </Switch>
             </HashRouter>
-        </CurrentUserContext.Provider>
+        </currentUserContext.Provider>
 
     )
 }
