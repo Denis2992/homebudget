@@ -1,18 +1,15 @@
 # Application Home budget.
 
-Application helps to count yours savings, income and expenses. Project consists of landpage and application.
+Application helps to count yours savings, income and expenses. Project consists of landpage with message form and application.
 One consists of: 
 - pulpit with general information
-- budget with savings, income and expenses details witch you can add, edit, delete.
+- budget with savings, income and expenses details witch you can add, edit, delete, sort
 - login and registration form with validation.	
 
-Used technologies and instruments: React, JSS, JSON Server, Fetch API, React Router, React Scroll, Material UI.
+Used technologies and instruments: React, JSS, JSON Server, Fetch API, React Router, React Scroll, Firebase, React Hook Form, Material UI.
 
-## Lauch Home Budget
-   - in the project directory, run```npm start```
-   - in the directory ```/homebudget/database``` run ```json-server --watch db.json --port 3001```
+Link to app [Home Budget](https://dadalski-home-budget.netlify.app)
 
 ### Further development
-- add firebase authentication and all data will be sent to firestore
-- make decomposition if is nessesary
-- add new function: send message form, credit calculator
+- make decomposition
+- add new function: credit calculator, administration panel
