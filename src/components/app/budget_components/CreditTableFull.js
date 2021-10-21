@@ -1,41 +1,46 @@
-import React, {createContext, useContext, useEffect, useState} from "react";
-import {
-    Checkbox,
-    Paper,
-    TableBody,
-    TableCell,
-    TableRow,
-    Typography,
-    TableContainer,
-    Table,
-    Grid
-} from "@material-ui/core"
-import {usersApiUrl, usersDataContext} from "../../../App";
-import TableHead from "@material-ui/core/TableHead";
-import TableSortLabel from "@material-ui/core/TableSortLabel";
-import PropTypes from "prop-types";
-import {lighten, makeStyles, withStyles} from "@material-ui/core/styles";
-import Toolbar from "@material-ui/core/Toolbar";
-import clsx from "clsx";
+import React, {createContext, useContext, useEffect, useState} from 'react';
+import PropTypes from 'prop-types';
+import clsx from 'clsx';
+import { lighten, makeStyles, withStyles } from '@material-ui/core/styles';
+import Table from '@material-ui/core/Table';
+import TableBody from '@material-ui/core/TableBody';
+import TableCell from '@material-ui/core/TableCell';
+import TableContainer from '@material-ui/core/TableContainer';
+import TableHead from '@material-ui/core/TableHead';
+import TablePagination from '@material-ui/core/TablePagination';
+import TableRow from '@material-ui/core/TableRow';
+import TableSortLabel from '@material-ui/core/TableSortLabel';
+import Toolbar from '@material-ui/core/Toolbar';
+import Typography from '@material-ui/core/Typography';
+import Paper from '@material-ui/core/Paper';
+import Checkbox from '@material-ui/core/Checkbox';
+import IconButton from '@material-ui/core/IconButton';
+import Tooltip from '@material-ui/core/Tooltip';
+import DeleteIcon from '@material-ui/icons/Delete';
+import PlayCircleFilledIcon from '@material-ui/icons/PlayCircleFilled';
+import AddCircleIcon from '@material-ui/icons/AddCircle';
+import EditIcon from '@material-ui/icons/Edit';
 import {HashRouter, Link, Route, Switch, useHistory} from "react-router-dom";
-import IconButton from "@material-ui/core/IconButton";
-import PlayCircleFilledIcon from "@material-ui/icons/PlayCircleFilled";
-import EditIcon from "@material-ui/icons/Edit";
-import DeleteIcon from "@material-ui/icons/Delete";
-import AddCircleIcon from "@material-ui/icons/AddCircle";
-import Tooltip from "@material-ui/core/Tooltip";
-import TablePagination from "@material-ui/core/TablePagination";
-import BudgetNewItemForm from "./BudgetNewItemForm";
+import CreditNewItemForm from "./CreditNewItemForm";
+import {Grid} from "@material-ui/core";
+import getFirebase from "../../firebase/firebase";
+import {currentUserContext} from "../../../index";
 
-export const newDataItemContext = createContext("");
+export const newCreditDataContext = createContext("")
+
+const headCells = [
+    { id: 'creditTitle', label: 'Tytuł' },
+    { id: 'creditSumm', label: 'Całkowita suma' },
+    { id: 'paidSumm', label: 'Spłacono' },
+    { id: 'leftSumm', label: 'Zostało' },
+    { id: 'singlePayment', label: 'Miesięczna rata' },
+    { id: 'leftPayments', label: 'Zostało rat' }
+];
 
 function descendingComparator(a, b, orderBy) {
     const isNumber = !isNaN(a[orderBy]);
     let first = isNumber ? +a[orderBy] : a[orderBy];
     let second = isNumber ? +b[orderBy] : b[orderBy];
-    // if (orderBy === "date") {
-    //     first = new Date()
-    // }
 
     if (second < first) {
         return -1;
@@ -71,14 +76,6 @@ const LightTooltip = withStyles((theme) => ({
         fontSize: 11,
     },
 }))(Tooltip);
-
-const headCells = [
-    { id: "id", label: 'ID' },
-    { id: 'title', label: 'Tytuł' },
-    { id: 'category', label: 'Kategoria' },
-    { id: 'summ', label: 'Suma' },
-    { id: 'date', label: 'Data' },
-];
 
 function EnhancedTableHead(props) {
     const { classes, onSelectAllClick, order, orderBy, numSelected, rowCount, onRequestSort } = props;
@@ -164,20 +161,10 @@ const useToolbarStyles = makeStyles((theme) => ({
         color: theme.palette.warning.dark
     }
 }));
-
-EnhancedTableHead.propTypes = {
-    classes: PropTypes.object.isRequired,
-    numSelected: PropTypes.number.isRequired,
-    onRequestSort: PropTypes.func.isRequired,
-    onSelectAllClick: PropTypes.func.isRequired,
-    order: PropTypes.oneOf(['asc', 'desc']).isRequired,
-    orderBy: PropTypes.string.isRequired,
-    rowCount: PropTypes.number.isRequired,
-};
-
 const EnhancedTableToolbar = (props) => {
     const classes = useToolbarStyles();
-    const { numSelected, onDeleteItem, onEditItem } = props;
+    const { numSelected, onDeleteItem, onEditItem} = props;
+    const history = useHistory();
 
     return (
         <Toolbar
@@ -203,7 +190,7 @@ const EnhancedTableToolbar = (props) => {
                         </LightTooltip>
                     </Link>
                     <Typography className={classes.titleToolbar} variant="h6" id="tableTitle" component="div">
-                        Wydatki i przychody
+                        Kredyty i pożyczki
                     </Typography>
                 </>
 
@@ -229,13 +216,11 @@ const EnhancedTableToolbar = (props) => {
                     </LightTooltip>
                 </>
             ) : (
-                <Link to="/app/budget/dataBudget/add/">
-                    <LightTooltip title="Dodaj nowy wpis">
-                        <IconButton>
-                            <AddCircleIcon fontSize="large" className={classes.addBtn}/>
-                        </IconButton>
-                    </LightTooltip>
-                </Link>
+                <LightTooltip title="Dodaj nowy wpis">
+                    <IconButton onClick={() => history.push("/app/budget/dataCredit/add/")}>
+                        <AddCircleIcon fontSize="large" className={classes.addBtn}/>
+                    </IconButton>
+                </LightTooltip>
             )}
         </Toolbar>
     );
@@ -246,11 +231,24 @@ EnhancedTableToolbar.propTypes = {
 };
 
 const useStyles = makeStyles((theme) => ({
-    paper: {
-        border: `2px solid ${theme.palette.success.main}`,
+    root: {
+        width: '100%',
+        maxWidth: theme.spacing(162.5),
+        display: "flex",
+        margin: theme.spacing(4)
     },
-    table: {
-
+    gridBox: {
+        justifyContent: "center",
+        marginLeft: 54,
+        [theme.breakpoints.up('sm')]: {
+            marginLeft: 0
+        },
+    },
+    paper: {
+        maxWidth: 1200,
+        border: `2px solid ${theme.palette.warning.light}`,
+        position: "relative",
+        zIndex: 1
     },
     visuallyHidden: {
         border: 0,
@@ -263,48 +261,52 @@ const useStyles = makeStyles((theme) => ({
         top: 20,
         width: 1,
     },
-    gridBox: {
-        justifyContent: "center",
-        marginLeft: 28,
-        [theme.breakpoints.up('sm')]: {
-            marginLeft: 0
-        },
-    },
 }));
 
-export default function BudgetTableFull () {
+export default function CreditTableFull() {
     const classes = useStyles();
     const [order, setOrder] = useState('asc');
     const [orderBy, setOrderBy] = useState('');
     const [selected, setSelected] = useState([]);
+    const [editMode, setEditMode] = useState(false);
     const [page, setPage] = useState(0);
-    const [rowsPerPage, setRowsPerPage] = useState(10);
-    const [editMode, setEditMode] = useState(false)
-    const [newItemData, setNewItemData] = useState({
+    const [rowsPerPage, setRowsPerPage] = useState(5);
+    const [newCreditData, setNewCreditData] = useState({
         id: "",
         title: "",
-        category: "",
-        date: "",
-        type: "",
-        summ: ""
+        creditSum: "",
+        paidSum: "",
+        leftSum: "",
+        monthlyPayment: "",
+        leftPayments: ""
     });
-    const {currentUserData, setUsersData, usersData, } = useContext(usersDataContext);
+    const [credits, setCredits] = useState([]);
     const history = useHistory();
+    const firebase = getFirebase();
+    const {currentUser} = useContext(currentUserContext);
 
     useEffect(() => {
-        fetch(usersApiUrl)
-            .then((resp) => {
-                if (resp.ok) {
-                    return resp.json();
-                } else {
-                    throw new Error("Błąd sieci!");
-                }
-            })
-            .then((data) => {
-                setUsersData(data);
-            })
-            .catch(err => console.log("Błąd!", err));
-    }, [setUsersData, usersData]);
+        const fetch = async () => {
+            try {
+                if (!firebase) return;
+                const db = firebase.firestore();
+                const ref = db.collection(`${currentUser}`);
+                await ref.get()
+                    .then(querySnapshot => {
+                        return querySnapshot.docs[0].ref.collection("credits").get();
+                    })
+                    .then(querySnapshot => {
+                        querySnapshot.forEach(doc => {
+                            setCredits(prevState => [...prevState, doc.data()])
+                        })
+                    })
+            } catch (error) {
+                console.log("error", error);
+            }
+        };
+
+        fetch();
+    }, [currentUser, firebase]);
 
     const handleRequestSort = (event, property) => {
         const isAsc = orderBy === property && order === 'asc';
@@ -314,7 +316,7 @@ export default function BudgetTableFull () {
 
     const handleSelectAllClick = (event) => {
         if (event.target.checked) {
-            const newSelecteds = currentUserData.budget.map((n) => n.id);
+            const newSelecteds = credits.map((n) => n.id);
             setSelected(newSelecteds);
             return;
         }
@@ -353,71 +355,64 @@ export default function BudgetTableFull () {
     const isSelected = (name) => selected.indexOf(name) !== -1;
 
     const handleDeleteItem = () => {
-        const dataToSend = {
-            budget: currentUserData.budget.filter(item => !selected.includes(item.id))
-        };
+        const selectedObject = credits?.filter(item => selected.includes(item.id));
+        const ids = selectedObject.map(item => item.id);
 
-        fetch(`${usersApiUrl}/${currentUserData.id}`, {
-            method: "PATCH",
-            body: JSON.stringify(dataToSend),
-            headers: {
-                "Content-Type": "application/json"
-            }
+        let db = firebase.firestore();
+        let budgetRef = db.collection(`${currentUser}`)
+            .doc("userData").collection("credits");
+
+        ids.forEach(el => {
+            budgetRef.where("id", "==", el)
+                .get()
+                .then(querySnapshot => {
+                    querySnapshot.forEach(doc => {
+                        doc.ref.delete().then(() => {
+                            console.log("Document successfully deleted!");
+                            setCredits(credits.filter(item => !selected.includes(item.id)));
+                        }).catch(error => {
+                            console.log("Error removing document: ", error);
+                        });
+                    });
+                })
+                .catch(error => {
+                    console.log("Error getting documents: ", error);
+                })
         })
-            .then((resp) => {
-                if (resp.ok) {
-                    return resp.json();
-                } else {
-                    throw new Error("Błąd")
-                }
-            })
-            .catch((err) => console.log("Błąd", err));
 
         setSelected([]);
-
-        fetch(usersApiUrl)
-            .then((resp) => {
-                if (resp.ok) {
-                    return resp.json();
-                } else {
-                    throw new Error("Błąd sieci!");
-                }
-            })
-            .then((data) => {
-                setUsersData(data);
-            })
-            .catch(err => console.log("Błąd!", err));
     };
 
     const handleEditItem = () => {
-        const singleData = currentUserData.budget.filter(item => item.id === selected[0]);
+        const singleData = credits.filter(item => item.id === selected[0]);
 
-        setNewItemData({
+        setNewCreditData({
             id: singleData[0].id,
             title: singleData[0].title,
-            category: singleData[0].category,
-            date: singleData[0].date,
-            type: singleData[0].type,
-            summ: singleData[0].summ
+            creditSum: singleData[0].creditSum,
+            paidSum: singleData[0].paidSum,
+            leftSum: singleData[0].leftSum,
+            monthlyPayment: singleData[0].monthlyPayment,
+            leftPayments: singleData[0].leftPayments
         });
+
         setEditMode(true);
-        history.push(`/app/budget/dataBudget/edit/${selected[0]}`)
+        history.push(`/app/budget/dataCredit/edit/${selected[0]}`)
     };
 
-
-    if (currentUserData){
+    if (currentUser) {
         return (
-            <newDataItemContext.Provider
-                value= {{
-                    newItemData,
-                    setNewItemData,
-                    editMode,
-                    setEditMode,
-                    setSelected
-                }}
+            <newCreditDataContext.Provider value={{
+                credits, setCredits,
+                newCreditData,
+                setNewCreditData,
+                setSelected,
+                setEditMode,
+                editMode
+            }}
             >
-                <Grid container spacing={2} className={classes.gridBox}>
-                    <Grid item xs={7} sm={10} md={12}>
+                <Grid container spacing={3} className={classes.gridBox}>
+                    <Grid item xs={6} sm={10} md={12}>
                         <Paper className={classes.paper} elevation={3}>
                             <EnhancedTableToolbar
                                 numSelected={selected.length}
@@ -437,10 +432,10 @@ export default function BudgetTableFull () {
                                         orderBy={orderBy}
                                         onSelectAllClick={handleSelectAllClick}
                                         onRequestSort={handleRequestSort}
-                                        rowCount={currentUserData?.budget?.length}
+                                        rowCount={credits?.length}
                                     />
                                     <TableBody>
-                                        {stableSort(currentUserData?.budget, getComparator(order, orderBy))
+                                        {stableSort(credits, getComparator(order, orderBy))
                                             .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                                             .map((row, index) => {
                                                 const isItemSelected = isSelected(row.id);
@@ -462,12 +457,13 @@ export default function BudgetTableFull () {
                                                             />
                                                         </TableCell>
                                                         <TableCell component="th" id={labelId} scope="row">
-                                                            {row.id}
+                                                            {row.title}
                                                         </TableCell>
-                                                        <TableCell>{row.title}</TableCell>
-                                                        <TableCell>{row.category}</TableCell>
-                                                        <TableCell>{row.summ}</TableCell>
-                                                        <TableCell>{row.date}</TableCell>
+                                                        <TableCell>{row.creditSum}</TableCell>
+                                                        <TableCell>{row.paidSum}</TableCell>
+                                                        <TableCell>{row.leftSum}</TableCell>
+                                                        <TableCell>{row.monthlyPayment}</TableCell>
+                                                        <TableCell>{row.leftPayments}</TableCell>
                                                     </TableRow>
                                                 );
                                             })}
@@ -475,9 +471,9 @@ export default function BudgetTableFull () {
                                 </Table>
                             </TableContainer>
                             <TablePagination
-                                rowsPerPageOptions={[10, 25, 50, 100]}
+                                rowsPerPageOptions={[5, 10]}
                                 component="div"
-                                count={currentUserData?.budget?.length}
+                                count={credits?.length}
                                 rowsPerPage={rowsPerPage}
                                 labelRowsPerPage="Wierszy na stronie"
                                 page={page}
@@ -487,17 +483,17 @@ export default function BudgetTableFull () {
                         </Paper>
                     </Grid>
                 </Grid>
+
                 <HashRouter>
                     <Switch>
-                        <Route path="/app/budget/dataBudget/add/" component={BudgetNewItemForm}/>
-                        <Route path="/app/budget/dataBudget/edit/" component={BudgetNewItemForm}/>
-
+                        <Route path="/app/budget/dataCredit/add/" component={CreditNewItemForm}/>
+                        <Route path="/app/budget/dataCredit/edit/" component={CreditNewItemForm}/>
                     </Switch>
                 </HashRouter>
-            </newDataItemContext.Provider>
-        );
+            </newCreditDataContext.Provider>
+        )
     } else {
-        return <Typography>Loading</Typography>
+        return <Typography>Loading...</Typography>
     }
 
 }

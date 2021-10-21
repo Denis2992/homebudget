@@ -1,4 +1,4 @@
-import React, {useContext, useEffect, useState} from 'react';
+import React, {useContext, useState} from 'react';
 import clsx from 'clsx';
 import {
     makeStyles,
@@ -27,8 +27,8 @@ import ExitToAppIcon from '@material-ui/icons/ExitToApp';
 import StartWindow from "./StartWindow";
 import Pulpit from "./Pulpit";
 import Budget from "./Budget";
-import {usersDataContext} from "../../App";
-
+import {currentUserContext} from "../../index";
+import getFirebase from "../firebase/firebase";
 
 
 const drawerWidth = 150;
@@ -187,11 +187,8 @@ export default function Header() {
     const classes = useStyles();
     const theme = useTheme();
     const [open, setOpen] = useState(false);
-    const {setCurrentUserData, usersData} = useContext(usersDataContext);
-
-    useEffect(() => {
-        setCurrentUserData(usersData.find(user => user.login === localStorage.userName));
-    });
+    const {currentUser, setCurrentUser} = useContext(currentUserContext);
+    const firebase = getFirebase();
 
 
     const handleDrawerOpen = () => {
@@ -202,12 +199,19 @@ export default function Header() {
         setOpen(false);
     };
 
-    const handleExitApp = () => {
-        localStorage.clear();
-        setCurrentUserData([]);
+    const handleExitApp = async () => {
+
+            try {
+                if (firebase) {
+                    await firebase.auth().signOut();
+                }
+                setCurrentUser(null);
+            } catch (error) {
+                console.log("error", error);
+            }
     };
 
-    if (localStorage.userName && localStorage.userPassword) {
+    if (currentUser) {
         return (
             <div className={classes.root}>
                 <AppBar
@@ -237,8 +241,8 @@ export default function Header() {
                             </Link>
                         </Box>
                         <Box className={classes.userBox}>
-                            <Avatar className={classes.avatar}>{localStorage.userName[0].toUpperCase()}</Avatar>
-                            <Typography>{localStorage.userName}</Typography>
+                            <Avatar className={classes.avatar}>{currentUser[0].toUpperCase()}</Avatar>
+                            <Typography>{currentUser}</Typography>
                             <LightTooltip title="Wyjdź">
                                 <IconButton aria-label="exit" onClick={handleExitApp}>
                                     <Link to="/app">
@@ -274,9 +278,9 @@ export default function Header() {
                             <Avatar
                                 className={classes.avatarMobile}
                             >
-                                {localStorage.userName[0].toUpperCase()}
+                                {currentUser[0].toUpperCase()}
                             </Avatar>
-                            <Typography>{localStorage.userName}</Typography>
+                            <Typography>{currentUser}</Typography>
                         </ListItem>
                         <ListItem button >
                             <NavLink exact to="/app/"

@@ -1,4 +1,4 @@
-import React, {useContext} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import PropTypes from 'prop-types';
 import { makeStyles } from '@material-ui/core/styles';
 import Table from '@material-ui/core/Table';
@@ -17,7 +17,8 @@ import Tooltip from '@material-ui/core/Tooltip';
 import {withStyles} from "@material-ui/core";
 import {Link} from "react-router-dom";
 import StorageIcon from '@material-ui/icons/Storage';
-import {usersDataContext} from "../../../App";
+import getFirebase from "../../firebase/firebase";
+import {currentUserContext} from "../../../index";
 
 
 function descendingComparator(a, b, orderBy) {
@@ -171,7 +172,32 @@ export default function CreditTableSummary() {
     const [orderBy, setOrderBy] = React.useState('calories');
     const [page, setPage] = React.useState(0);
     const [rowsPerPage, setRowsPerPage] = React.useState(5);
-    const {currentUserData} = useContext(usersDataContext);
+    const [credits, setCredits] = useState([]);
+    const firebase = getFirebase();
+    const {currentUser} = useContext(currentUserContext);
+
+    useEffect(() => {
+        const fetch = async () => {
+            try {
+                if (!firebase) return;
+                const db = firebase.firestore();
+                const ref = db.collection(`${currentUser}`);
+                await ref.get()
+                    .then(querySnapshot => {
+                        return querySnapshot.docs[0].ref.collection("credits").get();
+                    })
+                    .then(querySnapshot => {
+                        querySnapshot.forEach(doc => {
+                            setCredits(prevState => [...prevState, doc.data()])
+                        })
+                    })
+            } catch (error) {
+                console.log("error", error);
+            }
+        };
+
+        fetch();
+    }, [currentUser, firebase]);
 
     const handleRequestSort = (event, property) => {
         const isAsc = orderBy === property && order === 'asc';
@@ -201,10 +227,10 @@ export default function CreditTableSummary() {
                         order={order}
                         orderBy={orderBy}
                         onRequestSort={handleRequestSort}
-                        rowCount={currentUserData?.credits?.length}
+                        rowCount={credits?.length}
                     />
                     <TableBody>
-                        {stableSort(currentUserData?.credits, getComparator(order, orderBy))
+                        {stableSort(credits, getComparator(order, orderBy))
                             .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                             .map((row) => {
 
@@ -213,8 +239,8 @@ export default function CreditTableSummary() {
                                         hover
                                         key={row.id}
                                     >
-                                        <TableCell>{row.creditTitle}</TableCell>
-                                        <TableCell>{row.leftSumm}</TableCell>
+                                        <TableCell>{row.title}</TableCell>
+                                        <TableCell>{row.leftSum}</TableCell>
                                         <TableCell>{row.monthlyPayment}</TableCell>
                                         <TableCell>{row.leftPayments}</TableCell>
                                     </TableRow>
@@ -227,12 +253,13 @@ export default function CreditTableSummary() {
             <TablePagination
                 rowsPerPageOptions={[5, 10, 15]}
                 component="div"
-                count={currentUserData?.credits?.length}
+                count={credits?.length}
                 rowsPerPage={rowsPerPage}
                 labelRowsPerPage="Wierszy na stronie"
                 page={page}
                 onPageChange={handleChangePage}
                 onRowsPerPageChange={handleChangeRowsPerPage}
+                style={{marginBottom: 16}}
             />
         </Paper>
     );

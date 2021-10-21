@@ -11,19 +11,23 @@ import {
     Radio,
     makeStyles,
     InputLabel,
-    InputAdornment,
     IconButton,
     OutlinedInput,
     Button
 }
-from "@material-ui/core";
+    from "@material-ui/core";
 import Visibility from '@material-ui/icons/Visibility';
 import VisibilityOff from '@material-ui/icons/VisibilityOff';
 import HighlightOffIcon from '@material-ui/icons/HighlightOff';
 import {Link, useHistory} from "react-router-dom";
-import {usersDataContext} from "../../App";
-import validator from "validator/es";
-import {usersApiUrl} from "../../App";
+import {currentUserContext} from "../../index";
+import useInput from "../hooks/useInput";
+import { useForm, Controller } from "react-hook-form";
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from "yup";
+import getFirebase from "../firebase/firebase";
+import ReCAPTCHA from "react-google-recaptcha";
+
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -32,7 +36,8 @@ const useStyles = makeStyles((theme) => ({
     },
     textField: {
         width: '35ch',
-        marginTop: theme.spacing(4)
+        height: 60,
+        marginTop: theme.spacing(2)
     },
     box: {
         width: "100%",
@@ -45,7 +50,6 @@ const useStyles = makeStyles((theme) => ({
         border: `2px solid ${theme.palette.secondary.main}`,
         display: "flex",
         flexDirection: "column",
-
     },
     form: {
         display: "flex",
@@ -61,40 +65,61 @@ const useStyles = makeStyles((theme) => ({
         color: theme.palette.error.main
     },
     genderContainer: {
-        marginTop: theme.spacing(3)
+        marginTop: theme.spacing(2),
     },
     chooseGender: {
-        flexDirection: "row"
-    },
-    agreement: {
-        display: "flex",
-        alignItems: "center",
-        margin: theme.spacing(3, 0)
-    },
-
+        flexDirection: "row",
+    }
 }));
+
+const schema = yup.object({
+    email: yup
+        .string()
+        .email("Wprowadź poprawny email")
+        .max(50, "Maksymalna długość 50 znaków")
+        .required("Pole nie może być puste"),
+    name: yup
+        .string()
+        .min(3, "Imię ma zawierać minimum 3 znaki")
+        .matches(/^[A-Za-z]+$/i, "Imię nie może mieć liczb")
+        .required("Pole nie może być puste"),
+    surname: yup
+        .string()
+        .min(3, "Imię ma zawierać minimum 3 znaki")
+        .matches(/^[A-Za-z]+$/i, "Imię nie może mieć liczb")
+        .required("Pole nie może być puste"),
+    password: yup
+        .string()
+        .min(6, "Minimalna długość 6 znaków")
+        .required("Wprowadź hasło"),
+    confirmPassword: yup
+        .string()
+        .oneOf([yup.ref("password"), null], "Hasła maja byc jednakowe")
+        .required("Powtórz hasło"),
+    birthDate: yup.string().required("Wybierz date urodzenia"),
+}).required();
+
 
 const Registration = () => {
     const classes = useStyles();
+    const [email, resetEmail] = useInput("");
+    const [name, resetName] = useInput("");
+    const [surname, resetSurname] = useInput("");
+    const [password, resetPassword] = useInput("");
+    const [confirmPassword, resetConfirmPassword] = useInput("");
+    const [birthDate, resetBirthDate] = useInput("");
+    const [gender, resetGender] = useInput("mężczyzna");
     const [values, setValues] = useState({
-        login: "",
-        name: "",
-        surname: "",
-        email: "",
-        password: "",
-        confirmPassword: "",
-        birthDate: "",
-        gender: "",
         showPassword: false,
         showConfirmPassword: false
     });
-    const [errorList, setErrorList] = useState([]);
+    const [captchaChecked, setCaptchaChecked] = useState(false);
+    const [captchaErr, setCaptchaErr] = useState(false);
+    const [sendErr, setSendErr] = useState(false);
     const history = useHistory();
-    const {usersData} = useContext(usersDataContext);
+    const {setCurrentUser} = useContext(currentUserContext);
+    const firebaseInstance = getFirebase();
 
-    const handleChange = (prop) => (event) => {
-        setValues({ ...values, [prop]: event.target.value });
-    };
 
     const handleClickShowPassword = () => {
         setValues({ ...values, showPassword: !values.showPassword });
@@ -104,137 +129,102 @@ const Registration = () => {
         setValues({ ...values, showConfirmPassword: !values.showConfirmPassword });
     };
 
-    const handleMouseDownPassword = (event) => {
-        event.preventDefault();
-    };
+    const {  control, register, formState: { errors }, handleSubmit } = useForm({
+        resolver: yupResolver(schema)
+    });
 
-    const checkIfFormValid = () => {
-        const newErrorList = [];
-        const {
-            login,
-            name,
-            surname,
-            email,
-            password,
-            confirmPassword,
-            birthDate,
-            gender,
-        } = values;
+    const captchaOnChange = () => {
+        setCaptchaChecked(true);
+    }
 
-        if (usersData.some(user => {
-            return user.login === login
-        }) && login.length !== 0 ) {
-            newErrorList.push("Login jest zajęty");
-        }
+    const onSubmit = async () => {
+        if (captchaChecked) {
+            try {
+                if (firebaseInstance) {
+                    const user = await firebaseInstance
+                        .auth()
+                        .createUserWithEmailAndPassword(email.value, password.value);
+                    console.log("user", user);
+                    setCurrentUser(email.value);
+                    const db = firebaseInstance.firestore();
+                    const docUserData = db.collection(`${email.value}`)
+                        .doc("userData");
 
-        if (login.length === 0 && login.length < 3) {
-            newErrorList.push("Pole login nie może byc puste i musi zawierać minimum 3 znaki")
-        }
 
-        if (!validator.isAlpha(name,'pl-PL') || name.length < 3) {
-            newErrorList.push("Imie nie może zawierać liczby lub znaki i musi zawierać minimum 3 litery")
-        }
+                    await docUserData.set(
+                        {
+                            name: name.value,
+                            surname: surname.value,
+                            email: email.value,
+                            birthDate: birthDate.value,
+                            gender: gender.value
+                        },
+                        {merge: true}
+                    );
 
-        if (!validator.isAlpha(surname, 'pl-PL') || surname.length < 3) {
-            newErrorList.push("Nazwisko nie może zawierać liczby lub znaki i musi zawierać 3 litery");
-        }
+                    const categoriesRef =
+                        db.collection(`${email.value}`)
+                            .doc("userData")
+                            .collection("category");
 
-        if (!validator.isEmail(email)) {
-            newErrorList.push("Wprowadź poprawny email");
-        }
+                    categoriesRef
+                        .doc()
+                        .set({
+                            id: 1,
+                            name: "Pensja"
+                        })
+                        .then(function () {
+                            console.log('Document Added');
+                        })
+                        .catch(function (error) {
+                            console.error('Error adding document: ', error);
+                        });
 
-        if (password !== confirmPassword) {
-            newErrorList.push("Hasła mają byc takie same");
-        }
+                    categoriesRef
+                        .doc()
+                        .set({
+                            id: 2,
+                            name: "Zakupy"
+                        })
+                        .then(function () {
+                            console.log('Document Added');
+                        })
+                        .catch(function (error) {
+                            console.error('Error adding document: ', error);
+                        });
 
-        if (birthDate === "") {
-            newErrorList.push("Wprowadź date urodzenia");
-        }
+                    categoriesRef
+                        .doc()
+                        .set({
+                            id: 3,
+                            name: "Auto"
+                        })
+                        .then(function () {
+                            console.log('Document Added');
+                        })
+                        .catch(function (error) {
+                            console.error('Error adding document: ', error);
+                        });
 
-        if (gender === "") {
-            newErrorList.push("Wybierz płeć");
-        }
-
-        setErrorList(newErrorList);
-
-        return newErrorList.length === 0;
-    };
-
-    const handleFormSubmit = (e) => {
-        e.preventDefault();
-
-        if (checkIfFormValid()) {
-            const dataToSend = {
-                login: values.login,
-                name: values.name,
-                surname: values.surname,
-                email: values.email,
-                password: values.password,
-                birthDate: values.birthDate,
-                gender: values.gender,
-                budget: [],
-                credits: [],
-                savings: [],
-            };
-
-            fetch(usersApiUrl, {
-                method: "POST",
-                body: JSON.stringify(dataToSend),
-                headers: {
-                    "Content-Type": "application/json",
-                }
-            })
-                .then((resp) => {
-                    if (resp.ok) {
-                      return resp.json();
-                    } else {
-                        throw new Error("Błąd sieci!")
-                    }
-                })
-                .then((data) => {
-                    localStorage.setItem("userName", data.login);
-                    localStorage.setItem("userPassword", data.password);
+                    resetName();
+                    resetSurname();
+                    resetEmail();
+                    resetPassword();
+                    resetConfirmPassword();
+                    resetBirthDate();
+                    resetGender();
+                    setSendErr(false);
+                    setCaptchaChecked(false);
+                    setCaptchaErr(false);
                     history.push("/app");
-                    setValues({
-                        login: "",
-                        name: "",
-                        surname: "",
-                        email: "",
-                        password: "",
-                        confirmPassword: "",
-                        birthDate: "",
-                        gender: "",
-                    });
-                })
-                .catch((err) => console.log("Błąd!", err));
-        }
-    };
-
-    const getErrorToRender = () => {
-        let errorToRender;
-
-        if (errorList.length > 0) {
-            errorToRender = (
-                <Box>
-                    <ul>
-                        {errorList.map((singleError, index) => (
-                            <li key={index}>
-                                <Typography
-                                    variant="body2"
-                                    style={{color: "red", textAlign: "center"}}
-                                >
-                                    {singleError}
-                                </Typography>
-                            </li>
-                        ))}
-                    </ul>
-                </Box>
-            );
+                }
+            } catch (error) {
+                console.log("error", error);
+                setSendErr(true);
+            }
         } else {
-            errorToRender = null;
+            setCaptchaErr(true);
         }
-
-        return errorToRender;
     };
 
     return (
@@ -245,144 +235,212 @@ const Registration = () => {
                         <HighlightOffIcon className={classes.iconStyle}/>
                     </Link>
                 </IconButton>
-                <form className={classes.form} onSubmit={handleFormSubmit}>
-                    <Typography variant="h5">Wprowadź swoje dane</Typography>
-                    <TextField
-                        id="login"
-                        variant="outlined"
-                        color="secondary"
-                        label="Login"
-                        className={classes.textField}
-                        value={values.login}
-                        onChange={handleChange("login")}
+                <form className={classes.form} onSubmit={handleSubmit(onSubmit)}>
+                    <Typography variant="h5" style={{marginBottom: 16}}>Wprowadź swoje dane</Typography>
+                    <Controller
+                        name="email"
+                        control={control}
+                        render={() => (
+                            <TextField
+                                error={errors?.email ? true : false}
+                                color={errors?.email ? "error" : "secondary"}
+                                variant="outlined"
+                                size="small"
+                                label="Email"
+                                helperText={errors?.email?.message}
+                                className={classes.textField}
+                                {...register("email")}
+                                {...email}
+                            />
+                        )}
                     />
-                    <TextField
-                        id="name"
-                        variant="outlined"
-                        color="secondary"
-                        label="Imię"
-                        className={classes.textField}
-                        value={values.name}
-                        onChange={handleChange("name")}
+                    <Controller
+                        name="name"
+                        control={control}
+                        render={() => (
+                            <TextField
+                                error={errors?.name ? true : false}
+                                color={errors?.name ? "error" : "secondary"}
+                                variant="outlined"
+                                size="small"
+                                label="Imię"
+                                helperText={errors?.name?.message}
+                                className={classes.textField}
+                                {...register("name")}
+                                {...name}
+                            />
+                        )}
                     />
-                    <TextField
-                        id="surname"
-                        variant="outlined"
-                        color="secondary"
-                        label="Nazwisko"
-                        className={classes.textField}
-                        value={values.surname}
-                        onChange={handleChange("surname")}
+                    <Controller
+                        name="surname"
+                        control={control}
+                        render={() => (
+                            <TextField
+                                error={errors?.surname ? true : false}
+                                color={errors?.surname ? "error" : "secondary"}
+                                variant="outlined"
+                                size="small"
+                                label="Nazwisko"
+                                helperText={errors?.surname?.message}
+                                className={classes.textField}
+                                {...register("surname")}
+                                {...surname}
+                            />
+                        )}
                     />
-                    <TextField
-                        id="email"
-                        variant="outlined"
-                        color="secondary"
-                        label="Email"
-                        className={classes.textField}
-                        value={values.email}
-                        onChange={handleChange("email")}
-                    />
-                    <FormControl className={classes.textField} variant="outlined" color="secondary">
-                        <InputLabel htmlFor="enterPassword">Wprowadź hasło</InputLabel>
-                        <OutlinedInput
-                            label="Wprowadź hasło"
-                            id="enterPassword"
-                            type={values.showPassword ? 'text' : 'password'}
-                            value={values.password}
-                            onChange={handleChange('password')}
-                            endAdornment={
-                                <InputAdornment position="end">
+                    <Controller name="password" control={control} render={() => (
+                        <FormControl
+                            className={classes.textField}
+                            variant="outlined"
+                            error={errors?.password ? true : false}
+                            color={errors?.password ? "error" : "secondary"}
+                            size="small"
+                        >
+                            <InputLabel htmlFor="enterPassword">Wprowadź hasło</InputLabel>
+                            <OutlinedInput
+                                id="enterPassword"
+                                type={values.showPassword ? 'text' : 'password'}
+                                {...register("password")}
+                                {...password}
+                                endAdornment={
                                     <IconButton
-                                        aria-label="toggle password visibility"
                                         onClick={handleClickShowPassword}
-                                        onMouseDown={handleMouseDownPassword}
+                                        onMouseDown={e => e.preventDefault()}
                                         edge="end"
+                                        style={{height:40, width: 40}}
                                     >
                                         {values.showPassword ? <Visibility /> : <VisibilityOff />}
                                     </IconButton>
-                                </InputAdornment>
-                            }
-                            labelWidth={70}
-                        />
-                    </FormControl>
-                    <FormControl className={classes.textField} variant="outlined" color="secondary">
-                        <InputLabel htmlFor="confirmPassword">Powtórz hasło</InputLabel>
-                        <OutlinedInput
-                            label="Powtórz hasło"
-                            id="confirmPassword"
-                            type={values.showConfirmPassword ? 'text' : 'password'}
-                            value={values.confirmPassword}
-                            onChange={handleChange('confirmPassword')}
-                            endAdornment={
-                                <InputAdornment position="end">
-                                    <IconButton
-                                        aria-label="toggle password visibility"
-                                        onClick={handleClickShowConfirmPassword}
-                                        onMouseDown={handleMouseDownPassword}
-                                        edge="end"
-                                    >
-                                        {values.showConfirmPassword ? <Visibility /> : <VisibilityOff />}
-                                    </IconButton>
-                                </InputAdornment>
-                            }
-                            labelWidth={70}
-                            InputLabelProps={{
-                                shrink: true,
-                            }}
-                        />
-                    </FormControl>
-                    <TextField
-                        variant="outlined"
-                        color="secondary"
-                        id="birthDate"
+
+                                }
+                                labelWidth={125}
+                            />
+                            <Typography
+                                variant="caption"
+                                color="error"
+                                style={{padding: "4px 14px 0 14px"}}
+                            >
+                                {errors?.password?.message}
+                            </Typography>
+                        </FormControl>
+                    )}/>
+                    <Controller
+                        name="confirmPassword"
+                        control={control}
+                        render={() => (
+                            <FormControl className={classes.textField}
+                                         variant="outlined"
+                                         error={errors?.confirmPassword ? true : false}
+                                         color={errors?.confirmPassword ? "error" : "secondary"}
+                                         size="small"
+                            >
+                                <InputLabel htmlFor="confPassword">Powtórz hasło</InputLabel>
+                                <OutlinedInput
+                                    id="confPassword"
+                                    type={values.showConfirmPassword ? 'text' : 'password'}
+                                    {...register("confirmPassword")}
+                                    {...confirmPassword}
+                                    endAdornment={
+                                        <IconButton
+                                            aria-label="toggle password visibility"
+                                            onClick={handleClickShowConfirmPassword}
+                                            onMouseDown={e => e.preventDefault()}
+                                            edge="end"
+                                            style={{height: 40, width: 40}}
+                                        >
+                                            {values.showConfirmPassword ? <Visibility /> : <VisibilityOff />}
+                                        </IconButton>
+                                    }
+                                    labelWidth={105}
+                                    InputLabelProps={{
+                                        shrink: true,
+                                    }}
+                                />
+                                <Typography
+                                    variant="caption"
+                                    color="error"
+                                    style={{padding: "4px 14px 0 14px"}}
+                                >
+                                    {errors?.confirmPassword?.message}
+                                </Typography>
+                            </FormControl>
+                        )}
+                    />
+                    <Controller
                         name="birthDate"
-                        label="Data urodzenia"
-                        type="date"
-                        defaultValue=""
-                        className={classes.textField}
-                        value={values.birthDate}
-                        onChange={handleChange("birthDate")}
-                        InputLabelProps={{
-                            shrink: true,
-                        }}
+                        control={control}
+                        render={() => (
+                            <TextField
+                                variant="outlined"
+                                size="small"
+                                error={errors?.birthDate ? true : false}
+                                color={errors?.birthDate ? "error" : "secondary"}
+                                label="Data urodzenia"
+                                type="date"
+                                defaultValue=""
+                                helperText={errors?.birthDate?.message}
+                                className={classes.textField}
+                                {...register("birthDate")}
+                                {...birthDate}
+                                InputLabelProps={{
+                                    shrink: true,
+                                }}
+                            />
+                        )}
                     />
                     <FormControl component="fieldset" className={classes.genderContainer}>
-                        <FormLabel component="legend" color="secondary">Płeć</FormLabel>
-                        <RadioGroup
-                            aria-label="gender"
-                            name="gender1"
-                            className={classes.chooseGender}
-                        >
-                            <FormControlLabel
-                                name="gender"
-                                value="kobieta"
-                                control={<Radio />}
-                                label="Kobieta"
-                                onChange={handleChange("gender")}
-                                checked={values.gender === "kobieta"}
-                            />
-                            <FormControlLabel
-                                name="gender"
-                                value="mężczyzna"
-                                control={<Radio />}
-                                label="Mężczyzna"
-                                onChange={handleChange("gender")}
-                                checked={values.gender === "mężczyzna"}
-                            />
-                        </RadioGroup>
+                        <FormLabel color="secondary" style={{width:30}}>Płeć</FormLabel>
+                                <RadioGroup
+                                    name="gender"
+                                    className={classes.chooseGender}
+                                    {...gender}
+                                >
+                                    <FormControlLabel
+                                        value="mężczyzna"
+                                        control={<Radio />}
+                                        label="Mężczyzna"
+
+                                    />
+                                    <FormControlLabel
+                                        value="kobieta"
+                                        control={<Radio />}
+                                        label="Kobieta"
+                                    />
+                                </RadioGroup>
                     </FormControl>
-                    {getErrorToRender()}
-                    <Box className={classes.agreement}>
-                        <Typography
-                            variant="body2"
-                            style={{textAlign: "center"}}
-                        >
-                            Klikając zarejestruj się, zgadzasz się z warunkami
-                            korzystania aplikacji.
-                        </Typography>
+                    <Typography
+                        variant="body2"
+                        style={{textAlign: "center", marginTop: 24}}
+                    >
+                        Klikając załóż konto, zgadzasz się z warunkami
+                        korzystania aplikacji.
+                    </Typography>
+                    <ReCAPTCHA
+                        sitekey="6LcR5OUcAAAAAJ8An3RXPIXpDOW6RFAzcfM-mRiG"
+                        onChange={captchaOnChange}
+                        style={{margin: "10px 0 5px 0"}}
+                    />
+                    <Box style={{height:20, margin: "8px 0"}}>
+                        {captchaErr ? (
+                            <Typography
+                                variant="caption"
+                                color="error"
+                            >
+                                Potwierdź że nie jesteś robotem
+                            </Typography>
+                        ) : null}
+                        {sendErr ? (
+                            <Typography variant="caption" color="error">Rejestracja się nie powiodła</Typography>
+                        ) : null}
                     </Box>
-                    <Button variant="contained" color="secondary" type="submit">Zarejestruj się</Button>
+                    <Button
+                        variant="contained"
+                        color="secondary"
+                        type="submit"
+                        style={{marginBottom: 8}}
+                    >
+                        Zarejestruj się
+                    </Button>
                 </form>
             </Paper>
         </Box>
