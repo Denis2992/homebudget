@@ -1,11 +1,11 @@
-import React from 'react';
+import React, {createContext, useState, useEffect} from 'react';
 import ReactDOM from 'react-dom';
 import "reset-css";
 import {HashRouter, Route, Switch} from "react-router-dom";
 import LandingPage from "./components/LandingPage";
 import App from "./App";
 import { createTheme, ThemeProvider } from '@material-ui/core/styles';
-
+import getFirebase from "./components/firebase/firebase";
 
 export const theme = createTheme({
     palette: {
@@ -33,15 +33,37 @@ export const theme = createTheme({
     },
 });
 
+export const currentUserContext = createContext(null);
 
 const Index = () => {
+    const [currentUser, setCurrentUser] = useState(null);
+
+    useEffect(() => {
+        const firebase = getFirebase();
+
+        if (firebase) {
+            firebase.auth().onAuthStateChanged((authUser) => {
+                if (authUser) {
+                    setCurrentUser(authUser.email);
+                } else {
+                    setCurrentUser(null);
+                }
+            });
+        }
+    }, []);
+
     return (
-        <HashRouter>
-            <Switch>
-                <Route exact path="/" component={LandingPage} />
-                <Route path="/app" component={App} />
-            </Switch>
-        </HashRouter>
+        <currentUserContext.Provider value={{
+            currentUser, setCurrentUser
+        }}>
+            <HashRouter>
+                <Switch>
+                    <Route exact path="/" component={LandingPage} />
+                    <Route path="/app" component={App} />
+                </Switch>
+            </HashRouter>
+        </currentUserContext.Provider>
+
     )
 }
 

@@ -1,4 +1,4 @@
-import React, {useContext} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import { makeStyles, withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Grid from '@material-ui/core/Grid';
@@ -9,8 +9,9 @@ import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 import FiberManualRecordIcon from '@material-ui/icons/FiberManualRecord';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import AddIcon from '@material-ui/icons/Add';
-import {usersDataContext} from "../../App";
 import Tooltip from "@material-ui/core/Tooltip";
+import {currentUserContext} from "../../index";
+import getFirebase from "../firebase/firebase";
 
 
 const useStyles = makeStyles((theme) => ({
@@ -126,7 +127,6 @@ const useStyles = makeStyles((theme) => ({
         textAlign: 'center',
         color: theme.palette.text.secondary,
         border: `2px solid ${theme.palette.error.light}`,
-        height: theme.spacing(28),
     },
     singleCredit: {
         padding: theme.spacing(1, 0),
@@ -203,17 +203,65 @@ const MaxExpensesProgressBar = withStyles((theme) => ({
 
 export default function Pulpit() {
     const classes = useStyles();
-    const {currentUserData} = useContext(usersDataContext);
+    const [budget, setBudget] = useState([]);
+    const [savings, setSavings] = useState([]);
+    const [credits, setCredits] = useState([]);
+    const {currentUser} = useContext(currentUserContext);
+    const firebase = getFirebase();
+
+    useEffect(() => {
+        const fetch = async () => {
+            try {
+                if (!firebase) return;
+                const db = firebase.firestore();
+                const ref = db.collection(`${currentUser}`);
+                await ref.get()
+                    .then(querySnapshot => {
+                        return querySnapshot.docs[0].ref.collection("budget").get();
+                    })
+                    .then(querySnapshot => {
+                        querySnapshot.forEach(doc => {
+                            setBudget(prevState => [...prevState, doc.data()])
+                        })
+                    })
+
+                await ref.get()
+                    .then(querySnapshot => {
+                        return querySnapshot.docs[0].ref.collection("credits").get();
+                    })
+                    .then(querySnapshot => {
+                        querySnapshot.forEach(doc => {
+                            setCredits(prevState => [...prevState, doc.data()])
+                        })
+                    })
+
+                await ref.get()
+                    .then(querySnapshot => {
+                        return querySnapshot.docs[0].ref.collection("savings").get();
+                    })
+                    .then(querySnapshot => {
+                        querySnapshot.forEach(doc => {
+                            setSavings(prevState => [...prevState, doc.data()])
+                        })
+                    })
+            } catch (error) {
+                console.log("error", error);
+            }
+        };
+
+        fetch();
+    }, [currentUser, firebase]);
+
     //budget data sort to render
-    const budgetDataSorted = currentUserData?.budget?.sort((a,b) => {
+    const budgetDataSorted = budget?.sort((a,b) => {
         return b.id - a.id;
     });
     //savings data sort to render
-    const savingDataSorted = currentUserData?.savings?.sort((a, b) => {
+    const savingDataSorted = savings?.sort((a, b) => {
         return b.currentState - a.currentState
     });
     //budget sort by sum
-    const expensesList = currentUserData?.budget?.filter(item => item.type === "expenses");
+    const expensesList = budget?.filter(item => item.type === "expenses");
     const budgetSortBySum = expensesList?.sort((a,b) => {
         return b.summ - a.summ;
     })
@@ -229,20 +277,20 @@ export default function Pulpit() {
         }
     };
 
-    const getMonthlyBudget = currentUserData?.budget?.filter(item => item.date.includes(`${year}-${correctMonth()}`));
+    const getMonthlyBudget = budget.filter(item => item.date.includes(`${year}-${correctMonth()}`));
 
     const monthlyIncomeData = getMonthlyBudget?.filter(item => item.type === "income");
     const monthlyExpensesData = getMonthlyBudget?.filter(item => item.type === "expenses");
     const monthlySavingsData = getMonthlyBudget?.filter(item => item.type === "saving");
 
-
-    const income = monthlyIncomeData?.map(item => item.summ);
-    const expenses = monthlyExpensesData?.map(item => item.summ);
-    const savings = monthlySavingsData?.map(item => item.summ);
+    const income = monthlyIncomeData?.map(item => item.sum);
+    const expenses = monthlyExpensesData?.map(item => item.sum);
+    const saving = monthlySavingsData?.map(item => item.sum);
 
     const incomeSum = income?.reduce((sum, prev) => +sum + +prev, 0);
     const expensesSum = expenses?.reduce((sum, prev) => +sum + +prev, 0);
-    const savingsSum = savings?.reduce((prev, sum) => +prev + +sum, 0);
+    const savingsSum = saving?.reduce((prev, sum) => +prev + +sum, 0);
+
 
     const circleProgressValue = () => {
         let progressValue = (+expensesSum + +savingsSum) / incomeSum * 100;
@@ -253,105 +301,119 @@ export default function Pulpit() {
         }
     };
 
-    if (currentUserData) {
+    const restIncome = incomeSum - (+expensesSum + +savingsSum)
+
+
+    if (currentUser) {
         return (
             <Box className={classes.box}>
                 <Grid container spacing={2} className={classes.gridBox}>
                     <Grid item xs={9} sm={6} md={3}>
-                <Paper className={classes.paperThisMonth} elevation={3}>
+                        <Paper className={classes.paperThisMonth} elevation={3}>
                             <Typography color="textPrimary">W tym miesiącu</Typography>
-                            <Box className={classes.incomeBox}>
-                                <IncomeProgressBar variant="determinate" value={100}/>
-                                <ArrowDropUpIcon fontSize="large"/>
-                                <Typography>{incomeSum}</Typography>
-                            </Box>
-                            <Box className={classes.expensesBox}>
-                                <ExpensesProgressBar variant="determinate" value={expensesSum / incomeSum * 100}/>
-                                <ArrowDropDownIcon fontSize="large"/>
-                                <Typography>{expensesSum}</Typography>
-                            </Box>
-                            <Box className={classes.savingsBox}>
-                                <SavingsProgressBar variant="determinate" value={savingsSum / incomeSum * 100}/>
-                                <AddIcon style={{padding: "0 5px"}}/>
-                                <Typography>{savingsSum}</Typography>
-                            </Box>
-                            <Box className={classes.paperSummaryBoxInfo}>
-                                <div className={classes.incomeBox}>
-                                    <FiberManualRecordIcon/>
-                                    <Typography color="textSecondary" variant="body2">przychód</Typography>
-                                </div>
-                                <div className={classes.expensesBox}>
-                                    <FiberManualRecordIcon/>
-                                    <Typography color="textSecondary" variant="body2">wydatki</Typography>
-                                </div>
-                            </Box>
-                            <div className={classes.savingsBox} style={{justifyContent: "center"}}>
-                                <FiberManualRecordIcon/>
-                                <Typography color="textSecondary" variant="body2">oszczędności</Typography>
-                            </div>
+                            {incomeSum || expensesSum || savingsSum ? (
+                                <>
+                                    <Box className={classes.incomeBox}>
+                                        <IncomeProgressBar variant="determinate" value={100}/>
+                                        <ArrowDropUpIcon fontSize="large"/>
+                                        <Typography>{incomeSum ? incomeSum : 0}</Typography>
+                                    </Box>
+                                    <Box className={classes.expensesBox}>
+                                        <ExpensesProgressBar variant="determinate" value={expensesSum / incomeSum * 100}/>
+                                        <ArrowDropDownIcon fontSize="large"/>
+                                        <Typography>{expensesSum ? expensesSum : 0}</Typography>
+                                    </Box>
+                                    <Box className={classes.savingsBox}>
+                                        <SavingsProgressBar variant="determinate" value={savingsSum / incomeSum * 100}/>
+                                        <AddIcon style={{padding: "0 5px"}}/>
+                                        <Typography>{savingsSum ? savingsSum : 0}</Typography>
+                                    </Box>
+                                    <Box className={classes.paperSummaryBoxInfo}>
+                                        <div className={classes.incomeBox}>
+                                            <FiberManualRecordIcon/>
+                                            <Typography color="textSecondary" variant="body2">przychód</Typography>
+                                        </div>
+                                        <div className={classes.expensesBox}>
+                                            <FiberManualRecordIcon/>
+                                            <Typography color="textSecondary" variant="body2">wydatki</Typography>
+                                        </div>
+                                    </Box>
+                                    <div className={classes.savingsBox} style={{justifyContent: "center"}}>
+                                        <FiberManualRecordIcon/>
+                                        <Typography color="textSecondary" variant="body2">oszczędności</Typography>
+                                    </div>
+                                </>
+                            ) : null}
                         </Paper>
                     </Grid>
-                    <Grid item xs={9} sm={6} md={3}>
-                <Paper className={classes.paperExpenses} elevation={3}>
-                            <Typography color="textPrimary">Wykorzystano środków</Typography>
-                            <Box className={classes.boxCircleProgress}>
-                                <CircularProgress
-                                    variant="determinate"
-                                    value={circleProgressValue()}
-                                    thickness={10}
-                                    size="143px"
-                                    className={classes.circleProgressInfo}
-                                />
-                                <Typography>{circleProgressValue().toFixed(1)}%</Typography>
-                            </Box>
-                            <Typography>Reszta: {incomeSum - (+expensesSum + +savingsSum)}</Typography>
-                        </Paper>
-                    </Grid>
-                    <Grid item xs={9} sm={6} md={6}>
-                <Paper className={classes.lastExpenses} elevation={3}>
-                            <Typography color="textPrimary">Ostatnie wydatki i przychody</Typography>
 
+                    <Grid item xs={9} sm={6} md={3}>
+                        <Paper className={classes.paperExpenses} elevation={3}>
+                            <Typography color="textPrimary">Wykorzystano środków</Typography>
+                            {restIncome ? (
+                                <>
+                                    <Box className={classes.boxCircleProgress}>
+                                        <CircularProgress
+                                            variant="determinate"
+                                            value={circleProgressValue()}
+                                            thickness={10}
+                                            size="143px"
+                                            className={classes.circleProgressInfo}
+                                        />
+                                        <Typography>{circleProgressValue().toFixed(1)}%</Typography>
+                                    </Box>
+                                    <Typography>Reszta: {restIncome ? restIncome : 0}</Typography>
+                                </>
+                            ) : null}
+                        </Paper>
+                    </Grid>
+
+                    <Grid item xs={9} sm={6} md={6}>
+                        <Paper className={classes.lastExpenses} elevation={3}>
+                            <Typography color="textPrimary">Ostatnie wydatki i przychody</Typography>
                             {budgetDataSorted?.map((item, i) => i < 5 ? (
                                 <div key={item.id}>
                                     <LightTooltip title="Nazwa Kategoria Suma" >
                                         <Box className={classes.lastExpensesSingleBox}>
                                             <Typography style={{width: 180}}>{item.title}</Typography>
                                             <Typography style={{width: 120}}>{item.category}</Typography>
-                                            <Typography style={{width: 100}}>{item.summ}</Typography>
+                                            <Typography style={{width: 100}}>{item.sum}</Typography>
                                         </Box>
                                     </LightTooltip>
-                                    <Divider variant="middle" />
+                                    {i < 4 ? (<Divider variant="middle" />) : null}
                                 </div>
                                 ) : null
                             )}
                         </Paper>
                     </Grid>
+
                     <Grid item xs={9} sm={6} md={6}>
-                <Paper className={classes.theBiggestExpenses} elevation={3}>
+                        <Paper className={classes.theBiggestExpenses} elevation={3}>
                             <Typography color="textPrimary">Twoje największe wydatki przez cały czas</Typography>
                             {budgetSortBySum?.map((item, i) => i < 5 ? (
                                 <Box className={classes.theBiggestExpensesSingleBox} key={item.id}>
                                     <Typography style={{width: 180}}>{item.title}</Typography>
                                     <MaxExpensesProgressBar
                                         variant="determinate"
-                                        value={item.summ / 100}
+                                        value={item.sum / 100}
                                         className={classes.theBiggestExpensesLinearProgressBar}
                                     />
-                                    <Typography style={{width: 80}}>{item.summ}</Typography>
+                                    <Typography style={{width: 80}}>{item.sum}</Typography>
                                 </Box>
                             ) : null )}
                         </Paper>
                     </Grid >
+
                     <Grid item xs={9} sm={6} md={3}>
-                <Paper className={classes.credits} elevation={3}>
+                        <Paper className={classes.credits} elevation={3}>
                             <Typography color="textPrimary">Aktualne kredyty</Typography>
-                            {currentUserData?.credits?.map((item, i) => i < 5 ? (
+                            {credits?.map((item, i) => i < 5 ? (
                                     <div key={item.id}>
                                         <LightTooltip title="Nazwa: zostało do spłaty" key={item.id}>
                                             <Typography
                                                 className={classes.singleCredit}
                                             >
-                                                {item.creditTitle}: {item.leftSumm}
+                                                {item.title}: {item.leftSum}
                                             </Typography>
                                         </LightTooltip>
                                         <Divider variant="middle"/>
@@ -360,18 +422,18 @@ export default function Pulpit() {
                             )}
                         </Paper>
                     </Grid>
+
                     <Grid item xs={9} sm={6} md={3}>
-                <Paper className={classes.savings} elevation={3}>
+                        <Paper className={classes.savings} elevation={3}>
+                            <Typography color="textPrimary">Aktualnie zbierasz na:</Typography>
                             {savingDataSorted?.map((item, i) => i < 1 ? (
                                 <Box key={item.id}>
-                                    <Typography color="textPrimary">
-                                        Aktualnie zbierasz na: {item.name}
-                                    </Typography>
+                                    <Typography color="textPrimary">{item.name}</Typography>
                                     <CircularProgress
                                         variant="determinate"
                                         value={item.currentState / item.goal * 100}
                                         thickness={22}
-                                        size="100px"
+                                        size="80px"
                                         className={classes.circleProgressSaving}
                                     />
                                     <Typography variant="body2">Zebrano {item.currentState / item.goal * 100}%</Typography>
@@ -380,7 +442,7 @@ export default function Pulpit() {
                                 ) : null
                             )}
                         </Paper>
-                </Grid>
+                    </Grid>
                 </Grid>
             </Box>
         );
