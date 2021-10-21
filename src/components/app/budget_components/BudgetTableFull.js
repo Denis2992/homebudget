@@ -404,7 +404,7 @@ export default function BudgetTableFull () {
     };
 
 
-    if (currentUser){
+    if (budget){
         return (
             <newDataItemContext.Provider
                 value= {{

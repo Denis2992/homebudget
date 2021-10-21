@@ -26,7 +26,7 @@ import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from "yup";
 import getFirebase from "../firebase/firebase";
-// import ReCAPTCHA from "react-google-recaptcha";
+import ReCAPTCHA from "react-google-recaptcha";
 
 
 const useStyles = makeStyles((theme) => ({
@@ -108,12 +108,13 @@ const Registration = () => {
     const [password, resetPassword] = useInput("");
     const [confirmPassword, resetConfirmPassword] = useInput("");
     const [birthDate, resetBirthDate] = useInput("");
-    const [gender, resetGender] = useInput("");
+    const [gender, resetGender] = useInput("mężczyzna");
     const [values, setValues] = useState({
         showPassword: false,
         showConfirmPassword: false
     });
-    // const [captcha, setCaptcha] = useState(false);
+    const [captchaChecked, setCaptchaChecked] = useState(false);
+    const [captchaErr, setCaptchaErr] = useState(false);
     const [sendErr, setSendErr] = useState(false);
     const history = useHistory();
     const {setCurrentUser} = useContext(currentUserContext);
@@ -132,91 +133,97 @@ const Registration = () => {
         resolver: yupResolver(schema)
     });
 
-    // const captchaOnChange = () => {
-    //     setCaptcha(true)
-    // }
+    const captchaOnChange = () => {
+        setCaptchaChecked(true);
+    }
 
     const onSubmit = async () => {
-        try {
-            if (firebaseInstance) {
-                const user = await firebaseInstance
-                    .auth()
-                    .createUserWithEmailAndPassword(email.value, password.value);
-                console.log("user", user);
-                setCurrentUser(email.value);
-                const db = firebaseInstance.firestore();
-                const docUserData = db.collection(`${email.value}`)
-                    .doc("userData");
+        if (captchaChecked) {
+            try {
+                if (firebaseInstance) {
+                    const user = await firebaseInstance
+                        .auth()
+                        .createUserWithEmailAndPassword(email.value, password.value);
+                    console.log("user", user);
+                    setCurrentUser(email.value);
+                    const db = firebaseInstance.firestore();
+                    const docUserData = db.collection(`${email.value}`)
+                        .doc("userData");
 
 
-                await docUserData.set(
-                    {
-                        name: name.value,
-                        surname: surname.value,
-                        email: email.value,
-                        birthDate: birthDate.value,
-                        gender: gender.value
-                    },
-                    {merge: true}
-                );
+                    await docUserData.set(
+                        {
+                            name: name.value,
+                            surname: surname.value,
+                            email: email.value,
+                            birthDate: birthDate.value,
+                            gender: gender.value
+                        },
+                        {merge: true}
+                    );
 
-                const categoriesRef =
-                    db.collection(`${email.value}`)
-                        .doc("userData")
-                        .collection("category");
+                    const categoriesRef =
+                        db.collection(`${email.value}`)
+                            .doc("userData")
+                            .collection("category");
 
-                categoriesRef
-                    .doc()
-                    .set({
-                        id: 1,
-                        name: "Pensja"
-                    })
-                    .then(function () {
-                        console.log('Document Added');
-                    })
-                    .catch(function (error) {
-                        console.error('Error adding document: ', error);
-                    });
+                    categoriesRef
+                        .doc()
+                        .set({
+                            id: 1,
+                            name: "Pensja"
+                        })
+                        .then(function () {
+                            console.log('Document Added');
+                        })
+                        .catch(function (error) {
+                            console.error('Error adding document: ', error);
+                        });
 
-                categoriesRef
-                    .doc()
-                    .set({
-                        id: 2,
-                        name: "Zakupy"
-                    })
-                    .then(function () {
-                        console.log('Document Added');
-                    })
-                    .catch(function (error) {
-                        console.error('Error adding document: ', error);
-                    });
+                    categoriesRef
+                        .doc()
+                        .set({
+                            id: 2,
+                            name: "Zakupy"
+                        })
+                        .then(function () {
+                            console.log('Document Added');
+                        })
+                        .catch(function (error) {
+                            console.error('Error adding document: ', error);
+                        });
 
-                categoriesRef
-                    .doc()
-                    .set({
-                        id: 3,
-                        name: "Auto"
-                    })
-                    .then(function () {
-                        console.log('Document Added');
-                    })
-                    .catch(function (error) {
-                        console.error('Error adding document: ', error);
-                    });
+                    categoriesRef
+                        .doc()
+                        .set({
+                            id: 3,
+                            name: "Auto"
+                        })
+                        .then(function () {
+                            console.log('Document Added');
+                        })
+                        .catch(function (error) {
+                            console.error('Error adding document: ', error);
+                        });
 
-                resetName();
-                resetSurname();
-                resetEmail();
-                resetPassword();
-                resetConfirmPassword();
-                resetBirthDate();
-                resetGender();
-                setSendErr(false);
-                history.push("/app");
+                    resetName();
+                    resetSurname();
+                    resetEmail();
+                    resetPassword();
+                    resetConfirmPassword();
+                    resetBirthDate();
+                    resetGender();
+                    setSendErr(false);
+                    setCaptchaChecked(false);
+                    setCaptchaErr(false);
+                    history.push("/app");
+                }
+            } catch (error) {
+                console.log("error", error);
+                setSendErr(true);
             }
-        } catch (error) {
-            console.log("error", error);
-            setSendErr(true);
+        } else {
+            setCaptchaErr(true);
         }
     };
 
@@ -359,29 +366,28 @@ const Registration = () => {
                             </FormControl>
                         )}
                     />
-
-                            <Controller
-                                name="birthDate"
-                                control={control}
-                                render={() => (
-                                    <TextField
-                                        variant="outlined"
-                                        size="small"
-                                        error={errors?.birthDate ? true : false}
-                                        color={errors?.birthDate ? "error" : "secondary"}
-                                        label="Data urodzenia"
-                                        type="date"
-                                        defaultValue=""
-                                        helperText={errors?.birthDate?.message}
-                                        className={classes.textField}
-                                        {...register("birthDate")}
-                                        {...birthDate}
-                                        InputLabelProps={{
-                                            shrink: true,
-                                        }}
-                                    />
-                                )}
+                    <Controller
+                        name="birthDate"
+                        control={control}
+                        render={() => (
+                            <TextField
+                                variant="outlined"
+                                size="small"
+                                error={errors?.birthDate ? true : false}
+                                color={errors?.birthDate ? "error" : "secondary"}
+                                label="Data urodzenia"
+                                type="date"
+                                defaultValue=""
+                                helperText={errors?.birthDate?.message}
+                                className={classes.textField}
+                                {...register("birthDate")}
+                                {...birthDate}
+                                InputLabelProps={{
+                                    shrink: true,
+                                }}
                             />
+                        )}
+                    />
                     <FormControl component="fieldset" className={classes.genderContainer}>
                         <FormLabel color="secondary" style={{width:30}}>Płeć</FormLabel>
                                 <RadioGroup
@@ -409,12 +415,20 @@ const Registration = () => {
                         Klikając załóż konto, zgadzasz się z warunkami
                         korzystania aplikacji.
                     </Typography>
-                    {/*<ReCAPTCHA*/}
-                    {/*    sitekey="Your client site key"*/}
-                    {/*    onChange={captchaOnChange}*/}
-                    {/*    style={{marginBottom: 24}}*/}
-                    {/*/>*/}
+                    <ReCAPTCHA
+                        sitekey="6LcR5OUcAAAAAJ8An3RXPIXpDOW6RFAzcfM-mRiG"
+                        onChange={captchaOnChange}
+                        style={{margin: "10px 0 5px 0"}}
+                    />
                     <Box style={{height:20, margin: "8px 0"}}>
+                        {captchaErr ? (
+                            <Typography
+                                variant="caption"
+                                color="error"
+                            >
+                                Potwierdź że nie jesteś robotem
+                            </Typography>
+                        ) : null}
                         {sendErr ? (
                             <Typography variant="caption" color="error">Rejestracja się nie powiodła</Typography>
                         ) : null}

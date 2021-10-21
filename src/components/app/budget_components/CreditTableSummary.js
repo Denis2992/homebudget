@@ -17,7 +17,6 @@ import Tooltip from '@material-ui/core/Tooltip';
 import {withStyles} from "@material-ui/core";
 import {Link} from "react-router-dom";
 import StorageIcon from '@material-ui/icons/Storage';
-import {usersDataContext} from "../../../App";
 import getFirebase from "../../firebase/firebase";
 import {currentUserContext} from "../../../index";
 

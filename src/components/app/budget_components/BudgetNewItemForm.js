@@ -119,12 +119,10 @@ const schema = yup.object({
     title: yup
         .string()
         .min(3, "Tytuł ma zawierać minimum 3 znaki")
-        .matches(/^[A-Za-z]+$/i, "Tytuł nie może mieć liczb")
         .required("Pole nie może być puste"),
     category: yup
         .string()
-        .required("Pole nie może być puste")
-        .notOneOf(["addNew"], "Dodaj kategorię"),
+        .required("Wybierz lub dodaj kategorię"),
     date: yup
         .string().required("Wybierz date urodzenia"),
     sum: yup.number()
@@ -182,6 +180,8 @@ export default function BudgetNewItemForm () {
         resolver: yupResolver(schema)
     });
 
+
+
     const newCategoryValid = () => {
         const tab = [];
         if (/\d/.test(newCategory.value)) {
@@ -200,7 +200,7 @@ export default function BudgetNewItemForm () {
         return tab.length === 0;
     }
 
-    const handleAddNewCategory = async () => {
+    const handleAddNewCategory = () => {
         newCategoryValid();
 
         if (newCategoryValid()) {
@@ -221,6 +221,7 @@ export default function BudgetNewItemForm () {
                     categoriesRef.doc().set(dataToSend)
                         .then(function () {
                             console.log('Document Added');
+
                         })
                         .catch(function (error) {
                             console.error('Error adding document: ', error);
@@ -236,7 +237,6 @@ export default function BudgetNewItemForm () {
         } else {
             setNewCategoryErrActive(true);
         }
-
     };
 
     const handleAddNewItem = async () => {
@@ -250,34 +250,38 @@ export default function BudgetNewItemForm () {
                     type: type,
                     sum: sum
         };
+        if (category !== "addNew") {
+            if (firebase) {
+                try {
+                    const db = firebase.firestore()
+                    const budgetRef = db.collection(`${currentUser}`)
+                        .doc("userData")
+                        .collection("budget");
 
-        if (firebase) {
-            try {
-                const db = firebase.firestore()
-                const budgetRef = db.collection(`${currentUser}`)
-                    .doc("userData")
-                    .collection("budget");
-
-                budgetRef.doc().set(dataToSend)
-                    .then(function () {
-                        console.log('Document Added');
-                        setBudget(prevState => [...prevState, dataToSend]);
-                    })
-                    .catch(function (error) {
-                        console.error('Error adding document: ', error);
-                    });
-            } catch (error) {
-                console.log("error", error);
+                    budgetRef.doc().set(dataToSend)
+                        .then(function () {
+                            console.log('Document Added');
+                            setBudget(prevState => [...prevState, dataToSend]);
+                        })
+                        .catch(function (error) {
+                            console.error('Error adding document: ', error);
+                        });
+                } catch (error) {
+                    console.log("error", error);
+                }
             }
+
+
+            setTitle("");
+            setCategory("");
+            setDate("");
+            setType("expenses");
+            setSum("");
+            history.push("/app/budget/dataBudget");
+        } else {
+            setNewCategoryErrActive(true);
+            setNewCategoryErrors(prevState => [...prevState, "Dodaj lub wybierz kategorie"])
         }
-
-
-        setTitle("");
-        setCategory("");
-        setDate("");
-        setType("expenses");
-        setSum("");
-        history.push("/app/budget/dataBudget")
     };
 
     const handleSaveEditItem = () => {
@@ -378,20 +382,20 @@ export default function BudgetNewItemForm () {
                             onChange={e => setTitle(e.target.value)}
                         />
                     )}
-
                 />
-                <FormControl
-                    variant="outlined"
-                    size="small"
-                    error={errors?.category ? true : false}
-                    color={errors?.category ? "error" : "secondary"}
-                    className={classes.inputs}
-                >
-                    <InputLabel id="category" color="secondary">Kategoria</InputLabel>
                     <Controller
                         name="category"
                         control={control}
+                        value={category}
                         render={() => (
+                            <FormControl
+                                variant="outlined"
+                                size="small"
+                                error={errors?.category ? true : false}
+                                color={errors?.category ? "error" : "secondary"}
+                                className={classes.inputs}
+                            >
+                                <InputLabel id="category" color="secondary">Kategoria</InputLabel>
                             <Select
                                 label="Kategoria"
                                 classes={{root: classes.selectRoot}}
@@ -418,16 +422,16 @@ export default function BudgetNewItemForm () {
                                     Dodaj kategorię
                                 </MenuItem>
                             </Select>
+                                <Typography
+                                    variant="caption"
+                                    color="error"
+                                    style={{height:20, margin: "4px 14px 0 14px"}}
+                                >
+                                    {errors?.category?.message}
+                                </Typography>
+                            </FormControl>
                         )}
                     />
-                    <Typography
-                        variant="caption"
-                        color="error"
-                        style={{height:20, margin: "4px 14px 0 14px"}}
-                    >
-                        {errors?.category?.message}
-                    </Typography>
-                </FormControl>
                 {category === "addNew" ? (
                     <>
                         <Controller
