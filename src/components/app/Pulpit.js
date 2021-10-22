@@ -19,7 +19,7 @@ const useStyles = makeStyles((theme) => ({
         display: "flex",
         justifyContent: "center",
         flexWrap: "wrap",
-        maxWidth: theme.spacing(100),
+        maxWidth: theme.spacing(130),
         margin: theme.spacing(0, 2)
     },
     gridBox: {
