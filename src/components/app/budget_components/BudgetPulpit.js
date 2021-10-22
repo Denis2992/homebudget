@@ -13,7 +13,6 @@ const useStyles = makeStyles((theme) => ({
     },
     gridBox: {
         justifyContent: "center",
-        marginLeft: 54,
         [theme.breakpoints.up('sm')]: {
             marginLeft: 0
         },
@@ -52,8 +51,8 @@ export default function BudgetPulpit () {
                 <Grid container spacing={2} className={classes.gridBox}>
                     <Grid item xs={8} sm={12} md={6}><SortPulpitBudget /></Grid>
                     <Grid item xs={8} sm={12} md={6}><Savings /></Grid>
-                    <Grid item xs={9} sm={12} md={6}><BudgetTableSummary /></Grid>
-                    <Grid item xs={9} sm={12} md={6}><CreditTableSummary /></Grid>
+                    <Grid item xs={8} sm={12} md={6}><BudgetTableSummary /></Grid>
+                    <Grid item xs={8} sm={12} md={6}><CreditTableSummary /></Grid>
                 </Grid>
             </Container>
         </datesContext.Provider>

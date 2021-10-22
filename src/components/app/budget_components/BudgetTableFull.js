@@ -266,10 +266,6 @@ const useStyles = makeStyles((theme) => ({
     },
     gridBox: {
         justifyContent: "center",
-        marginLeft: 28,
-        [theme.breakpoints.up('sm')]: {
-            marginLeft: 0
-        },
     },
 }));
 

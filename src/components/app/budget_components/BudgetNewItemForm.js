@@ -50,10 +50,6 @@ const useStyles = makeStyles((theme) => ({
     },
     gridBox: {
         justifyContent: "center",
-        marginLeft: 22,
-        [theme.breakpoints.up('sm')]: {
-            marginLeft: 0
-        },
     },
     form: {
         display: "flex",

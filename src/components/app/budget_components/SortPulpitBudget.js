@@ -26,7 +26,10 @@ const useStyles = makeStyles((theme) => ({
     form: {
         display: "flex",
         alignItems: "center",
-        justifyContent: "center",
+        justifyContent:"center",
+        [theme.breakpoints.down('sm')]: {
+            flexWrap: "wrap",
+        },
     },
     input: {
         margin: theme.spacing(2, 1, 0, 1),
@@ -100,7 +103,6 @@ export default function SortPulpitBudget () {
         <Paper className={classes.paper}>
             <Typography align="center">Zobacz dane za inny miesiąc</Typography>
             <form className={classes.form} onSubmit={handleSubmit(handleFilterData)}>
-
                 <FormControl
                     fullWidth
                     variant="outlined"
@@ -196,7 +198,9 @@ export default function SortPulpitBudget () {
                         color="secondary"
                         className={classes.sortBtn}
                         type="submit"
-                >Filtruj</Button>
+                >
+                    Filtruj
+                </Button>
             </form>
         </Paper>
     )

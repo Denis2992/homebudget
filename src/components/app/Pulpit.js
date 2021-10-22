@@ -19,15 +19,11 @@ const useStyles = makeStyles((theme) => ({
         display: "flex",
         justifyContent: "center",
         flexWrap: "wrap",
-        maxWidth: theme.spacing(130),
+        maxWidth: theme.spacing(100),
         margin: theme.spacing(0, 2)
     },
     gridBox: {
         justifyContent: "center",
-        marginLeft: 70,
-        [theme.breakpoints.up('sm')]: {
-            marginLeft: 0
-        },
     },
     //this month income/expenses
     paperThisMonth: {
@@ -104,6 +100,7 @@ const useStyles = makeStyles((theme) => ({
     lastExpensesSingleBox: {
         display: "flex",
         justifyContent: "space-around",
+        alignItems: "center",
         padding: theme.spacing(1, 0),
         cursor: "default",
     },
@@ -308,7 +305,7 @@ export default function Pulpit() {
         return (
             <Box className={classes.box}>
                 <Grid container spacing={2} className={classes.gridBox}>
-                    <Grid item xs={9} sm={6} md={3}>
+                    <Grid item xs={8} sm={6} md={3}>
                         <Paper className={classes.paperThisMonth} elevation={3}>
                             <Typography color="textPrimary">W tym miesiącu</Typography>
                             {incomeSum || expensesSum || savingsSum ? (
@@ -347,7 +344,7 @@ export default function Pulpit() {
                         </Paper>
                     </Grid>
 
-                    <Grid item xs={9} sm={6} md={3}>
+                    <Grid item xs={8} sm={6} md={3}>
                         <Paper className={classes.paperExpenses} elevation={3}>
                             <Typography color="textPrimary">Wykorzystano środków</Typography>
                             {restIncome ? (
@@ -368,7 +365,7 @@ export default function Pulpit() {
                         </Paper>
                     </Grid>
 
-                    <Grid item xs={9} sm={6} md={6}>
+                    <Grid item xs={8} sm={6} md={6}>
                         <Paper className={classes.lastExpenses} elevation={3}>
                             <Typography color="textPrimary">Ostatnie wydatki i przychody</Typography>
                             {budgetDataSorted?.map((item, i) => i < 5 ? (
@@ -387,7 +384,7 @@ export default function Pulpit() {
                         </Paper>
                     </Grid>
 
-                    <Grid item xs={9} sm={6} md={6}>
+                    <Grid item xs={8} sm={6} md={6}>
                         <Paper className={classes.theBiggestExpenses} elevation={3}>
                             <Typography color="textPrimary">Twoje największe wydatki przez cały czas</Typography>
                             {budgetSortBySum?.map((item, i) => i < 5 ? (
@@ -404,7 +401,7 @@ export default function Pulpit() {
                         </Paper>
                     </Grid >
 
-                    <Grid item xs={9} sm={6} md={3}>
+                    <Grid item xs={8} sm={6} md={3}>
                         <Paper className={classes.credits} elevation={3}>
                             <Typography color="textPrimary">Aktualne kredyty</Typography>
                             {credits?.map((item, i) => i < 5 ? (
@@ -423,7 +420,7 @@ export default function Pulpit() {
                         </Paper>
                     </Grid>
 
-                    <Grid item xs={9} sm={6} md={3}>
+                    <Grid item xs={8} sm={6} md={3}>
                         <Paper className={classes.savings} elevation={3}>
                             <Typography color="textPrimary">Aktualnie zbierasz na:</Typography>
                             {savingDataSorted?.map((item, i) => i < 1 ? (
