@@ -6,7 +6,7 @@ One consists of:
 - budget with savings, income and expenses details witch you can add, edit, delete, sort
 - login and registration form with validation.	
 
-Used technologies and instruments: React, JSS, JSON Server, Fetch API, React Router, React Scroll, Firebase, React Hook Form, Material UI.
+Used technologies and instruments: React, JSS, JSON Server, Fetch API, React Router, React Scroll, RWD, Firebase, React Hook Form, Material UI.
 
 Link to app [Home Budget](https://dadalski-home-budget.netlify.app)
 
