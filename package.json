@@ -27,6 +27,7 @@
     "react-scripts": "4.0.3",
     "react-scroll": "^1.8.4",
     "reset-css": "^5.0.1",
+    "set-value": "^4.1.0",
     "styled-components": "^5.3.1",
     "use-google-fonts": "^1.0.2",
     "validator": "^13.6.0",
