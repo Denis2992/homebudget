@@ -11,25 +11,24 @@ function App() {
     // const [currentUserData, setCurrentUserData] = useState([]);
     // const {currentUser} = useContext(currentUserContext);
     // const firebase = getFirebase();
-
-
-
+    //
+    //
+    //
     // useEffect( () => {
-        // const fetch = async () => {
-        //     await firebase
-        //         .firestore()
-        //         .collection(`${currentUser}`)
-        //         .doc("userData")
-        //         .get()
-        //         .then(snapshot => setCurrentUserData(snapshot.data()))
-        // };
-
-        // fetch();
+    //     const fetch = async () => {
+    //         await firebase
+    //             .firestore()
+    //             .collection(`${currentUser}`)
+    //             .doc("userData")
+    //             .get()
+    //             .then(snapshot => setCurrentUserData(snapshot.data()))
+    //     };
+    //
+    //     fetch();
     // }, [currentUser, firebase]);
 
 
     return (
-
       <HashRouter>
           <Switch>
               <Route exact path="/app" component={Header}/>

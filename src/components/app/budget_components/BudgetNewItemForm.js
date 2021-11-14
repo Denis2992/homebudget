@@ -65,7 +65,6 @@ const useStyles = makeStyles((theme) => ({
     divider: {
         backgroundColor: theme.palette.success.main,
         height: 2,
-
     },
     inputs: {
         height: 60,
@@ -217,7 +216,6 @@ export default function BudgetNewItemForm () {
                     categoriesRef.doc().set(dataToSend)
                         .then(function () {
                             console.log('Document Added');
-
                         })
                         .catch(function (error) {
                             console.error('Error adding document: ', error);

@@ -250,9 +250,7 @@ const useStyles = makeStyles((theme) => ({
     paper: {
         border: `2px solid ${theme.palette.success.main}`,
     },
-    table: {
 
-    },
     visuallyHidden: {
         border: 0,
         clip: 'rect(0 0 0 0)',
@@ -396,6 +394,7 @@ export default function BudgetTableFull () {
         setType(singleData[0].type);
         setSum(singleData[0].sum);
         setEditMode(true);
+        console.log(id);
         history.push(`/app/budget/dataBudget/edit/${selected[0]}`)
     };
 
