@@ -318,6 +318,7 @@ export default function Header() {
                     <HashRouter>
                         <Switch>
                             <Route exact path="/app/" component={Pulpit}/>
+                            <Route path="/app/pulpit" component={Pulpit}/>
                             <Route path="/app/budget/" component={Budget}/>
                         </Switch>
                     </HashRouter>

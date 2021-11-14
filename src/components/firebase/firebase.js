@@ -1,12 +1,12 @@
 import firebase from "firebase/compat";
 
 const firebaseConfig = {
-    apiKey: "AIzaSyC0gc5metAKob5UL-JpSBp6QmvX584hPCc",
-    authDomain: "home-budget-44efa.firebaseapp.com",
-    projectId: "home-budget-44efa",
-    storageBucket: "home-budget-44efa.appspot.com",
-    messagingSenderId: "163550072392",
-    appId: "1:163550072392:web:de9602f2f76a306d1dd27d"
+    apiKey: "AIzaSyC1zOYssPElRwn5D5YKnY8DX2UK1_MBwq4",
+    authDomain: "home-budget-e28b5.firebaseapp.com",
+    projectId: "home-budget-e28b5",
+    storageBucket: "home-budget-e28b5.appspot.com",
+    messagingSenderId: "233095909452",
+    appId: "1:233095909452:web:8c6eca8a9cd1480f0064e9"
 };
 
 let instance;

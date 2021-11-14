@@ -200,12 +200,11 @@ const Registration = () => {
                             name: "Auto"
                         })
                         .then(function () {
-                            console.log('Document Added');
                         })
                         .catch(function (error) {
                             console.error('Error adding document: ', error);
                         });
-
+                    console.log('Document Added');
                     resetName();
                     resetSurname();
                     resetEmail();
@@ -216,7 +215,8 @@ const Registration = () => {
                     setSendErr(false);
                     setCaptchaChecked(false);
                     setCaptchaErr(false);
-                    history.push("/app");
+                    console.log("ok");
+                    history.push("/app/");
                 }
             } catch (error) {
                 console.log("error", error);
@@ -225,6 +225,7 @@ const Registration = () => {
         } else {
             setCaptchaErr(true);
         }
+        history.push("/app/");
     };
 
     return (
