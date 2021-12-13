@@ -225,7 +225,6 @@ const Registration = () => {
         } else {
             setCaptchaErr(true);
         }
-        history.push("/app/");
     };
 
     return (
